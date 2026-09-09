@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clutch Lab — Tact microphone-as-clutch experiment</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Tact experiment</p>
+        <h1>Clutch Lab</h1>
+        <p class="subtitle">Does voice reduce interaction cost when the screen carries the referent?</p>
+      </div>
+      <div class="topbar-actions">
+        <button id="resetRunBtn" class="quiet-button" type="button">Reset run</button>
+        <button id="exportBtn" class="quiet-button" type="button">Export results</button>
+      </div>
+    </header>
+
+    <section class="experiment-bar" aria-label="Experiment controls">
+      <fieldset class="segmented-group" id="modeGroup">
+        <legend>Input condition</legend>
+        <label><input type="radio" name="mode" value="pointer" checked /> <span>1. Pointer + keyboard</span></label>
+        <label><input type="radio" name="mode" value="voice" /> <span>2. Voice-only</span></label>
+        <label><input type="radio" name="mode" value="mixed" /> <span>3. Mixed voice + selection</span></label>
+      </fieldset>
+
+      <fieldset class="segmented-group" id="scenarioGroup">
+        <legend>Task</legend>
+        <label><input type="radio" name="scenario" value="request" checked /> <span>Failed request</span></label>
+        <label><input type="radio" name="scenario" value="merge" /> <span>Merge work</span></label>
+        <label><input type="radio" name="scenario" value="spacing" /> <span>Spacing edit</span></label>
+      </fieldset>
+    </section>
+
+    <main class="workbench-grid">
+      <section class="stage-panel panel" aria-labelledby="stageTitle">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Live artifact</p>
+            <h2 id="stageTitle">Debugging stage</h2>
+          </div>
+          <div id="runStateBadge" class="badge">Ready</div>
+        </div>
+
+        <div id="taskPrompt" class="task-prompt"></div>
+        <div id="stage" class="stage" aria-live="polite"></div>
+        <div id="directControls" class="direct-controls"></div>
+      </section>
+
+      <aside class="interpretation-panel panel" aria-labelledby="interpretationTitle">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Visible interpretation</p>
+            <h2 id="interpretationTitle">Heard → Understood → Did</h2>
+          </div>
+        </div>
+
+        <div id="interpretation" class="interpretation"></div>
+
+        <div class="mic-dock" id="micDock">
+          <button id="micButton" class="mic-button" type="button" aria-pressed="false">
+            <span class="mic-dot" aria-hidden="true"></span>
+            <span id="micLabel">Hold to speak</span>
+          </button>
+          <p id="micHelp" class="mic-help">Hold the button or Space. Release to interpret.</p>
+          <p id="speechStatus" class="speech-status" aria-live="polite"></p>
+        </div>
+
+        <details class="simulator">
+          <summary>Simulate a voice turn</summary>
+          <p>Useful for deterministic failure runs or browsers without speech recognition.</p>
+          <div class="simulator-row">
+            <input id="simulatedUtterance" type="text" autocomplete="off" placeholder="Type the utterance, then commit it as one voice turn" />
+            <button id="simulateBtn" type="button">Commit</button>
+          </div>
+        </details>
+      </aside>
+
+      <aside class="lab-panel panel" aria-labelledby="labTitle">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Repair lab</p>
+            <h2 id="labTitle">Inject one bad turn</h2>
+          </div>
+        </div>
+
+        <div id="failureLab" class="failure-lab"></div>
+        <div id="liveMetrics" class="live-metrics"></div>
+      </aside>
+    </main>
+
+    <section class="results-panel panel" aria-labelledby="resultsTitle">
+      <div class="panel-heading results-heading">
+        <div>
+          <p class="eyebrow">Comparison</p>
+          <h2 id="resultsTitle">Completed runs</h2>
+        </div>
+        <button id="clearResultsBtn" class="quiet-button" type="button">Clear results</button>
+      </div>
+      <div id="comparisonSummary" class="comparison-summary"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Condition</th>
+              <th>Injected error</th>
+              <th>Time</th>
+              <th>Actions</th>
+              <th>Voice turns</th>
+              <th>Spoken words</th>
+              <th>Referent words</th>
+              <th>Typed chars</th>
+              <th>Repair turns</th>
+              <th>Wrong interpretations</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="footer-note">
+      <strong>Protocol:</strong> run each task once clean in all three conditions, then repeat voice-only and mixed with the same injected recognition, referent, and intent failures. The lab stores completed runs in this browser only.
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
