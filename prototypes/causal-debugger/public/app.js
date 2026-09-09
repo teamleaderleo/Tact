@@ -220,13 +220,14 @@ async function captureUiProof(taskIds) {
     const currentTask = task(taskId);
     const result = ui.results.get(taskId);
     const passed = result?.status === 200 && result.visibleMessage?.length > 0;
+    const networkVerification = latestEvent((event) => event.kind === "verification.network" && event.taskIds.includes(taskId) && event.data.status === 200);
     const response = await api("/api/verify-ui", {
       method: "POST",
       body: JSON.stringify({
         taskId,
         pageId,
         focusId: currentTask.focusId,
-        parentEventId: ui.selectedEventId,
+        parentEventId: networkVerification?.id || ui.selectedEventId,
         passed,
         summary: passed ? `browser visibly shows: ${result.visibleMessage}` : "browser still shows failure",
         visibleText: result?.visibleMessage || null,
