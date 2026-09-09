@@ -17,6 +17,8 @@ The starting point is simple: having strong taste is useful, but product design 
 - candidate principles with confidence levels;
 - claims that deserve weakening or retirement from the active doctrine.
 
+[`notes/operator-loop.md`](notes/operator-loop.md) is the current answer to **"what should Leo actually do with this lab?"** It turns the built prototypes into short human-use sessions, says which measurements are worth trusting now, and separates Leo's job as a user/test subject from the builders' job maintaining harnesses.
+
 The long notes below are **research evidence, examples, and arguments**. They are allowed to disagree. They should not all be read as simultaneous doctrine.
 
 ## Working beliefs
@@ -52,14 +54,20 @@ Use issues and notes for small, concrete hunts:
 
 Prefer a prototype that settles a live disagreement over another essay that restates one.
 
-## Built experiments
+## Runnable lab
 
-- [`experiments/adversarial-attention-compiler/`](experiments/adversarial-attention-compiler/) — executable 100-worker supervision simulator comparing a worker grid, commitment/decision reduction, and the same reduced interface with independent population audit signals for correlated premise failure, retries, verification decline, compute burn, stale-source concentration, and lossy decision fan-in.
+- [`experiments/microcraft/`](experiments/microcraft/) — blind one-variable A/B drills for typography, spacing, alignment, hierarchy, contrast, material, icon weight, density, motion duration, and easing. This is the recurring craft-training loop.
+- [`prototypes/microphone-clutch/`](prototypes/microphone-clutch/) — pointer/keyboard vs voice-only vs mixed selection + voice, with deterministic recognition/referent/intent failures and repair-cost instrumentation.
 - [`prototypes/causal-debugger/`](prototypes/causal-debugger/) — one-stage causal debugging thread from visible browser failure through runtime, request/log, source, edit, rebuild, replay, and proof; the shared-cause case forces two human tasks to converge on one edit/rebuild and tests task identity against a lower-level causal graph.
+- [`prototypes/warm-field/`](prototypes/warm-field/) — cropped edge bookmarks vs scaled mini-windows vs MRU vs search over a persistent warm working set. Useful for informal interaction testing now; timed density claims should wait for the adversarial harness work tracked in issues #28–#31.
+- [`experiments/adversarial-attention-compiler/`](experiments/adversarial-attention-compiler/) — executable 100-worker supervision simulator comparing a worker grid, commitment/decision reduction, and the same reduced interface with independent population audit signals for correlated premise failure, retries, verification decline, compute burn, stale-source concentration, and lossy decision fan-in.
 - [`experiments/capture-retrieve-handoff-delete/`](experiments/capture-retrieve-handoff-delete/) — Discord-like capture with shallow channels, lexical/semantic/temporal/context retrieval, deterministic complete sets, current-state projections with provenance, export/import handoff, correction, and source/derived redaction and deletion.
+
+The lab is now ahead of the human evidence. Run the prototypes, keep observations compact, and let results change the Workbench before adding more general doctrine.
 
 ## Research notes
 
+- [`notes/operator-loop.md`](notes/operator-loop.md) — concrete human-use protocol for the current prototypes: what Leo should run, what to notice, what to defer, and how to record evidence without turning Tact into another job.
 - [`notes/starting-points.md`](notes/starting-points.md) — first principles, practice loops, agent-attention questions, and issue-sized exercises.
 - [`notes/leo-interface-instincts.md`](notes/leo-interface-instincts.md) — Leo's product preferences across ChatGPT, browsers, games, notes, email, macOS, calendars, car sites, and a first map of competing design values.
 - [`notes/contrarian-review.md`](notes/contrarian-review.md) — adversarial review of the doctrine: density, organization, ceremony, disappearance, spatial memory, agent reduction, task identity, append-only history, repeated use, and platform specificity.
