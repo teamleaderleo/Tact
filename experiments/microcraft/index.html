@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tact · Microcraft calibration</title>
+  <meta name="description" content="Blind one-variable A/B drills for product-design micro-craft.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="studio-shell">
+    <header class="studio-header">
+      <div class="studio-title-block">
+        <div class="eyebrow">Tact · experiment 9</div>
+        <h1>Microcraft calibration</h1>
+        <p>Pick first. Diagnose second. Reveal exact values last.</p>
+      </div>
+      <div class="month-stats" aria-live="polite">
+        <div><span id="monthLabel">This month</span><strong id="attemptCount">0</strong><small>tries</small></div>
+        <div><span>accuracy</span><strong id="accuracyValue">—</strong><small id="missedSummary">no history yet</small></div>
+      </div>
+    </header>
+
+    <section class="studio-controls" aria-label="Calibration controls">
+      <label class="control-field">
+        <span>Category</span>
+        <select id="categoryFilter">
+          <option value="all">All categories</option>
+          <option value="typography">Typography</option>
+          <option value="spacing">Spacing</option>
+          <option value="alignment">Alignment</option>
+          <option value="hierarchy">Hierarchy</option>
+          <option value="contrast">Contrast</option>
+          <option value="material">Material</option>
+          <option value="iconography">Icon weight</option>
+          <option value="density">Density</option>
+          <option value="motion">Motion</option>
+        </select>
+      </label>
+
+      <fieldset class="segmented control-field">
+        <legend>Delta</legend>
+        <label><input type="radio" name="difficulty" value="subtle" checked><span>Subtle</span></label>
+        <label><input type="radio" name="difficulty" value="obvious"><span>Obvious</span></label>
+      </fieldset>
+
+      <label class="switch-field">
+        <input id="blindMode" type="checkbox" checked>
+        <span class="switch-track" aria-hidden="true"><span></span></span>
+        <span><strong>Blind</strong><small>hide variable until reveal</small></span>
+      </label>
+
+      <button id="replayButton" class="quiet-button" type="button" hidden>Replay motion <kbd>Space</kbd></button>
+      <button id="resetButton" class="quiet-button danger" type="button">Reset history</button>
+    </section>
+
+    <section class="challenge-card" aria-labelledby="challengePrompt">
+      <div class="challenge-meta">
+        <span id="challengeCategory" class="category-pill">Blind pair</span>
+        <span id="difficultyLabel">Subtle delta</span>
+      </div>
+      <h2 id="challengePrompt">Which version feels more composed?</h2>
+      <p id="challengeInstruction">Choose the stronger version before trying to name the variable.</p>
+    </section>
+
+    <section id="comparison" class="comparison" aria-label="A/B comparison">
+      <div id="leftVariant" class="variant-card" data-side="left" role="button" tabindex="0" aria-label="Choose left variant">
+        <span id="leftLabel" class="variant-label">17</span>
+        <span id="leftSurface" class="variant-surface"></span>
+        <span class="variant-pick">Choose <kbd>1</kbd></span>
+      </div>
+
+      <div id="rightVariant" class="variant-card" data-side="right" role="button" tabindex="0" aria-label="Choose right variant">
+        <span id="rightLabel" class="variant-label">42</span>
+        <span id="rightSurface" class="variant-surface"></span>
+        <span class="variant-pick">Choose <kbd>2</kbd></span>
+      </div>
+    </section>
+
+    <section id="diagnosisPanel" class="diagnosis-panel" aria-live="polite">
+      <div>
+        <div class="eyebrow">Your diagnosis</div>
+        <p id="choiceSummary">Make a blind pick to continue.</p>
+      </div>
+      <label class="diagnosis-field">
+        <span>What changed, and why does it alter the quality?</span>
+        <textarea id="diagnosisInput" rows="3" placeholder="Example: the external group gap collapses toward the row cadence, so the sections stop reading as distinct chunks." disabled></textarea>
+      </label>
+      <div class="diagnosis-actions">
+        <button id="unnamedButton" class="quiet-button" type="button" disabled>I can feel it; I can’t name it yet</button>
+        <button id="revealButton" class="primary-button" type="button" disabled>Reveal exact values <kbd>Enter</kbd></button>
+      </div>
+    </section>
+
+    <section id="revealPanel" class="reveal-panel" hidden aria-live="polite">
+      <div class="reveal-topline">
+        <div>
+          <div class="eyebrow">Reveal</div>
+          <h2 id="resultHeading">Calibration result</h2>
+        </div>
+        <span id="resultBadge" class="result-badge">—</span>
+      </div>
+
+      <div class="reveal-grid">
+        <div class="reveal-block">
+          <h3>Changed variable</h3>
+          <p id="variableName"></p>
+          <dl id="valueTable" class="value-table"></dl>
+        </div>
+        <div class="reveal-block">
+          <h3>Intended defect</h3>
+          <p id="defectText"></p>
+        </div>
+        <div class="reveal-block">
+          <h3>Useful diagnosis</h3>
+          <p id="diagnosisText"></p>
+          <div id="vocabularyTags" class="vocabulary-tags"></div>
+        </div>
+        <div class="reveal-block user-note">
+          <h3>Your note</h3>
+          <p id="savedDiagnosis">—</p>
+        </div>
+      </div>
+
+      <div class="reveal-actions">
+        <button id="repeatButton" class="quiet-button" type="button">Repeat same category</button>
+        <button id="nextButton" class="primary-button" type="button">Next pair <kbd>N</kbd></button>
+      </div>
+    </section>
+
+    <footer class="studio-footer">
+      <span><kbd>1</kbd>/<kbd>2</kbd> pick</span>
+      <span><kbd>Enter</kbd> reveal</span>
+      <span><kbd>N</kbd> next</span>
+      <span><kbd>Space</kbd> replay motion</span>
+      <span>Values shown after reveal are calibration targets, not universal laws.</span>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
