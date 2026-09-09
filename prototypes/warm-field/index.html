@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tact Warm Field Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">TACT / SPATIAL PROTOTYPE</p>
+        <h1>Warm field switching</h1>
+      </div>
+      <div class="topbar-actions">
+        <button id="startTrial" class="primary">Start trial <kbd>N</kbd></button>
+        <button id="collapseFocus">Collapse focus <kbd>Esc</kbd></button>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="Experiment controls">
+      <fieldset>
+        <legend>Switcher</legend>
+        <div class="segmented" id="modeControl">
+          <button data-mode="cropped" class="selected">1 · Cropped edges</button>
+          <button data-mode="scaled">2 · Mini-windows</button>
+          <button data-mode="mru">3 · MRU</button>
+          <button data-mode="search">4 · Search</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Screen</legend>
+        <div class="segmented" id="screenControl">
+          <button data-screen="wide" class="selected">27-inch field</button>
+          <button data-screen="laptop">Laptop</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Tasks</legend>
+        <label class="range-label"><span id="taskCountLabel">12 visible</span><input id="taskCount" type="range" min="4" max="16" step="2" value="12" /></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Labels</legend>
+        <label class="toggle"><input id="trainingLabels" type="checkbox" checked /> <span>training labels</span></label>
+      </fieldset>
+    </section>
+
+    <section class="trial-strip" aria-live="polite">
+      <div>
+        <span class="trial-kicker" id="trialKicker">Practice freely</span>
+        <strong id="trialPrompt">Start a trial to measure target acquisition.</strong>
+      </div>
+      <div class="trial-meta">
+        <span id="trialMode">cropped</span>
+        <span id="trialClass">—</span>
+        <span id="trialTimer">—</span>
+      </div>
+    </section>
+
+    <section class="workbench-layout">
+      <div class="stage-wrap">
+        <div class="stage wide" id="stage" aria-label="Fake task window environment">
+          <div class="stage-grid" aria-hidden="true"></div>
+          <div id="bookmarkLayer" class="bookmark-layer"></div>
+
+          <article id="focusWindow" class="focus-window" aria-live="polite">
+            <div class="focus-empty">
+              <div class="focus-mark">⌘</div>
+              <h2>Focus region</h2>
+              <p>Select a task. Edge geography stays in place while the center expands.</p>
+            </div>
+          </article>
+
+          <aside id="mruRail" class="mru-rail" aria-label="Most recently used tasks"></aside>
+
+          <div id="searchOverlay" class="search-overlay" role="dialog" aria-modal="false" aria-label="Search tasks">
+            <div class="search-box">
+              <label for="searchInput">Search by task name</label>
+              <input id="searchInput" autocomplete="off" spellcheck="false" placeholder="Type a task name…" />
+              <div id="searchResults" class="search-results"></div>
+            </div>
+          </div>
+        </div>
+        <p class="stage-note" id="stageNote">27-inch simulation · stable normalized edge slots</p>
+      </div>
+
+      <aside class="metrics-panel">
+        <section>
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">SESSION</p>
+              <h2>Measured use</h2>
+            </div>
+            <button id="clearData" class="quiet">Clear</button>
+          </div>
+          <dl class="metric-grid">
+            <div><dt>Correct trials</dt><dd id="metricTrials">0</dd></div>
+            <div><dt>Median acquire</dt><dd id="metricMedian">—</dd></div>
+            <div><dt>Wrong picks</dt><dd id="metricErrors">0</dd></div>
+            <div><dt>Events</dt><dd id="metricEvents">0</dd></div>
+          </dl>
+        </section>
+
+        <section>
+          <p class="eyebrow">RUN SEQUENCE</p>
+          <p class="small-copy">Trial classes rotate: <strong>warm → recent → cold → warm…</strong>. Warm targets repeat from a four-task set. Recent targets come from prior focus history. Cold targets prefer unseen or least-recent tasks.</p>
+          <div class="button-row">
+            <button id="exportJson">Export JSON</button>
+            <button id="exportCsv">Export CSV</button>
+          </div>
+        </section>
+
+        <section>
+          <p class="eyebrow">KEYS</p>
+          <div class="key-list">
+            <span><kbd>1–4</kbd> switch mode</span>
+            <span><kbd>N</kbd> next trial</span>
+            <span><kbd>/</kbd> search</span>
+            <span><kbd>Esc</kbd> collapse</span>
+          </div>
+        </section>
+
+        <section>
+          <p class="eyebrow">LATEST EVENTS</p>
+          <ol id="eventFeed" class="event-feed"></ol>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
