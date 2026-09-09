@@ -52,6 +52,10 @@ Use issues and notes for small, concrete hunts:
 
 Prefer a prototype that settles a live disagreement over another essay that restates one.
 
+## Built experiments
+
+- [`experiments/adversarial-attention-compiler/`](experiments/adversarial-attention-compiler/) — executable 100-worker supervision simulator comparing a worker grid, commitment/decision reduction, and the same reduced interface with independent population audit signals for correlated premise failure, retries, verification decline, compute burn, stale-source concentration, and lossy decision fan-in.
+
 ## Research notes
 
 - [`notes/starting-points.md`](notes/starting-points.md) — first principles, practice loops, agent-attention questions, and issue-sized exercises.
