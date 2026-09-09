@@ -45,6 +45,7 @@ The goal is to turn aesthetic instinct into repeatable product judgment, without
 - [`notes/leo-interface-instincts.md`](notes/leo-interface-instincts.md) — Leo's actual product preferences across ChatGPT, browsers, games, notes, email, macOS, calendars, car sites, and the Thunderdome of competing design values.
 - [`notes/browser-terminal-agent.md`](notes/browser-terminal-agent.md) — a task-centric browser + terminal + source + dev-server + agent environment built around shared object identity, time, causality, executable history, and receipts.
 - [`notes/power-from-seeing-the-field.md`](notes/power-from-seeing-the-field.md) — expert density, spatial memory, labels and icons, command vocabulary, contextual help, panel cost, and repeated-use experiments.
+- [`notes/when-100-agents-feel-like-three-decisions.md`](notes/when-100-agents-feel-like-three-decisions.md) — high-concurrency supervision through stable commitments, exception routing, decision packets, fan-in, exact receipts, and quiet healthy work.
 
 ## Nearby work
 
