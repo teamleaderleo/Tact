@@ -18,7 +18,8 @@
         <div class="receipt-label">Did</div>
         <div class="receipt-value ${state.did ? '' : 'receipt-empty'}">${state.did ? escapeHtml(state.did) : 'No action yet.'}</div>
       </div>
-      ${intent && !state.runCompleted && state.mode !== 'pointer' ? '<div class="context-retained">Context retained. Repair one field, change the visible selection, or keep speaking; the next turn patches this interpretation.</div>' : ''}
+      ${intent && !state.runCompleted && state.mode === 'mixed' ? '<div class="context-retained">Context retained. Repair one field, change the visible selection, or keep speaking; the next turn patches this interpretation.</div>' : ''}
+      ${intent && !state.runCompleted && state.mode === 'voice' ? '<div class="context-retained">Context retained. Keep speaking; the next voice turn patches this interpretation without requiring the full command again.</div>' : ''}
     `;
 
     bindIntentEditorEvents();
@@ -29,17 +30,23 @@
     const visibleActions = scenario.actions.includes(intent.action) || !intent.action ? scenario.actions : [intent.action, ...scenario.actions];
     const actionOptions = visibleActions.map((action) => `<option value="${action}" ${intent.action === action ? 'selected' : ''}>${prettyAction(action)}</option>`).join('');
     const targetText = intent.targets?.length ? intent.targets.map(labelForId).join(' + ') : '—';
+    const actionControl = state.mode === 'mixed'
+      ? `<select data-intent-field="action">${actionOptions}</select>`
+      : `<span class="intent-value">${escapeHtml(prettyAction(intent.action || 'unknown'))}</span>`;
+    const targetControl = state.mode === 'mixed'
+      ? '<button class="intent-button" data-pick-slot="target" type="button">Pick</button>'
+      : '';
     const rows = [
-      `<div class="intent-row"><label>Action</label><select data-intent-field="action">${actionOptions}</select></div>`,
-      `<div class="intent-row"><label>Target</label><span class="intent-value">${escapeHtml(targetText)}</span>${state.mode === 'mixed' ? '<button class="intent-button" data-pick-slot="target" type="button">Pick</button>' : renderIntentSelect('target', intent.targets?.[0])}</div>`,
+      `<div class="intent-row"><label>Action</label>${actionControl}</div>`,
+      `<div class="intent-row"><label>Target</label><span class="intent-value">${escapeHtml(targetText)}</span>${targetControl}</div>`,
     ];
 
     if (state.scenarioId === 'request' || state.scenarioId === 'spacing') {
-      rows.push(`<div class="intent-row"><label>Reference</label><span class="intent-value">${escapeHtml(labelForId(intent.reference))}</span>${state.mode === 'mixed' ? '<button class="intent-button" data-pick-slot="reference" type="button">Pick</button>' : renderIntentSelect('reference', intent.reference)}</div>`);
+      rows.push(`<div class="intent-row"><label>Reference</label><span class="intent-value">${escapeHtml(labelForId(intent.reference))}</span>${state.mode === 'mixed' ? '<button class="intent-button" data-pick-slot="reference" type="button">Pick</button>' : ''}</div>`);
     }
 
     if (state.scenarioId === 'merge') {
-      rows.push(`<div class="intent-row"><label>Owner</label><span class="intent-value">${escapeHtml(labelForId(intent.owner))}</span>${state.mode === 'mixed' ? '<button class="intent-button" data-pick-slot="owner" type="button">Pick</button>' : renderIntentSelect('owner', intent.owner)}</div>`);
+      rows.push(`<div class="intent-row"><label>Owner</label><span class="intent-value">${escapeHtml(labelForId(intent.owner))}</span>${state.mode === 'mixed' ? '<button class="intent-button" data-pick-slot="owner" type="button">Pick</button>' : ''}</div>`);
     }
 
     if (state.scenarioId === 'spacing' && typeof intent.spacing === 'number') {
@@ -47,13 +54,6 @@
     }
 
     return `<div class="intent-editor">${rows.join('')}</div>`;
-  }
-
-  function renderIntentSelect(field, value) {
-    const options = [`<option value="">—</option>`]
-      .concat(currentScenario().objects.map((object) => `<option value="${object.id}" ${value === object.id ? 'selected' : ''}>${escapeHtml(object.title)}</option>`))
-      .join('');
-    return `<select data-intent-field="${field}">${options}</select>`;
   }
 
   function bindIntentEditorEvents() {
