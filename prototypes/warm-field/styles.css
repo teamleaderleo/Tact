@@ -97,7 +97,7 @@ legend { padding: 0 5px; color: var(--muted); font-size: 10px; text-transform: u
   box-shadow: 0 24px 80px rgba(0,0,0,.28);
   isolation: isolate;
 }
-.stage.laptop { --stage-w: 1100; --stage-h: 760; }
+.stage.laptop { --stage-w: 1100; --stage-h: 720; width: 78%; margin-inline: auto; }
 .stage-grid {
   position: absolute; inset: 0;
   background-image:
@@ -245,7 +245,7 @@ body.show-training-labels .bookmark .bookmark-label,
 .mru-copy span, .mru-rank { color: var(--muted); font-size: 9px; }
 
 .search-overlay { position: absolute; z-index: 12; inset: 0; display: none; align-items: flex-start; justify-content: center; padding-top: 10%; background: rgba(7,9,10,.38); backdrop-filter: blur(2px); }
-.stage.mode-search .search-overlay, .search-overlay.open { display: flex; }
+.search-overlay.open { display: flex; }
 .search-box { width: min(560px, 80%); border: 1px solid #51595e; background: #1b1f21; border-radius: 12px; padding: 12px; box-shadow: 0 22px 80px rgba(0,0,0,.5); }
 .search-box label { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 7px; }
 .search-box input { width: 100%; height: 43px; border: 1px solid #50575b; background: #111415; color: white; border-radius: 8px; padding: 0 12px; outline: none; }
