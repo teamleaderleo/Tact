@@ -1,0 +1,24 @@
+{
+  "seed": 260909,
+  "worker_count": 100,
+  "commitments": [
+    {"id": "C1", "title": "Release 2026.09", "count": 13},
+    {"id": "C2", "title": "API compatibility", "count": 14},
+    {"id": "C3", "title": "Dependency refresh", "count": 12},
+    {"id": "C4", "title": "Search latency", "count": 12},
+    {"id": "C5", "title": "Research synthesis", "count": 14},
+    {"id": "C6", "title": "Billing migration", "count": 12},
+    {"id": "C7", "title": "Docs and onboarding", "count": 11},
+    {"id": "C8", "title": "Production deploy", "count": 12}
+  ],
+  "scenarios": [
+    {"id": "normal", "label": "Normal · 100 workers, three decisions", "description": "Healthy fan-out with three genuine human obligations and no population-level audit anomaly.", "mutations": []},
+    {"id": "wrong-premise", "label": "80 share one wrong premise", "description": "Eighty locally healthy workers depend on the same invalid planning premise.", "mutations": ["wrong-premise"]},
+    {"id": "retry-storm", "label": "Retries quietly explode", "description": "Sixty workers recover locally after repeated retries, so the reducer sees successful outcomes.", "mutations": ["retry-storm"]},
+    {"id": "verification-drop", "label": "Verification coverage declines", "description": "Forty-two workers complete without the expected independent verification boundary.", "mutations": ["verification-drop"]},
+    {"id": "cost-spike", "label": "Cost / compute burn spikes", "description": "Seventy workers remain healthy while consuming much more compute than the plan expected.", "mutations": ["cost-spike"]},
+    {"id": "stale-source", "label": "Healthy results share one stale source", "description": "Seventy-five workers agree because they all depend on the same stale source snapshot.", "mutations": ["stale-source"]},
+    {"id": "split-decisions", "label": "One merge group hides two product decisions", "description": "The reducer fans two distinct product decisions into one obligation because they share a merge-group key.", "mutations": ["split-decisions"]},
+    {"id": "all-adversarial", "label": "All systemic failures together", "description": "A stress case combining premise concentration, retries, weak verification, cost burn, stale sources, and lossy fan-in.", "mutations": ["wrong-premise", "retry-storm", "verification-drop", "cost-spike", "stale-source", "split-decisions"]}
+  ]
+}
