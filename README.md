@@ -38,6 +38,12 @@ Use issues and notes for small, concrete hunts:
 
 The goal is to turn aesthetic instinct into repeatable product judgment, without sanding away personality.
 
+## Working notes
+
+- [`notes/starting-points.md`](notes/starting-points.md) — first principles, practice loops, agent-attention questions, and issue-sized exercises.
+- [`notes/authorship-and-product-design.md`](notes/authorship-and-product-design.md) — art, authorship, product constraints, early-team ownership, and personality in software.
+- [`notes/leo-interface-instincts.md`](notes/leo-interface-instincts.md) — Leo's actual product preferences across ChatGPT, browsers, games, notes, email, macOS, calendars, car sites, and the Thunderdome of competing design values.
+
 ## Nearby work
 
 Tact overlaps with several existing projects from different directions:
