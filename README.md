@@ -47,6 +47,7 @@ The goal is to turn aesthetic instinct into repeatable product judgment, without
 - [`notes/power-from-seeing-the-field.md`](notes/power-from-seeing-the-field.md) — expert density, spatial memory, labels and icons, command vocabulary, contextual help, panel cost, and repeated-use experiments.
 - [`notes/when-100-agents-feel-like-three-decisions.md`](notes/when-100-agents-feel-like-three-decisions.md) — high-concurrency supervision through stable commitments, exception routing, decision packets, fan-in, exact receipts, and quiet healthy work.
 - [`notes/append-only-memory-and-computed-present.md`](notes/append-only-memory-and-computed-present.md) — append-only capture, hybrid retrieval, chronology, contextual metadata, resurfacing, stable anchors, and deriving current truth from historical streams.
+- [`notes/native-macos-daily-use.md`](notes/native-macos-daily-use.md) — Finder, Safari, System Settings, Spotlight, Mission Control, native window behavior, latency, AppKit/SwiftUI conventions, customization, and cats.
 
 ## Nearby work
 
