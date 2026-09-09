@@ -55,6 +55,7 @@ Prefer a prototype that settles a live disagreement over another essay that rest
 ## Built experiments
 
 - [`experiments/adversarial-attention-compiler/`](experiments/adversarial-attention-compiler/) — executable 100-worker supervision simulator comparing a worker grid, commitment/decision reduction, and the same reduced interface with independent population audit signals for correlated premise failure, retries, verification decline, compute burn, stale-source concentration, and lossy decision fan-in.
+- [`prototypes/causal-debugger/`](prototypes/causal-debugger/) — one-stage causal debugging thread from visible browser failure through runtime, request/log, source, edit, rebuild, replay, and proof; the shared-cause case forces two human tasks to converge on one edit/rebuild and tests task identity against a lower-level causal graph.
 
 ## Research notes
 
