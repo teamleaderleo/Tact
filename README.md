@@ -43,6 +43,7 @@ The goal is to turn aesthetic instinct into repeatable product judgment, without
 - [`notes/starting-points.md`](notes/starting-points.md) — first principles, practice loops, agent-attention questions, and issue-sized exercises.
 - [`notes/authorship-and-product-design.md`](notes/authorship-and-product-design.md) — art, authorship, product constraints, early-team ownership, and personality in software.
 - [`notes/leo-interface-instincts.md`](notes/leo-interface-instincts.md) — Leo's actual product preferences across ChatGPT, browsers, games, notes, email, macOS, calendars, car sites, and the Thunderdome of competing design values.
+- [`notes/power-from-seeing-the-field.md`](notes/power-from-seeing-the-field.md) — expert density, spatial memory, labels and icons, command vocabulary, contextual help, panel cost, and repeated-use experiments.
 
 ## Nearby work
 
