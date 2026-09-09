@@ -41,6 +41,7 @@ The goal is to turn aesthetic instinct into repeatable product judgment, without
 ## Working notes
 
 - [`notes/starting-points.md`](notes/starting-points.md) — first principles, practice loops, agent-attention questions, and issue-sized exercises.
+- [`notes/taste-to-diagnosis-microcraft.md`](notes/taste-to-diagnosis-microcraft.md) — a micro-craft studio for typography, hierarchy, spacing, alignment, iconography, color, contrast, material, motion, transitions, rhythm, density, and controlled A/B drills.
 - [`notes/authorship-and-product-design.md`](notes/authorship-and-product-design.md) — art, authorship, product constraints, early-team ownership, and personality in software.
 - [`notes/leo-interface-instincts.md`](notes/leo-interface-instincts.md) — Leo's actual product preferences across ChatGPT, browsers, games, notes, email, macOS, calendars, car sites, and the Thunderdome of competing design values.
 - [`notes/lovable-jank-and-operational-atmosphere.md`](notes/lovable-jank-and-operational-atmosphere.md) — Dwarf Fortress, Battle Brothers, Mount & Blade, strategy and immersive interfaces; hot flows, muscle memory, thematic chrome, lovable jank, semantic diegesis, and repeated-use lessons for serious software.
