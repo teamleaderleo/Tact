@@ -134,6 +134,148 @@ An agent can then observe the application, inspect browser state, run local tool
 
 The design question is how to make those capabilities feel like one place instead of a pile of adjacent panes.
 
+## A practice loop for developing product judgment
+
+Tact should work more like a studio than a curriculum.
+
+```text
+observe
+-> articulate
+-> imitate
+-> alter
+-> use
+-> revise
+```
+
+A video, product, screenshot, annoyance, old interface, art reference, or half-baked idea can start the loop. The source is less important than whether the exercise sharpens judgment.
+
+### Observe
+
+Collect interfaces that create a reaction: delight, irritation, calm, confusion, attachment, fatigue. Start with products that are already part of ordinary life rather than hunting only for canonical design examples.
+
+Ask:
+
+- What caught my eye first?
+- What disappeared after a few minutes of use?
+- What keeps feeling good after repetition?
+- Where does my attention go without conscious effort?
+- Which details feel authored, and which feel arbitrary?
+
+### Articulate
+
+Move from "I like this" or "this feels wrong" toward a precise claim.
+
+Look for hierarchy, density, spacing, typography, motion, control placement, information timing, selection state, error behavior, keyboard flow, pointer flow, and what the product deliberately omits.
+
+A useful critique should make a prediction about behavior, not merely describe appearance.
+
+### Imitate
+
+Rebuild a small surface closely enough to discover hidden decisions. Copying for study is useful when the goal is understanding why the original works.
+
+Good targets:
+
+- one sidebar;
+- one command palette;
+- one empty state;
+- one tab strip;
+- one settings page;
+- one notification flow;
+- one piece of motion.
+
+### Alter
+
+Make several materially different versions. Change the interaction or information hierarchy, not only the skin.
+
+Examples:
+
+- dense vs sparse;
+- persistent vs contextual controls;
+- feed vs spatial navigation;
+- explicit confirmation vs reversible action;
+- animation as explanation vs immediate state change;
+- one rich surface vs several small views.
+
+### Use
+
+Live with the result. A design that looks excellent in a screenshot may become irritating on the fiftieth repetition.
+
+The strongest test is often mundane: does ordinary work become easier, calmer, quicker, or more legible?
+
+### Revise
+
+Record what changed your mind. Promote opinions slowly. A good Tact note can end with a stronger question instead of a permanent rule.
+
+## Question bank
+
+These are deliberately broad. Each can become an issue, reference collection, teardown, prototype, or week-long rabbit hole.
+
+### Calm interfaces
+
+**Why do some sidebars feel calm while others feel like database admin panels?**
+
+Collect examples and inspect width, row height, nesting, separators, typography, icon weight, metadata, selection state, disclosure, and what stays hidden until needed.
+
+### Personality
+
+**When should software have personality?**
+
+Compare expressive and restrained products. Ask when personality improves orientation, identity, delight, or memory, and when it competes with the work.
+
+### Repetition
+
+**What survives the hundredth use?**
+
+Find interactions that are delightful once and irritating later, plus interactions whose quality only becomes apparent after repeated use.
+
+### Attention
+
+**What should an agent workspace show when everything is healthy?**
+
+Design the quiet state first. Then add one blocked worker, one ambiguous result, one completed candidate, and one decision requiring human judgment.
+
+### Information density
+
+**What deserves to remain visible all the time?**
+
+Study which information earns persistent space, which belongs behind interaction, and which should surface only when it changes the next action.
+
+### Command palettes
+
+**When does a command palette become a junk drawer?**
+
+Compare several products. Look at naming, grouping, recency, search quality, contextual commands, discoverability, and whether common actions deserve direct controls instead.
+
+### Motion
+
+**When does animation explain state?**
+
+Separate motion that teaches spatial/state relationships from motion added only to make an interface feel polished.
+
+### Invisible design
+
+**Which products do I love because I barely notice the interface?**
+
+Study the decisions that allow attention to remain on the work itself.
+
+### Browser + terminal + agent
+
+**What would make browser, terminal, and agent feel like one workspace?**
+
+Prototype one real debugging journey and count the seams: context switches, repeated observations, manual state transfer, duplicated navigation, and places where the user has to tell one tool what another already knows.
+
+### Taste under constraint
+
+**How much artistic opinion can a utilitarian interface carry?**
+
+Take one functional surface and push it through several levels of visual authorship. Find where personality strengthens the experience and where it begins charging a repeated-use tax.
+
+### Bullshit detection
+
+**What exactly makes an interface feel fake, overdesigned, dead, or generic?**
+
+Collect concrete examples. Avoid stopping at adjectives. Identify the decisions that create the reaction and test whether removing them improves the product.
+
 ## Practice agenda
 
 Some first issue-sized exercises:
