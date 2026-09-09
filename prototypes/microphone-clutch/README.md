@@ -6,7 +6,7 @@ The claim under test is narrow:
 
 > Speech should carry relationship / intent while visible selection carries the exact referent. The interpretation stays visible, and the user can repair the smallest wrong part without restarting the thought.
 
-This is an experiment, not a voice assistant demo. It is deliberately instrumented around repair cost.
+This is an instrumented experiment centered on repair cost.
 
 ## Run it
 
@@ -52,11 +52,11 @@ Understood  -> action + target + reference / owner
 Did         -> actual effect
 ```
 
-The `Understood` fields remain editable.
+The `Understood` interpretation stays visible. Mixed mode exposes targeted repair controls on those fields.
 
 In **mixed** mode, a wrong target/reference/owner can be repaired by pressing **Pick** and selecting the correct visible object. The command context remains active after the repair, so the user can speak again immediately.
 
-In **voice-only** mode, the same fields can be changed through compact selects or another voice turn. For strict voice-only study sessions, ignore the selects and repair by speech; the visible fields still make the error inspectable.
+In **voice-only** mode, the same fields remain visible but read-only. Repair happens through another voice turn, and the parser patches the existing interpretation instead of requiring the complete command again. This keeps the condition experimentally clean while preserving inspectability.
 
 ## Failure injection
 
@@ -118,9 +118,9 @@ Record qualitative observations beside the JSON if useful:
 
 ## Important limits
 
-The prototype uses the browser Web Speech API as an input source; recognition quality varies by browser, operating system, microphone, accent, and network service. The deterministic failure switches exist so the repair experiment does not depend on naturally occurring ASR errors.
+The prototype uses the browser Web Speech API as an input source; recognition quality varies by browser, operating system, microphone, accent, and network service. The deterministic failure switches make repair trials reproducible without waiting for naturally occurring ASR errors.
 
-The task model is intentionally local and reversible. This experiment says nothing yet about speech around destructive actions, secrets in shared rooms, or long-running agent authority.
+The task model is intentionally local and reversible. Destructive actions, secrets in shared rooms, and long-running agent authority remain future test cases.
 
 ## Success / failure read
 
