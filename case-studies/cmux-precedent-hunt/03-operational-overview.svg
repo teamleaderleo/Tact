@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="780" viewBox="0 0 1400 780">
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f3f3f5}.title{font-size:30px;font-weight:700}.kicker{font-size:14px;letter-spacing:1.6px;fill:#9b9ba3}.head{font-size:19px;font-weight:650}.label{font-size:15px}.small{font-size:13px;fill:#a7a7af}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}.panel{fill:#17171b;stroke:#34343b}.card{fill:#232328;stroke:#3b3b43}.selected{fill:#29313a;stroke:#6886a3}.blue{fill:#0a84ff}.ok{fill:#53c26b}.warn{fill:#ffb454}.callout{fill:#24242a;stroke:#494953}.button{fill:#303038;stroke:#484852}
+</style>
+<rect width="1400" height="780" fill="#0f0f12"/>
+<text x="56" y="58" class="kicker">PRECEDENT TRANSLATION · FACTORIO REMOTE VIEW → CMUX</text>
+<text x="56" y="100" class="title">Overview should remain an operating surface.</text>
+
+<rect x="56" y="140" width="1288" height="74" rx="18" class="panel"/>
+<text x="84" y="178" class="head">CMUX overview · same task objects, reduced detail, constrained task-level verbs</text>
+<text x="1010" y="179" class="small">⌘⇧O · Esc returns exactly</text>
+
+<rect x="56" y="238" width="840" height="432" rx="18" class="panel"/>
+<text x="84" y="276" class="head">Stable task field</text>
+
+<rect x="84" y="302" width="246" height="140" rx="14" class="selected"/>
+<text x="104" y="331" class="label">auth-refactor</text><circle cx="301" cy="326" r="6" class="warn"/>
+<text x="104" y="360" class="small">Needs you · Permission</text>
+<text x="104" y="389" class="small">browser · terminal · 4 agents</text>
+<rect x="104" y="405" width="82" height="25" rx="7" class="button"/><text x="125" y="422" class="small">Answer</text>
+<rect x="194" y="405" width="68" height="25" rx="7" class="button"/><text x="212" y="422" class="small">Focus</text>
+
+<rect x="344" y="302" width="246" height="140" rx="14" class="card"/>
+<text x="364" y="331" class="label">billing-tests</text><circle cx="561" cy="326" r="6" class="blue"/>
+<text x="364" y="360" class="small">Running · 6 agents</text>
+<text x="364" y="389" class="small">latest: integration suite</text>
+<rect x="364" y="405" width="68" height="25" rx="7" class="button"/><text x="382" y="422" class="small">Focus</text>
+
+<rect x="604" y="302" width="264" height="140" rx="14" class="card"/>
+<text x="624" y="331" class="label">docs-site</text><circle cx="839" cy="326" r="6" class="ok"/>
+<text x="624" y="360" class="small">2 unseen updates</text>
+<text x="624" y="389" class="small">preview verified</text>
+<rect x="624" y="405" width="68" height="25" rx="7" class="button"/><text x="642" y="422" class="small">Peek</text>
+
+<rect x="84" y="458" width="246" height="140" rx="14" class="card"/>
+<text x="104" y="487" class="label">release</text><circle cx="301" cy="482" r="6" class="ok"/>
+<text x="104" y="516" class="small">Verified · ready</text>
+<text x="104" y="545" class="small">PR #184 · branch clean</text>
+<rect x="104" y="561" width="68" height="25" rx="7" class="button"/><text x="122" y="578" class="small">Focus</text>
+
+<rect x="344" y="458" width="246" height="140" rx="14" class="card"/>
+<text x="364" y="487" class="label">search-index</text>
+<text x="364" y="516" class="small">Idle · checkpoint saved</text>
+<text x="364" y="545" class="small">terminal · agent</text>
+<rect x="364" y="561" width="68" height="25" rx="7" class="button"/><text x="382" y="578" class="small">Focus</text>
+
+<rect x="604" y="458" width="264" height="140" rx="14" class="card"/>
+<text x="624" y="487" class="label">payments-bug</text><circle cx="839" cy="482" r="6" class="warn"/>
+<text x="624" y="516" class="small">Needs you · Question</text>
+<text x="624" y="545" class="small">1 agent · browser shared</text>
+<rect x="624" y="561" width="82" height="25" rx="7" class="button"/><text x="645" y="578" class="small">Answer</text>
+
+<rect x="920" y="238" width="424" height="432" rx="18" class="panel"/>
+<text x="948" y="276" class="head">Same verbs survive the pull-back</text>
+<text x="948" y="316" class="label">Select</text><text x="1044" y="316" class="small">same task identity as sidebar / focus</text>
+<text x="948" y="355" class="label">Focus</text><text x="1044" y="355" class="small">zoom into current task, preserving target</text>
+<text x="948" y="394" class="label">Answer</text><text x="1044" y="394" class="small">resolve typed human obligation in place</text>
+<text x="948" y="433" class="label">Peek</text><text x="1044" y="433" class="small">temporary receipt / diff / browser preview</text>
+<text x="948" y="472" class="label">Move</text><text x="1044" y="472" class="small">directly place a task or group</text>
+<text x="948" y="511" class="label">Stop</text><text x="1044" y="511" class="small">only when semantics are unambiguous</text>
+<rect x="948" y="548" width="368" height="86" rx="12" class="callout"/>
+<text x="970" y="577" class="label">The overview is lower-resolution CMUX.</text>
+<text x="970" y="603" class="small">Identity, selection, status, and task verbs remain.</text>
+<text x="970" y="625" class="small">Tiny terminal emulation stays out of this mode.</text>
+
+<rect x="56" y="692" width="1288" height="52" rx="14" class="callout"/>
+<text x="82" y="724" class="label">Mechanism: preserve the operational vocabulary across scale. The user learns one set of verbs and carries them from overview to focus.</text>
+</svg>
