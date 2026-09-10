@@ -99,6 +99,11 @@ Good first cases because they overlap with Leo's real daily use and the upcoming
 
 Do not assume these require product changes. Start by observing the real interaction closely.
 
+## Current CMUX applied work
+
+- [`cmux-spatial-interactions/`](cmux-spatial-interactions/) — three live CMUX interaction cases around notification reorder, agent triage versus stable return, and cross-workspace switcher identity.
+- [`cmux-precedent-hunt/`](cmux-precedent-hunt/) — seven product precedents selected for transferable mechanisms, plus CMUX-adjacent sketches for semantic scrollback, a task-scoped causal cursor, and an operational overview.
+
 ## Other useful case sources
 
 If a non-CMUX product provokes a strong reaction, capture it while the reaction is fresh. Good recurring sources include ChatGPT mobile, Edge vertical tabs, Safari, Outlook, macOS Settings, Discord, YouTube, games, calendars, spreadsheets, and technical product pages.
