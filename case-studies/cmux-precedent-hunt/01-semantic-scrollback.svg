@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f3f3f5}.title{font-size:30px;font-weight:700}.kicker{font-size:14px;letter-spacing:1.6px;fill:#9b9ba3}.head{font-size:19px;font-weight:650}.label{font-size:15px}.small{font-size:13px;fill:#a7a7af}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px}.panel{fill:#17171b;stroke:#34343b}.well{fill:#202026}.selected{fill:#242a31;stroke:#5b748d}.mark{fill:#0a84ff}.ok{fill:#53c26b}.bad{fill:#ff5d5d}.callout{fill:#24242a;stroke:#494953}
+</style>
+<rect width="1400" height="760" fill="#0f0f12"/>
+<text x="56" y="58" class="kicker">PRECEDENT TRANSLATION · ITERM2 COMMAND SELECTION → CMUX</text>
+<text x="56" y="100" class="title">Keep the terminal stream. Add semantic landmarks the user can act on.</text>
+
+<rect x="56" y="140" width="820" height="548" rx="18" class="panel"/>
+<text x="84" y="180" class="head">Terminal · raw output with CMUX event marks</text>
+<text x="84" y="206" class="small">marks come from shell integration, agent journal, build/test events, and verification receipts</text>
+
+<circle cx="92" cy="246" r="5" class="ok"/><text x="112" y="251" class="mono">$ npm test -- auth</text>
+<text x="112" y="278" class="mono" fill="#b8b8bf">PASS token.test.ts</text>
+<text x="112" y="302" class="mono" fill="#b8b8bf">FAIL refresh.test.ts: expected 200, got 401</text>
+<text x="112" y="326" class="mono" fill="#b8b8bf">Tests: 1 failed, 18 passed</text>
+
+<rect x="76" y="348" width="780" height="172" rx="10" class="selected"/>
+<circle cx="92" cy="376" r="5" class="mark"/><text x="112" y="381" class="mono">agent · inspect refresh failure</text>
+<text x="112" y="408" class="mono" fill="#b8b8bf">read src/auth/refresh.ts</text>
+<text x="112" y="432" class="mono" fill="#b8b8bf">edit 3 lines · retry cookie rotation</text>
+<text x="112" y="456" class="mono" fill="#b8b8bf">run npm test -- refresh</text>
+<text x="112" y="480" class="mono" fill="#b8b8bf">PASS refresh.test.ts</text>
+<text x="688" y="378" class="small">18.4s · verified</text>
+<text x="688" y="408" class="small">Copy output</text>
+<text x="688" y="432" class="small">Find here</text>
+<text x="688" y="456" class="small">Open receipt</text>
+<text x="688" y="480" class="small">Name mark</text>
+
+<circle cx="92" cy="554" r="5" class="ok"/><text x="112" y="559" class="mono">$ git diff --stat</text>
+<text x="112" y="586" class="mono" fill="#b8b8bf">src/auth/refresh.ts | 3 +--</text>
+<circle cx="92" cy="624" r="5" class="bad"/><text x="112" y="629" class="mono">$ npm run lint</text>
+<text x="112" y="656" class="mono" fill="#b8b8bf">exit 1 · unrelated generated file</text>
+
+<rect x="912" y="140" width="432" height="548" rx="18" class="panel"/>
+<text x="940" y="180" class="head">Selection becomes a local scope</text>
+<rect x="940" y="215" width="376" height="86" rx="12" class="callout"/>
+<text x="962" y="245" class="label">Click a marked run / turn / receipt.</text>
+<text x="962" y="270" class="small">The raw transcript stays where it is.</text>
+
+<text x="940" y="344" class="label">Find</text><text x="1105" y="344" class="small">inside selected output</text>
+<text x="940" y="382" class="label">Copy</text><text x="1105" y="382" class="small">command / output / receipt</text>
+<text x="940" y="420" class="label">Inspect</text><text x="1105" y="420" class="small">cwd · status · duration · revision</text>
+<text x="940" y="458" class="label">Jump</text><text x="1105" y="458" class="small">previous / next semantic mark</text>
+<text x="940" y="496" class="label">Pin</text><text x="1105" y="496" class="small">name a useful landmark</text>
+<text x="940" y="534" class="label">Link</text><text x="1105" y="534" class="small">browser event / diff / verification</text>
+
+<rect x="940" y="582" width="376" height="72" rx="12" class="callout"/>
+<text x="962" y="611" class="label">Mechanism: semantic delimiters over raw history.</text>
+<text x="962" y="636" class="small">CMUX gains objects without turning the terminal into cards.</text>
+
+<text x="56" y="724" class="small">Literal iTerm2 shell marks are too narrow for agents and TUIs. CMUX can supply richer boundaries from its own journal while preserving terminal fidelity.</text>
+</svg>
