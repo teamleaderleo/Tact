@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">CMUX pane tab selection and focus</title>
+  <desc id="desc">A side-by-side diagram showing current selected tabs on a transparent shared backdrop and a proposed system where selected, focused, and hovered states use separate visual channels.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#11151b"/><stop offset="1" stop-color="#090b0f"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="16" flood-opacity="0.34"/></filter>
+  </defs>
+  <rect width="1440" height="900" fill="url(#bg)"/>
+  <text x="64" y="70" fill="#f4f5f7" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="34" font-weight="700">03 — Selection should survive when focus leaves the pane</text>
+  <text x="64" y="104" fill="#9da6b2" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="17">Selected surface, keyboard destination, and pointer hover are three different states.</text>
+
+  <text x="70" y="158" fill="#ffbd9f" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="14" font-weight="700" letter-spacing="1.4">CURRENT SHARED-BACKDROP PATH</text>
+  <text x="752" y="158" fill="#a9f0c5" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="14" font-weight="700" letter-spacing="1.4">PROPOSED: THREE SEPARATE CHANNELS</text>
+
+  <!-- current -->
+  <rect x="64" y="182" width="620" height="480" rx="18" fill="#161b21" stroke="#39414d" filter="url(#shadow)"/>
+  <rect x="82" y="206" width="584" height="190" rx="12" fill="#11161c" stroke="#2f3741"/>
+  <text x="98" y="229" fill="#7f8995" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11" font-weight="700">PANE A — FOCUSED</text>
+  <rect x="98" y="244" width="154" height="38" rx="6" fill="#171c22"/>
+  <rect x="98" y="244" width="154" height="2" fill="#5aa7ff"/>
+  <text x="175" y="268" text-anchor="middle" fill="#e3e6ea" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">server logs</text>
+  <rect x="256" y="244" width="154" height="38" rx="6" fill="#242c35"/>
+  <text x="333" y="268" text-anchor="middle" fill="#bbc2cb" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">tests</text>
+  <rect x="414" y="244" width="154" height="38" rx="6" fill="#171c22"/>
+  <text x="491" y="268" text-anchor="middle" fill="#9ca5b0" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">agent</text>
+  <text x="333" y="303" text-anchor="middle" fill="#f0a383" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11">hover has visible fill</text>
+  <text x="175" y="303" text-anchor="middle" fill="#8e99a5" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11">selected = clear + 1.5 pt line</text>
+  <text x="110" y="346" fill="#8d98a4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12">$ tail -f app.log</text>
+  <text x="110" y="370" fill="#bec6cf" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12">request completed 200  84ms</text>
+
+  <rect x="82" y="414" width="584" height="224" rx="12" fill="#11161c" stroke="#2f3741"/>
+  <text x="98" y="437" fill="#737d88" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11" font-weight="700">PANE B — UNFOCUSED</text>
+  <rect x="98" y="452" width="154" height="38" rx="6" fill="#171c22"/>
+  <rect x="98" y="452" width="154" height="2" fill="#787d84"/>
+  <text x="175" y="476" text-anchor="middle" fill="#c2c6cb" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">README</text>
+  <rect x="256" y="452" width="154" height="38" rx="6" fill="#171c22"/>
+  <text x="333" y="476" text-anchor="middle" fill="#969fa9" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">diff</text>
+  <rect x="414" y="452" width="154" height="38" rx="6" fill="#171c22"/>
+  <text x="491" y="476" text-anchor="middle" fill="#969fa9" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">browser</text>
+  <text x="175" y="512" text-anchor="middle" fill="#f0a383" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11">accent quiets; selection becomes hard to spot</text>
+  <rect x="110" y="543" width="515" height="63" rx="8" fill="#151b22"/>
+  <text x="128" y="570" fill="#909aa6" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12"># Native Mac daily-use pass</text>
+  <text x="128" y="591" fill="#697481" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12">Selection should stay legible across pane focus.</text>
+
+  <!-- proposed -->
+  <rect x="746" y="182" width="630" height="480" rx="18" fill="#161b21" stroke="#3f5b4c" filter="url(#shadow)"/>
+  <rect x="764" y="206" width="594" height="190" rx="12" fill="#11161c" stroke="#52715e" stroke-width="2"/>
+  <text x="780" y="229" fill="#9bc6aa" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11" font-weight="700">PANE A — KEYBOARD FOCUS</text>
+  <rect x="780" y="244" width="154" height="38" rx="6" fill="#28313a"/>
+  <rect x="780" y="244" width="154" height="3" fill="#5aa7ff"/>
+  <text x="857" y="268" text-anchor="middle" fill="#f0f2f5" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13" font-weight="650">server logs</text>
+  <rect x="938" y="244" width="154" height="38" rx="6" fill="#202832"/>
+  <text x="1015" y="268" text-anchor="middle" fill="#b5bdc7" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">tests</text>
+  <rect x="1096" y="244" width="154" height="38" rx="6" fill="#171c22"/>
+  <text x="1173" y="268" text-anchor="middle" fill="#9ca5b0" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">agent</text>
+  <text x="857" y="303" text-anchor="middle" fill="#a9f0c5" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11">selected = persistent neutral wash</text>
+  <text x="1015" y="303" text-anchor="middle" fill="#9eb5c9" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11">hover = lighter temporary wash</text>
+  <text x="792" y="346" fill="#8d98a4" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12">$ tail -f app.log</text>
+  <text x="792" y="370" fill="#bec6cf" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12">request completed 200  84ms</text>
+
+  <rect x="764" y="414" width="594" height="224" rx="12" fill="#11161c" stroke="#303841"/>
+  <text x="780" y="437" fill="#77828e" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11" font-weight="700">PANE B — UNFOCUSED, SELECTION STILL PRESENT</text>
+  <rect x="780" y="452" width="154" height="38" rx="6" fill="#252c34"/>
+  <text x="857" y="476" text-anchor="middle" fill="#e2e5e8" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13" font-weight="650">README</text>
+  <rect x="938" y="452" width="154" height="38" rx="6" fill="#171c22"/>
+  <text x="1015" y="476" text-anchor="middle" fill="#969fa9" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">diff</text>
+  <rect x="1096" y="452" width="154" height="38" rx="6" fill="#171c22"/>
+  <text x="1173" y="476" text-anchor="middle" fill="#969fa9" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">browser</text>
+  <text x="857" y="512" text-anchor="middle" fill="#a9f0c5" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11">selection keeps body; accent belongs to focused pane above</text>
+  <rect x="792" y="543" width="525" height="63" rx="8" fill="#151b22"/>
+  <text x="810" y="570" fill="#9aa5b0" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12"># Native Mac daily-use pass</text>
+  <text x="810" y="591" fill="#6f7b87" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="12">Selected object persists; focus says where typing goes.</text>
+
+  <rect x="64" y="710" width="1312" height="130" rx="16" fill="#12171d" stroke="#2b333d"/>
+  <text x="88" y="744" fill="#f4f5f7" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="16" font-weight="700">State vocabulary</text>
+  <rect x="88" y="765" width="116" height="30" rx="7" fill="#28313a"/><text x="146" y="785" text-anchor="middle" fill="#e8ecef" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="12">selected</text>
+  <rect x="218" y="765" width="116" height="30" rx="7" fill="#171c22" stroke="#5aa7ff" stroke-width="2"/><text x="276" y="785" text-anchor="middle" fill="#e8ecef" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="12">focused pane</text>
+  <rect x="348" y="765" width="116" height="30" rx="7" fill="#202832"/><text x="406" y="785" text-anchor="middle" fill="#c9d0d8" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="12">hovered</text>
+  <text x="494" y="786" fill="#c8ced6" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="14">Three states, three channels. Shared CMUX material stays intact.</text>
+  <text x="88" y="818" fill="#8f9aa7" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="13">Hundredth use: peripheral recognition replaces title-by-title scanning.</text>
+</svg>
