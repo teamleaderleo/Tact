@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="720" viewBox="0 0 1400 720">
+<style>
+  text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f3f3f5}
+  .title{font-size:30px;font-weight:700}.kicker{font-size:14px;letter-spacing:1.6px;fill:#9b9ba3}.head{font-size:19px;font-weight:650}
+  .label{font-size:15px}.small{font-size:13px;fill:#a7a7af}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+  .panel{fill:#17171b;stroke:#34343b;stroke-width:1}.well{fill:#202026}.row{fill:#2a2a31}.row2{fill:#24242a}
+  .selected{fill:#34343c}.accent{fill:#ff9f0a}.blue{fill:#0a84ff}.green{fill:#30d158}.line{stroke:#777783;stroke-width:2;fill:none}
+  .callout{fill:#24242a;stroke:#494953}.pin{fill:#c6c6cc}.dim{fill:#6f6f78}
+</style>
+<rect width="1400" height="720" fill="#0f0f12"/>
+<text x="56" y="62" class="kicker">CASE 1 · SIDEBAR / WORKSPACE ORDER</text>
+<text x="56" y="103" class="title">A notification should signal attention without stealing a learned home.</text>
+
+<rect x="56" y="142" width="626" height="510" rx="18" class="panel"/>
+<text x="84" y="181" class="head">Current · default reorder on notification</text>
+<text x="84" y="207" class="small">Same sidebar, two moments</text>
+
+<text x="100" y="247" class="small">BEFORE</text>
+<rect x="90" y="265" width="250" height="212" rx="13" class="well"/>
+<rect x="106" y="282" width="218" height="48" rx="9" class="selected"/><text x="124" y="312" class="label">Docs</text><text x="276" y="312" class="mono">⌘1</text>
+<rect x="106" y="338" width="218" height="48" rx="9" class="row"/><text x="124" y="368" class="label">API</text><text x="276" y="368" class="mono">⌘2</text>
+<rect x="106" y="394" width="218" height="48" rx="9" class="row"/><text x="124" y="424" class="label">Release</text><text x="276" y="424" class="mono">⌘3</text>
+
+<text x="390" y="247" class="small">RELEASE NOTIFIES</text>
+<rect x="380" y="265" width="250" height="212" rx="13" class="well"/>
+<rect x="396" y="282" width="218" height="48" rx="9" class="row"/><circle cx="412" cy="306" r="5" class="accent"/><text x="428" y="312" class="label">Release</text><text x="566" y="312" class="mono">⌘1</text>
+<rect x="396" y="338" width="218" height="48" rx="9" class="selected"/><text x="414" y="368" class="label">Docs</text><text x="566" y="368" class="mono">⌘2</text>
+<rect x="396" y="394" width="218" height="48" rx="9" class="row"/><text x="414" y="424" class="label">API</text><text x="566" y="424" class="mono">⌘3</text>
+
+<path d="M335 414 C360 414 360 306 387 306" class="line"/>
+<polygon points="386,300 398,306 386,312" fill="#777783"/>
+<rect x="102" y="507" width="524" height="94" rx="12" class="callout"/>
+<circle cx="127" cy="534" r="10" class="accent"/><text x="122" y="539" class="mono" fill="#111">1</text>
+<text x="148" y="538" class="label">Attention event mutates navigation order.</text>
+<text x="148" y="563" class="small">Release was ⌘3; after the event it is visually ⌘1.</text>
+<text x="148" y="586" class="small">The learned target map and the activity queue are the same list.</text>
+
+<rect x="718" y="142" width="626" height="510" rx="18" class="panel"/>
+<text x="746" y="181" class="head">Alternative · stable Homes + attention mirror</text>
+<text x="746" y="207" class="small">Build on CMUX pinning; expose the promise directly</text>
+
+<rect x="752" y="234" width="558" height="58" rx="12" class="well"/>
+<text x="770" y="257" class="small">NEEDS ATTENTION</text>
+<rect x="900" y="245" width="132" height="34" rx="17" fill="#3b2a12"/><circle cx="920" cy="262" r="5" class="accent"/><text x="936" y="267" class="label">Release</text>
+<text x="1053" y="267" class="small">mirrors home row</text>
+
+<text x="768" y="331" class="small">HOMES</text>
+<rect x="752" y="347" width="558" height="194" rx="13" class="well"/>
+<rect x="768" y="364" width="526" height="48" rx="9" class="selected"/><text x="789" y="394" class="pin">◆</text><text x="813" y="394" class="label">Docs</text><text x="1245" y="394" class="mono">⌘1</text>
+<rect x="768" y="420" width="526" height="48" rx="9" class="row"/><text x="789" y="450" class="pin">◆</text><text x="813" y="450" class="label">API</text><text x="1245" y="450" class="mono">⌘2</text>
+<rect x="768" y="476" width="526" height="48" rx="9" class="row"/><text x="789" y="506" class="pin">◆</text><circle cx="825" cy="500" r="5" class="accent"/><text x="843" y="506" class="label">Release</text><text x="1245" y="506" class="mono">⌘3</text>
+
+<rect x="764" y="565" width="530" height="64" rx="12" class="callout"/>
+<circle cx="789" cy="593" r="10" class="blue"/><text x="784" y="598" class="mono" fill="#111">2</text>
+<text x="810" y="597" class="label">Position says “where”; badge/strip says “needs you.”</text>
+<text x="810" y="619" class="small">Transient unpinned work can keep recency ordering.</text>
+
+<text x="56" y="687" class="small">CMUX evidence: app.reorderOnNotification defaults true; pinned rows already support user order. Proposal makes the distinction explicit.</text>
+</svg>
