@@ -101,6 +101,7 @@ Do not assume these require product changes. Start by observing the real interac
 
 ## Current CMUX applied work
 
+- [`cmux-native-macos-daily-use/`](cmux-native-macos-daily-use/) — four repeat-use native-Mac seams: titlebar/window ownership, file Quick Look, pane selection versus focus, and Accessibility focus. Includes side-by-side SVG alternatives plus notes on native sheets, menus, drag/drop, restoration, materials, and motion.
 - [`cmux-causal-selection-handoff/`](cmux-causal-selection-handoff/) — one real browser-visible failure (#10965), the existing React Grab terminal round-trip, and a working mock of a durable selection receipt through request/source/edit/build/verification.
 - [`cmux-spatial-interactions/`](cmux-spatial-interactions/) — three live CMUX interaction cases around notification reorder, agent triage versus stable return, and cross-workspace switcher identity.
 - [`cmux-precedent-hunt/`](cmux-precedent-hunt/) — seven product precedents selected for transferable mechanisms, plus CMUX-adjacent sketches for semantic scrollback, a task-scoped causal cursor, and an operational overview.
