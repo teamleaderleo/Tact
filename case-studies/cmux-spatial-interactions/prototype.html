@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CMUX applied spatial interaction — 3 cases</title>
+<style>
+:root{color-scheme:dark;--bg:#0e0e11;--panel:#17171b;--well:#202026;--row:#292930;--stroke:#35353d;--muted:#a7a7af;--blue:#0a84ff;--orange:#ff9f0a;--green:#30d158}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f3f3f5;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:1320px;margin:auto;padding:42px 28px 70px}.eyebrow{text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-size:12px}
+h1{font-size:36px;line-height:1.08;margin:8px 0 12px;max-width:900px}p{color:#d4d4da}.lede{max-width:820px;font-size:16px}
+.tabs{display:flex;gap:8px;margin:28px 0 18px;flex-wrap:wrap}.tabs button,.action,.toggle button{border:1px solid var(--stroke);background:#1a1a20;color:#e8e8ec;border-radius:10px;padding:9px 13px;font:inherit;cursor:pointer}
+.tabs button[aria-selected="true"],.toggle button.active{background:#303038;border-color:#555562}.case{display:none}.case.active{display:block}
+.case-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin:14px 0}.case-head h2{font-size:24px;margin:0}.case-head p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:var(--panel);border:1px solid var(--stroke);border-radius:18px;padding:20px;min-height:500px}
+.card h3{font-size:17px;margin:0 0 5px}.caption{color:var(--muted);font-size:13px;margin-bottom:18px}.sidebar,.palette,.board{background:var(--well);border-radius:14px;padding:12px}
+.row{display:flex;align-items:center;gap:10px;background:var(--row);border-radius:9px;padding:11px 12px;margin:7px 0;min-height:48px;transition:transform .26s ease,background .2s ease,opacity .2s ease}.row.selected{background:#373740}
+.name{font-weight:600}.meta{font-size:12px;color:var(--muted)}.grow{flex:1}.key{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:#c9c9d0}.dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex:none}.dot.orange{background:var(--orange)}.dot.green{background:var(--green)}
+.section-label{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;letter-spacing:.08em;margin:15px 4px 6px;text-transform:uppercase}
+.annotation{margin-top:18px;padding:13px 14px;border:1px solid #494953;border-radius:11px;background:#232329;color:#d8d8dd}.annotation b{color:#fff}
+.action{margin-top:16px;background:#2b2b33}.action:hover{background:#35353e}.attention{border:1px solid #57411e;background:#2c2316;border-radius:12px;padding:10px 12px;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.pin{font-size:10px;color:#d6d6dd}.flash{animation:flash .7s ease}@keyframes flash{0%{box-shadow:0 0 0 0 rgba(255,159,10,.45)}100%{box-shadow:0 0 0 14px rgba(255,159,10,0)}}
+.toggle{display:flex;gap:6px;background:var(--well);border-radius:12px;padding:6px;margin-bottom:12px}.toggle button{padding:7px 10px;border-radius:8px}.agent-sections,.home-sections{min-height:340px}
+.palette .query{background:#16161b;border:1px solid #383840;border-radius:10px;padding:12px;margin-bottom:10px;color:#f2f2f5}.colheads,.palette-row{display:grid;grid-template-columns:1.05fr 1.15fr .65fr;gap:12px;align-items:center}.colheads{padding:5px 12px;color:var(--muted);font-size:10px;letter-spacing:.08em}.palette-row{background:var(--row);border-radius:9px;padding:12px;margin:7px 0}.palette-row.current{display:flex}
+.sources{margin-top:20px;font-size:12px;color:var(--muted)}a{color:#8ec5ff}
+footer{margin-top:36px;color:var(--muted)}@media(max-width:850px){.grid{grid-template-columns:1fr}.case-head{align-items:start;flex-direction:column}h1{font-size:30px}}
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">Applied CMUX interaction analysis</div>
+<h1>Three places where navigation order, attention, and identity collide.</h1>
+<p class="lede">These are schematic interaction mocks backed by current CMUX source/issues. Click the controls. The point is to make each tradeoff visible in seconds.</p>
+
+<div class="tabs" role="tablist">
+  <button data-case="c1" aria-selected="true">1 · Notification reorder</button>
+  <button data-case="c2" aria-selected="false">2 · Agent overview</button>
+  <button data-case="c3" aria-selected="false">3 · Global switcher identity</button>
+</div>
+
+<section id="c1" class="case active">
+  <div class="case-head"><div><div class="eyebrow">sidebar / stable position</div><h2>Attention currently has permission to move the target.</h2></div><p>Click once; watch the shortcut map.</p></div>
+  <div class="grid">
+    <article class="card">
+      <h3>Current · reorder on notification</h3>
+      <div class="caption"><code>app.reorderOnNotification = true</code> by default.</div>
+      <div class="sidebar" id="current-sidebar"></div>
+      <button class="action" id="notify-current">Send notification to Release</button>
+      <div class="annotation"><b>Coupling:</b> notification recency changes visible order, so the list’s positional / numeric meaning changes with it.</div>
+    </article>
+    <article class="card">
+      <h3>Alternative · stable Homes + attention mirror</h3>
+      <div class="caption">Builds on CMUX’s existing pinned/manual-order model.</div>
+      <div id="attention-slot"></div>
+      <div class="section-label"><span>Homes</span><span>keeps place</span></div>
+      <div class="sidebar" id="home-sidebar"></div>
+      <button class="action" id="notify-home">Send notification to Release</button>
+      <div class="annotation"><b>Split the meanings:</b> position says where the recurring workspace lives; badge/attention strip says which one spoke.</div>
+    </article>
+  </div>
+  <div class="sources">Evidence: <a href="https://github.com/manaflow-ai/cmux/issues/2900">issue #2900</a> · <a href="https://github.com/manaflow-ai/cmux/blob/main/skills/cmux-settings/references/all-keys.md">settings keys</a> · <a href="https://github.com/manaflow-ai/cmux/blob/main/docs/workspace-groups.md">pin/manual order docs</a></div>
+</section>
+
+<section id="c2" class="case">
+  <div class="case-head"><div><div class="eyebrow">overview / focus / agents</div><h2>Dynamic movement earns its place when state is the question.</h2></div><p>Change one agent’s state.</p></div>
+  <div class="grid">
+    <article class="card">
+      <h3>Current CMUX example · Triage</h3>
+      <div class="caption"><code>Examples/CustomSidebars/agents-board.js</code>: status first, exact deep-link.</div>
+      <div class="board agent-sections" id="triage-board"></div>
+      <button class="action" id="toggle-agent">Fix auth retry: Working → Needs You</button>
+      <div class="annotation"><b>Good movement:</b> the agent crosses semantic sections because its obligation changed. That is the fact the panel exists to reveal.</div>
+    </article>
+    <article class="card">
+      <h3>Alternative · Home</h3>
+      <div class="caption">Same exact target action, grouped by workspace and kept in place.</div>
+      <div class="toggle"><button class="active">Home</button><button disabled>Triage is the left panel</button></div>
+      <div class="board home-sections" id="home-board"></div>
+      <div class="annotation"><b>Different job:</b> known-target return becomes easier; “who needs me?” takes a longer scan. This should be a second view, not a replacement.</div>
+    </article>
+  </div>
+  <div class="sources">Evidence: <a href="https://github.com/manaflow-ai/cmux/issues/4356">issue #4356</a> · <a href="https://github.com/manaflow-ai/cmux/blob/main/Examples/CustomSidebars/agents-board.js">current agents-board example</a> · <a href="https://github.com/teamleaderleo/terminal-kit/blob/main/scripts/overview.sh">terminal-kit overview</a></div>
+</section>
+
+<section id="c3" class="case">
+  <div class="case-head"><div><div class="eyebrow">command palette / identity</div><h2>Cross-workspace search needs parent context.</h2></div><p>Same query, same results, clearer landing point.</p></div>
+  <div class="grid">
+    <article class="card">
+      <h3>Current issue flow · surface title only</h3>
+      <div class="caption"><code>⌘P</code> with all-surfaces search enabled.</div>
+      <div class="palette">
+        <div class="query">cla <span class="meta" style="float:right">3 results</span></div>
+        <div class="palette-row current selected"><span class="dot"></span><span class="name">claude</span></div>
+        <div class="palette-row current"><span style="width:8px"></span><span class="name">claude</span></div>
+        <div class="palette-row current"><span style="width:8px"></span><span class="name">claude</span></div>
+      </div>
+      <div class="annotation"><b>Missing cue:</b> the child label is visible; the parent workspace is hidden exactly when search crosses workspace boundaries.</div>
+    </article>
+    <article class="card">
+      <h3>Alternative · hierarchical result row</h3>
+      <div class="caption">Workspace first; surface second; tab/split detail trails.</div>
+      <div class="palette">
+        <div class="query">cla <span class="meta" style="float:right">3 results</span></div>
+        <div class="colheads"><span>WORKSPACE</span><span>SURFACE</span><span>CONTEXT</span></div>
+        <div class="palette-row selected"><span class="name">Backend</span><span class="name">claude</span><span class="meta">split 2</span></div>
+        <div class="palette-row"><span class="name">Docs</span><span class="name">claude</span><span class="meta">tab 1</span></div>
+        <div class="palette-row"><span class="name">Release</span><span class="name">claude</span><span class="meta">tab 3</span></div>
+      </div>
+      <div class="annotation"><b>Identity fix:</b> this remains a search interaction. Query-dependent order is expected; semantic parent context does the useful work.</div>
+    </article>
+  </div>
+  <div class="sources">Evidence: <a href="https://github.com/manaflow-ai/cmux/issues/1857">issue #1857</a> · <a href="https://github.com/manaflow-ai/cmux/blob/main/skills/cmux-settings/references/all-keys.md">all-surfaces setting</a></div>
+</section>
+
+<footer>Annotated interaction sketch, not a pixel replica of CMUX. Built to discuss the decision, then open the source. <br><br>— Miso 🐈</footer>
+</main>
+
+<script>
+const workspaces=[{name:"Docs"},{name:"API"},{name:"Release"}];
+let currentOrder=[...workspaces], currentNotified=false, homeNotified=false;
+
+function renderCurrent(){
+  const el=document.querySelector("#current-sidebar"); el.innerHTML="";
+  currentOrder.forEach((w,i)=>{
+    const row=document.createElement("div"); row.className="row"+(i===0?" selected":"");
+    row.innerHTML=`${currentNotified&&w.name==="Release"?'<span class="dot orange"></span>':'<span style="width:8px"></span>'}<span class="name">${w.name}</span><span class="grow"></span><span class="key">⌘${i+1}</span>`;
+    el.appendChild(row);
+  });
+}
+function renderHome(){
+  const el=document.querySelector("#home-sidebar"); el.innerHTML="";
+  workspaces.forEach((w,i)=>{
+    const row=document.createElement("div"); row.className="row"+(i===0?" selected":"");
+    row.innerHTML=`<span class="pin">◆</span>${homeNotified&&w.name==="Release"?'<span class="dot orange"></span>':''}<span class="name">${w.name}</span><span class="grow"></span><span class="key">⌘${i+1}</span>`;
+    el.appendChild(row);
+  });
+  const slot=document.querySelector("#attention-slot");
+  slot.innerHTML=homeNotified?`<div class="attention flash"><span class="dot orange"></span><span class="name">Release</span><span class="grow"></span><span class="meta">Needs attention · home stays ⌘3</span></div>`:"";
+}
+document.querySelector("#notify-current").onclick=()=>{
+  currentNotified=!currentNotified;
+  currentOrder=currentNotified?[workspaces[2],workspaces[0],workspaces[1]]:[...workspaces];
+  renderCurrent();
+  document.querySelector("#notify-current").textContent=currentNotified?"Reset order":"Send notification to Release";
+};
+document.querySelector("#notify-home").onclick=()=>{
+  homeNotified=!homeNotified;renderHome();
+  document.querySelector("#notify-home").textContent=homeNotified?"Clear notification":"Send notification to Release";
+};
+renderCurrent();renderHome();
+
+const agents=[
+  {id:"auth",title:"Fix auth retry",ws:"Backend",status:"working"},
+  {id:"types",title:"Review API types",ws:"Backend",status:"idle"},
+  {id:"docs",title:"Rewrite docs",ws:"Docs",status:"working"},
+  {id:"release",title:"Cut RC build",ws:"Release",status:"working"}
+];
+const statusMeta={needs_input:["NEEDS YOU","orange"],working:["WORKING",""],idle:["IDLE","green"],ended:["ENDED",""]};
+const statusOrder=["needs_input","working","idle","ended"];
+function agentRow(a){
+  const dot=statusMeta[a.status][1]; const row=document.createElement("div");row.className="row";
+  row.innerHTML=`<span class="dot ${dot}"></span><div><div class="name">${a.title}</div><div class="meta">${a.ws}</div></div><span class="grow"></span><span class="meta">${a.status==="needs_input"?"needs you":a.status}</span>`;
+  return row;
+}
+function renderAgents(){
+  const tri=document.querySelector("#triage-board");tri.innerHTML="";
+  statusOrder.forEach(s=>{
+    const items=agents.filter(a=>a.status===s); if(!items.length)return;
+    const lab=document.createElement("div");lab.className="section-label";lab.innerHTML=`<span>${statusMeta[s][0]}</span><span>${items.length}</span>`;tri.appendChild(lab);
+    items.sort((a,b)=>a.id.localeCompare(b.id)).forEach(a=>tri.appendChild(agentRow(a)));
+  });
+  const home=document.querySelector("#home-board");home.innerHTML="";
+  ["Backend","Docs","Release"].forEach(ws=>{
+    const items=agents.filter(a=>a.ws===ws);const lab=document.createElement("div");lab.className="section-label";lab.innerHTML=`<span>${ws}</span><span>${items.filter(a=>a.status==="needs_input").length?"needs you":""}</span>`;home.appendChild(lab);
+    items.forEach(a=>home.appendChild(agentRow(a)));
+  });
+}
+document.querySelector("#toggle-agent").onclick=()=>{
+  const a=agents.find(a=>a.id==="auth");a.status=a.status==="working"?"needs_input":"working";renderAgents();
+  document.querySelector("#toggle-agent").textContent=a.status==="working"?"Fix auth retry: Working → Needs You":"Reset: Needs You → Working";
+};
+renderAgents();
+
+document.querySelectorAll(".tabs button").forEach(btn=>btn.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected","false"));
+  btn.setAttribute("aria-selected","true");
+  document.querySelectorAll(".case").forEach(c=>c.classList.remove("active"));
+  document.querySelector("#"+btn.dataset.case).classList.add("active");
+});
+</script>
+</body>
+</html>
