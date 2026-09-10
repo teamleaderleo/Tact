@@ -1,11 +1,11 @@
 # Pocket vocabulary
 
-Only language with a concrete packet case behind it. If Leo cannot point to the artifact that earned the phrase, leave the phrase in the pocket.
+Every phrase below has a concrete packet case behind it. Leo should be able to point to the artifact that earned the phrase in a few seconds.
 
 | Term | Earned by | Meaning here |
 | --- | --- | --- |
 | **change salience before location** | Notification / Homes case | For a recurring target with a learned home, signal new attention with emphasis, badge, or a mirror before moving the target itself. |
-| **stable home** | Notification / Homes case | A chosen recurring object keeps a learned row/shortcut while its state changes. Stability is a promise attached to that job, not a universal ordering rule. |
+| **stable home** | Notification / Homes case | A chosen recurring object keeps a learned row/shortcut while its state changes. Stability is a promise attached to that job; Triage and search can use different orderings. |
 | **human obligation** | Agent Triage + attention-compiler audit | A choice, approval, answer, or recovery action that actually requires a person. Machine activity stays subordinate until it creates one. |
 | **independent population audit** | Adversarial attention compiler | A separate aggregate path that can say the worker population has become suspicious even while the obligation reducer still reports only a few human decisions. |
 | **target granularity** | Agent board | The jump target should be the object the person intends to operate: agent surface when workspace alone is too coarse. |
@@ -21,7 +21,7 @@ Only language with a concrete packet case behind it. If Leo cannot point to the 
 
 ## Useful disagreement attached to the vocabulary
 
-**Stable geography is conditional.** Home benefits from learned position. Triage benefits from meaningful movement. Search results benefit from explicit parent identity because query order is expected to move. The cases earn a choice among these behaviors; they do not earn one master rule.
+**Stable geography is conditional.** Home benefits from learned position. Triage benefits from meaningful movement. Search results benefit from explicit parent identity because query order is expected to move. The cases earn three behaviors, each keyed to the job.
 
 **Task identity has a boundary.** Task/workspace works well for human resumption. Selection, request, source artifact, edit, build, and proof keep independent identities beneath that human-facing grouping.
 
