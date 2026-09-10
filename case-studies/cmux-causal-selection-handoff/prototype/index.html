@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CMUX causal selection handoff</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg:#090b0e; --panel:#12161b; --panel2:#171c22; --line:#2d333b;
+    --text:#f0f6fc; --muted:#8b949e; --purple:#d2a8ff; --blue:#79c0ff;
+    --red:#ff7b72; --green:#7ee787; --orange:#ffa657;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  button { font:inherit; }
+  .app { min-height:100vh; display:grid; grid-template-columns:220px 1fr; }
+  .rail { border-right:1px solid var(--line); background:#0d1014; padding:16px 12px; }
+  .brand { font-weight:800; letter-spacing:-.03em; font-size:21px; padding:3px 8px 15px; }
+  .rail-label { color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-size:11px; padding:12px 8px 7px; }
+  .workspace { width:100%; border:0; color:var(--text); background:transparent; padding:9px 10px; border-radius:8px; text-align:left; cursor:pointer; }
+  .workspace.active { background:#1a2028; }
+  .workspace small { color:var(--muted); display:block; margin-top:3px; }
+  .dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--orange); margin-right:8px; }
+  .main { min-width:0; display:grid; grid-template-rows:auto 1fr auto; }
+  .topbar { height:58px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; padding:0 18px; }
+  .task { font-weight:700; margin-right:auto; }
+  .task span { color:var(--muted); font-weight:500; margin-left:7px; }
+  .seg { display:flex; padding:3px; border:1px solid var(--line); border-radius:9px; background:#0d1014; }
+  .seg button { border:0; color:var(--muted); background:transparent; border-radius:6px; padding:6px 11px; cursor:pointer; }
+  .seg button.active { color:var(--text); background:#242a32; }
+  .stage-wrap { min-height:0; padding:18px; display:grid; grid-template-columns:minmax(0,1fr) 310px; gap:16px; }
+  .stage, .inspector { border:1px solid var(--line); border-radius:13px; background:var(--panel); overflow:hidden; }
+  .stage { min-height:580px; display:grid; grid-template-rows:42px 1fr; }
+  .pane-tabs { display:flex; align-items:center; gap:4px; padding:0 9px; border-bottom:1px solid var(--line); background:#101318; }
+  .pane-tab { border:0; background:transparent; color:var(--muted); padding:8px 10px; border-radius:7px; }
+  .pane-tab.active { color:var(--text); background:#1b2027; }
+  .content { min-height:0; padding:14px; }
+  .current-grid { height:100%; display:grid; grid-template-columns:1.15fr .85fr; gap:12px; }
+  .browser, .terminal, .source, .receipt { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#0d1117; }
+  .bar { height:38px; display:flex; align-items:center; gap:8px; padding:0 11px; border-bottom:1px solid var(--line); background:#171b21; color:var(--muted); }
+  .lights { display:flex; gap:5px; }
+  .light { width:8px; height:8px; border-radius:50%; background:#555; }
+  .light:nth-child(1){background:var(--red)} .light:nth-child(2){background:var(--orange)} .light:nth-child(3){background:var(--green)}
+  .url { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .viewer { padding:18px; }
+  .toolbar { display:flex; gap:8px; align-items:center; padding-bottom:18px; border-bottom:1px solid #20262e; }
+  .dead { border:1px solid #444c56; background:#20262e; color:#d8dee4; border-radius:7px; padding:7px 10px; position:relative; }
+  .dead.primary { outline:2px solid var(--red); outline-offset:2px; }
+  .dead.primary::after { content:"dead"; position:absolute; top:-21px; right:-5px; color:var(--red); font-size:11px; }
+  .diff { margin-top:16px; font:12px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace; color:#9da7b3; }
+  .add { color:var(--green); } .del { color:var(--red); }
+  pre { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; color:#c9d1d9; }
+  .terminal-body { padding:14px; }
+  .err { color:var(--red); } .ok { color:var(--green); } .dim { color:var(--muted); }
+  .break { margin-top:18px; padding:12px; border:1px dashed #5c6370; border-radius:9px; color:#c3cbd5; background:#11151a; }
+  .break strong { color:var(--red); }
+  .proposal { display:grid; grid-template-rows:auto 1fr; gap:12px; height:100%; }
+  .selection-card { display:flex; align-items:center; gap:10px; border:1px solid #67469a; background:#20182a; padding:10px 12px; border-radius:9px; }
+  .selection-id { font:12px ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--purple); white-space:nowrap; }
+  .selection-card b { margin-right:auto; }
+  .selection-card small { color:var(--muted); }
+  .lens { border:1px solid var(--line); border-radius:10px; background:#0d1117; min-height:420px; overflow:hidden; }
+  .lens-head { height:42px; border-bottom:1px solid var(--line); padding:0 13px; display:flex; align-items:center; justify-content:space-between; color:var(--muted); }
+  .lens-body { padding:18px; }
+  .eyebrow { color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-size:11px; margin-bottom:8px; }
+  .lens h2 { font-size:22px; margin:0 0 8px; }
+  .lens p { color:#b7c0ca; max-width:760px; }
+  .artifact { margin-top:18px; border:1px solid var(--line); border-radius:9px; padding:14px; background:#12171d; }
+  .browser-demo { margin-top:16px; display:grid; grid-template-columns:1fr 220px; gap:12px; }
+  .mini-page { min-height:190px; border:1px solid var(--line); background:#fafafa; color:#15171a; border-radius:8px; padding:20px; }
+  .mini-page .dead { display:inline-block; color:#111; background:#fff; border-color:#aaa; }
+  .mini-page .selected { outline:3px solid #8957e5; outline-offset:4px; }
+  .mini-page .menu { margin-top:7px; width:180px; background:#fff; border:1px solid #bbb; border-radius:7px; padding:8px; box-shadow:0 10px 25px rgba(0,0,0,.18); }
+  .mini-page .menu div { padding:5px; }
+  .meta { border:1px solid var(--line); border-radius:8px; padding:12px; font:11px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; color:#aab4c0; background:#0b0e12; }
+  .inspector { padding:15px; overflow:auto; }
+  .inspector h3 { font-size:14px; margin:3px 0 9px; }
+  .inspector p { color:var(--muted); margin:0 0 14px; }
+  .context-list { display:grid; gap:7px; }
+  .context-row { border:1px solid var(--line); border-radius:8px; padding:9px 10px; background:#10151b; }
+  .context-row b { display:block; font-size:12px; margin-bottom:2px; }
+  .context-row span { color:var(--muted); font-size:12px; }
+  .callout { margin-top:14px; padding:11px; border-left:2px solid var(--purple); background:#17121e; color:#c9d1d9; }
+  .many { margin-top:14px; border:1px solid var(--line); border-radius:9px; padding:11px; background:#0f1318; }
+  .many code { font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace; color:#b6c0cb; white-space:pre; }
+  .ribbon { border-top:1px solid var(--line); background:#0d1014; padding:11px 18px 15px 238px; }
+  .ribbon-title { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px; }
+  .steps { display:flex; gap:7px; overflow:auto; padding-bottom:2px; }
+  .step { border:1px solid var(--line); border-radius:18px; color:#aeb7c2; background:#14191f; padding:7px 11px; white-space:nowrap; cursor:pointer; }
+  .step::before { content:""; display:inline-block; width:6px; height:6px; border-radius:50%; background:#6e7681; margin-right:7px; vertical-align:1px; }
+  .step.active { border-color:#8957e5; background:#21172c; color:var(--text); }
+  .step.active::before { background:var(--purple); }
+  .step.good::before { background:var(--green); }
+  .step.bad::before { background:var(--red); }
+  .proposal-only { display:none; }
+  body.proposal-mode .proposal-only { display:block; }
+  body.proposal-mode .current-only { display:none; }
+  body.current-mode .proposal-only { display:none; }
+  .note { font-size:12px; color:var(--muted); padding:10px 18px 0; }
+  @media (max-width:1050px) {
+    .app { grid-template-columns:1fr; }
+    .rail { display:none; }
+    .stage-wrap { grid-template-columns:1fr; }
+    .inspector { min-height:0; }
+    .ribbon { padding-left:18px; }
+  }
+  @media (max-width:720px) {
+    .current-grid, .browser-demo { grid-template-columns:1fr; }
+    .stage-wrap { padding:10px; }
+    .topbar { padding:0 10px; }
+  }
+</style>
+</head>
+<body class="current-mode">
+<div class="app">
+  <aside class="rail">
+    <div class="brand">cmux</div>
+    <div class="rail-label">Workspaces</div>
+    <button class="workspace active"><span class="dot"></span>diff viewer bug<small>main · ~/code/cmux · 2 agents</small></button>
+    <button class="workspace">browser engine<small>issue-10084 · review</small></button>
+    <button class="workspace">release checks<small>main · 3 terminals</small></button>
+    <div class="rail-label">This case</div>
+    <div style="padding:8px 10px;color:var(--muted);font-size:12px">Issue #10965<br/>React Grab handoff<br/>WebKit → Chromium/CDP direction</div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="task">diff viewer toolbar <span>one task · linked objects</span></div>
+      <div class="seg" aria-label="Prototype mode">
+        <button id="currentBtn" class="active">Current</button>
+        <button id="proposalBtn">Proposal</button>
+      </div>
+    </header>
+
+    <div class="stage-wrap">
+      <section class="stage">
+        <div class="pane-tabs">
+          <button class="pane-tab active">browser · diff viewer</button>
+          <button class="pane-tab">agent · terminal</button>
+          <span style="margin-left:auto;color:var(--muted);font-size:12px">workspace: diff-viewer-bug</span>
+        </div>
+        <div class="content">
+          <div class="current-only current-grid">
+            <div class="browser">
+              <div class="bar"><div class="lights"><i class="light"></i><i class="light"></i><i class="light"></i></div><span class="url">cmux-diff-viewer://84d…/diff-…-viewer.html</span></div>
+              <div class="viewer">
+                <div class="toolbar">
+                  <button class="dead primary">Source: Unstaged</button>
+                  <button class="dead">Repository</button>
+                  <span style="margin-left:auto;color:#777">◫ ⟳ ⋯</span>
+                </div>
+                <div class="diff">
+                  <div>Sources/Panels/CmuxDiffViewerURLSchemeHandler.swift</div>
+                  <div class="del">- old line</div>
+                  <div class="add">+ new line</div>
+                </div>
+                <div class="break"><strong>Visible failure:</strong> click the Source dropdown. Nothing happens. Web Inspector shows four resource 404s, with no failing URL in the report.</div>
+              </div>
+            </div>
+            <div class="terminal">
+              <div class="bar">agent terminal · surface:3</div>
+              <div class="terminal-body">
+<pre>$ cmux tree
+… surface:7 [browser]
+
+$ cmux browser surface:7 errors list
+<span class="err">invalid_params: Surface is not a browser</span>
+
+$ cmux browser surface:7 network requests
+<span class="err">not_supported: … on WKWebView</span>
+
+$ # React Grab eventually pastes:
+&lt;button&gt;Source: Unstaged&lt;/button&gt;
+
+<span class="dim"># object identity is now prose/HTML.
+# agent re-discovers the page and object.</span></pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="proposal-only proposal">
+            <div class="selection-card">
+              <span class="selection-id">@selection:17</span>
+              <b>Source / Unstaged</b>
+              <small>surface:7 · gen 42 → re-resolved in gen 43</small>
+            </div>
+            <div class="lens">
+              <div class="lens-head"><span id="lensKind">browser selection</span><span id="lensStatus">human-selected</span></div>
+              <div id="lensBody" class="lens-body"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="inspector">
+        <div class="current-only">
+          <h3>What CMUX already preserves</h3>
+          <p>The current round-trip has more identity than the pasted result exposes.</p>
+          <div class="context-list">
+            <div class="context-row"><b>Workspace</b><span>known</span></div>
+            <div class="context-row"><b>Browser surface</b><span>known during React Grab routing</span></div>
+            <div class="context-row"><b>Return terminal</b><span>exact panel/surface is remembered</span></div>
+            <div class="context-row"><b>Selected element</b><span>collapsed into copied content</span></div>
+            <div class="context-row"><b>Request</b><span>blocked in the #10965 WebKit path</span></div>
+          </div>
+          <div class="callout">The human becomes the identity adapter between a visible browser failure and the terminal/source investigation.</div>
+        </div>
+
+        <div class="proposal-only">
+          <h3>Agent receives automatically</h3>
+          <p>Exact handles first; readable context second.</p>
+          <div class="context-list">
+            <div class="context-row"><b>@selection:17</b><span>durable receipt for the human-selected intent</span></div>
+            <div class="context-row"><b>surface:7 · gen 42</b><span>browser target + document generation</span></div>
+            <div class="context-row"><b>Element descriptor</b><span>React Grab output + selector candidates + crop</span></div>
+            <div class="context-row"><b>Nearby evidence</b><span>recent interaction + console/errors</span></div>
+            <div class="context-row"><b>Runtime clues</b><span>workspace cwd · git branch · listening ports</span></div>
+            <div class="context-row"><b>Request identity</b><span>attach when Chromium/CDP surface provides it</span></div>
+          </div>
+          <div class="callout">Causality stays inspectable: every automatic join should say why it connected two objects.</div>
+          <div class="many"><strong style="display:block;margin-bottom:7px">Task identity eventually loses precision</strong><code>selection A ─┐                 ┌─ claim A
+             ├─ source → edit → build ┤
+selection B ─┘                 └─ claim B</code></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="note current-only">Current specimen: public issue #10965 on CMUX 0.64.22. This mock reproduces the reported interaction, not the unknown bug cause.</div>
+    <footer class="ribbon proposal-only">
+      <div class="ribbon-title">Causal ribbon · click a landmark</div>
+      <div id="steps" class="steps">
+        <button class="step active" data-step="selection">Source dropdown</button>
+        <button class="step bad" data-step="request">resource 404</button>
+        <button class="step" data-step="source">scheme handler</button>
+        <button class="step" data-step="edit">edit</button>
+        <button class="step" data-step="build">build</button>
+        <button class="step good" data-step="verify">verified</button>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<script>
+const views = {
+  selection: {
+    kind: 'browser selection', status: 'human-selected',
+    html: `<div class="eyebrow">same object across handoff</div><h2>Source / Unstaged</h2><p>The selection receipt preserves the human's referent while the live DOM node remains tied to document generation 42.</p><div class="browser-demo"><div class="mini-page"><b>Diff viewer</b><p>Choose what to compare:</p><button class="dead selected">Source: Unstaged</button><p style="color:#777;font-size:12px">Cmd+Shift+G → click once → return to agent</p></div><div class="meta">@selection:17<br/>workspace: diff-viewer-bug<br/>surface:7<br/>generation:42<br/>intent: click/open<br/>return:surface:3</div></div>`
+  },
+  request: {
+    kind: 'browser request', status: 'failed',
+    html: `<div class="eyebrow">causal child of the replayed click</div><h2 style="color:var(--red)">404 · exact request</h2><p>On a Chromium/CDP surface, request identity can attach to the interaction that triggered it. Current WebKit behavior in #10965 cannot supply this edge, so the UI should say so explicitly.</p><div class="artifact"><pre>selection:17
+  → interaction:8841
+    → request:req-55
+      URL: cmux-diff-viewer://…/chunks/&lt;exact-request&gt;.mjs
+      status: 404
+      observed during: replay #2</pre></div>`
+  },
+  source: {
+    kind: 'source', status: 'candidate cause',
+    html: `<div class="eyebrow">follow the request into implementation</div><h2>CmuxDiffViewerURLSchemeHandler.swift</h2><p>The exact failing URL gives the agent a narrow place to inspect. Current source routes ordinary custom-scheme file misses through <code>registeredFile(for:)</code> and then returns a file-does-not-exist error.</p><div class="artifact"><pre>serve(requestURL: …)
+  …
+  guard let file = registeredFile(for: requestURL) else {
+      failSchemeTask(…, code: NSURLErrorFileDoesNotExist)
+      return
+  }
+
+<span class="dim">The mock stops here on bug diagnosis; #10965 is still open.</span></pre></div>`
+  },
+  edit: {
+    kind: 'agent edit', status: 'working source changed',
+    html: `<div class="eyebrow">edit is linked backward to evidence</div><h2>One source change, one receipt</h2><p>The agent's diff records <code>parents: [req-55, selection:17]</code>. The source edit advances working source while the browser continues running the previous build.</p><div class="artifact"><pre>edit:93
+parents: request:req-55, selection:17
+files: 1
+working revision: main + dirty:7f2…
+active browser build: build:17 <span class="dim">(unchanged)</span></pre></div>`
+  },
+  build: {
+    kind: 'terminal / build', status: 'active revision advanced',
+    html: `<div class="eyebrow">terminal receipt</div><h2>Rebuild is its own event</h2><p>The build is shared evidence. It should exist once even when several visible claims depend on it.</p><div class="artifact"><pre>$ ./scripts/reload.sh --tag diffviewer-fix
+… build complete
+
+build:18
+source: edit:93
+browser target: surface:7
+active revision: diffviewer-fix</pre></div>`
+  },
+  verify: {
+    kind: 'verification', status: 'claim proved',
+    html: `<div class="eyebrow">return to the human claim</div><h2 style="color:var(--green)">Source dropdown opens</h2><p>CMUX re-resolves <code>@selection:17</code> in document generation 43, repeats the saved click intent, and attaches proof to the claim.</p><div class="browser-demo"><div class="mini-page"><b>Diff viewer</b><p>Choose what to compare:</p><button class="dead selected" style="outline-color:#3fb950">Source: Unstaged</button><div class="menu"><div>Working tree</div><div>Staged</div><div>Branch…</div></div></div><div class="meta" style="color:var(--green)">✓ replayed selection:17<br/>✓ gen 43<br/>✓ menu visible<br/>✓ linked 404s: 0<br/>✓ build:18<br/><br/><span style="color:#9da7b3">proof expands on demand</span></div></div>`
+  }
+};
+
+const currentBtn = document.getElementById('currentBtn');
+const proposalBtn = document.getElementById('proposalBtn');
+const lensKind = document.getElementById('lensKind');
+const lensStatus = document.getElementById('lensStatus');
+const lensBody = document.getElementById('lensBody');
+
+function setMode(mode) {
+  document.body.className = mode + '-mode';
+  currentBtn.classList.toggle('active', mode === 'current');
+  proposalBtn.classList.toggle('active', mode === 'proposal');
+  if (mode === 'proposal') setStep('selection');
+}
+function setStep(step) {
+  const view = views[step];
+  lensKind.textContent = view.kind;
+  lensStatus.textContent = view.status;
+  lensBody.innerHTML = view.html;
+  document.querySelectorAll('.step').forEach(b => b.classList.toggle('active', b.dataset.step === step));
+}
+currentBtn.addEventListener('click', () => setMode('current'));
+proposalBtn.addEventListener('click', () => setMode('proposal'));
+document.getElementById('steps').addEventListener('click', e => {
+  const btn = e.target.closest('[data-step]');
+  if (btn) setStep(btn.dataset.step);
+});
+setStep('selection');
+</script>
+</body>
+</html>
