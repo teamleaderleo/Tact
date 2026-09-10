@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="720" viewBox="0 0 1400 720">
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f3f3f5}.title{font-size:30px;font-weight:700}.kicker{font-size:14px;letter-spacing:1.6px;fill:#9b9ba3}.head{font-size:19px;font-weight:650}.label{font-size:15px}.small{font-size:13px;fill:#a7a7af}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.panel{fill:#17171b;stroke:#34343b}.well{fill:#202026}.row{fill:#292930}.callout{fill:#24242a;stroke:#494953}.orange{fill:#ff9f0a}.blue{fill:#0a84ff}.green{fill:#30d158}.gray{fill:#72727d}
+</style>
+<rect width="1400" height="720" fill="#0f0f12"/>
+<text x="56" y="62" class="kicker">CASE 2 · OVERVIEW / FOCUS / MULTIPLE AGENTS</text>
+<text x="56" y="103" class="title">Two orderings answer two different questions.</text>
+
+<rect x="56" y="142" width="626" height="510" rx="18" class="panel"/>
+<text x="84" y="181" class="head">Current CMUX example · Triage</text>
+<text x="84" y="207" class="small">agents-board.js · grouped by status · click deep-focuses surface</text>
+
+<text x="96" y="248" class="small">NEEDS YOU</text><text x="610" y="248" class="mono">1</text>
+<rect x="90" y="262" width="558" height="56" rx="10" class="row"/><circle cx="113" cy="290" r="6" class="orange"/><text x="132" y="286" class="label">Fix auth retry</text><text x="132" y="304" class="small">Backend</text><text x="594" y="294" class="mono">2m</text>
+<text x="96" y="348" class="small">WORKING</text><text x="610" y="348" class="mono">2</text>
+<rect x="90" y="362" width="558" height="56" rx="10" class="row"/><circle cx="113" cy="390" r="6" class="blue"/><text x="132" y="386" class="label">Rewrite docs</text><text x="132" y="404" class="small">Docs</text><text x="594" y="394" class="mono">18s</text>
+<rect x="90" y="426" width="558" height="56" rx="10" class="row"/><circle cx="113" cy="454" r="6" class="blue"/><text x="132" y="450" class="label">Cut RC build</text><text x="132" y="468" class="small">Release</text><text x="594" y="458" class="mono">41s</text>
+<text x="96" y="512" class="small">IDLE</text><text x="610" y="512" class="mono">1</text>
+<rect x="90" y="526" width="558" height="56" rx="10" class="row"/><circle cx="113" cy="554" r="6" class="green"/><text x="132" y="550" class="label">Review API types</text><text x="132" y="568" class="small">Backend</text><text x="594" y="558" class="mono">6m</text>
+
+<rect x="98" y="596" width="542" height="40" rx="10" class="callout"/><text x="116" y="621" class="small">When state changes, the row moves. Here that movement carries meaning.</text>
+
+<rect x="718" y="142" width="626" height="510" rx="18" class="panel"/>
+<text x="746" y="181" class="head">Alternative · Home</text>
+<text x="746" y="207" class="small">same deep-link action · grouped by workspace · rows stay put</text>
+<rect x="756" y="229" width="550" height="42" rx="12" class="well"/>
+<text x="774" y="255" class="label">Triage</text><rect x="842" y="237" width="76" height="26" rx="13" fill="#33333a"/><text x="862" y="255" class="small">Home</text>
+<text x="1272" y="255" class="small">1 needs you</text>
+
+<text x="768" y="309" class="small">BACKEND</text>
+<rect x="756" y="323" width="550" height="56" rx="10" class="row"/><circle cx="779" cy="351" r="6" class="orange"/><text x="798" y="347" class="label">Fix auth retry</text><text x="798" y="365" class="small">surface 2</text><text x="1250" y="355" class="small">needs you</text>
+<rect x="756" y="387" width="550" height="56" rx="10" class="row"/><circle cx="779" cy="415" r="6" class="green"/><text x="798" y="411" class="label">Review API types</text><text x="798" y="429" class="small">surface 3</text><text x="1258" y="419" class="small">idle</text>
+<text x="768" y="477" class="small">DOCS</text>
+<rect x="756" y="491" width="550" height="56" rx="10" class="row"/><circle cx="779" cy="519" r="6" class="blue"/><text x="798" y="515" class="label">Rewrite docs</text><text x="798" y="533" class="small">surface 1</text><text x="1245" y="523" class="small">working</text>
+<text x="768" y="581" class="small">RELEASE</text>
+<rect x="756" y="595" width="550" height="40" rx="10" class="row"/><circle cx="779" cy="615" r="6" class="blue"/><text x="798" y="620" class="label">Cut RC build</text><text x="1245" y="620" class="small">working</text>
+
+<text x="56" y="687" class="small">Triage wins for “what needs me?” Home wins for “take me back to the agent I already mean.” Stable geography is conditional here.</text>
+</svg>
