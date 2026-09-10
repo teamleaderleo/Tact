@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="780" viewBox="0 0 1400 780">
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f3f3f5}.title{font-size:30px;font-weight:700}.kicker{font-size:14px;letter-spacing:1.6px;fill:#9b9ba3}.head{font-size:19px;font-weight:650}.label{font-size:15px}.small{font-size:13px;fill:#a7a7af}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}.panel{fill:#17171b;stroke:#34343b}.well{fill:#202026}.selected{fill:#2a3038;stroke:#5b748d}.blue{fill:#0a84ff}.bad{fill:#ff5d5d}.ok{fill:#53c26b}.callout{fill:#24242a;stroke:#494953}
+</style>
+<rect width="1400" height="780" fill="#0f0f12"/>
+<text x="56" y="58" class="kicker">PRECEDENT TRANSLATION · PLAYWRIGHT TRACE VIEWER → CMUX</text>
+<text x="56" y="100" class="title">Select one event. Let every lens answer about the same moment.</text>
+
+<rect x="56" y="140" width="1288" height="104" rx="18" class="panel"/>
+<text x="84" y="176" class="head">Task causal ribbon</text>
+<text x="84" y="207" class="small">auth-refactor · browser + dev server + source + agent · revision 7f2a</text>
+<circle cx="115" cy="226" r="8" class="blue"/><text x="136" y="231" class="label">click Save</text>
+<text x="254" y="231" class="small">→</text><circle cx="286" cy="226" r="8" class="bad"/><text x="307" y="231" class="label">POST /api/profile 500</text>
+<text x="487" y="231" class="small">→</text><circle cx="519" cy="226" r="8" class="bad"/><text x="540" y="231" class="label">server exception</text>
+<text x="675" y="231" class="small">→</text><circle cx="707" cy="226" r="8" class="blue"/><text x="728" y="231" class="label">edit update.ts:81</text>
+<text x="894" y="231" class="small">→</text><circle cx="926" cy="226" r="8" class="ok"/><text x="947" y="231" class="label">replay 200 · verified</text>
+
+<rect x="56" y="272" width="414" height="430" rx="18" class="panel"/>
+<text x="84" y="310" class="head">Browser</text>
+<rect x="84" y="335" width="358" height="190" rx="12" class="well"/>
+<rect x="118" y="374" width="290" height="40" rx="8" fill="#2a2a31"/><text x="138" y="399" class="small">Profile name</text>
+<rect x="118" y="438" width="114" height="42" rx="8" fill="#0a84ff"/><text x="152" y="464" class="label">Save</text>
+<circle cx="231" cy="459" r="19" fill="none" stroke="#ff5d5d" stroke-width="2"/>
+<text x="84" y="558" class="label">Selected event: click Save</text>
+<text x="84" y="585" class="small">before / action / after snapshots</text>
+<text x="84" y="612" class="small">DOM handle: @element/save-button</text>
+<text x="84" y="639" class="small">runtime: localhost:5173 · browser session A</text>
+<text x="84" y="666" class="small">time: 14:32:18.421</text>
+
+<rect x="493" y="272" width="414" height="430" rx="18" class="panel"/>
+<text x="521" y="310" class="head">Evidence filtered by selection</text>
+<rect x="521" y="335" width="358" height="76" rx="10" class="selected"/>
+<text x="541" y="365" class="label">Network</text><text x="636" y="365" class="mono">POST /api/profile</text>
+<text x="541" y="391" class="small">500 · 182ms · caused by @click/save</text>
+<rect x="521" y="425" width="358" height="76" rx="10" class="selected"/>
+<text x="541" y="455" class="label">Server</text><text x="636" y="455" class="mono">TypeError: token missing</text>
+<text x="541" y="481" class="small">stderr · request id req_74c</text>
+<rect x="521" y="515" width="358" height="76" rx="10" class="selected"/>
+<text x="541" y="545" class="label">Source</text><text x="636" y="545" class="mono">update.ts:81</text>
+<text x="541" y="571" class="small">mapped from request handler stack</text>
+<rect x="521" y="605" width="358" height="76" rx="10" class="selected"/>
+<text x="541" y="635" class="label">Agent</text><text x="636" y="635" class="mono">edited 3 lines</text>
+<text x="541" y="661" class="small">receipt points back to same failure</text>
+
+<rect x="930" y="272" width="414" height="430" rx="18" class="panel"/>
+<text x="958" y="310" class="head">CMUX contract</text>
+<rect x="958" y="335" width="358" height="110" rx="12" class="callout"/>
+<text x="980" y="366" class="label">One selection changes every secondary lens.</text>
+<text x="980" y="393" class="small">The user chooses the event once.</text>
+<text x="980" y="418" class="small">Source, logs, browser, and agent follow.</text>
+<text x="958" y="487" class="label">Keep</text><text x="1040" y="487" class="small">task identity + exact receipts</text>
+<text x="958" y="526" class="label">Add</text><text x="1040" y="526" class="small">event handle + time range + revision</text>
+<text x="958" y="565" class="label">Default</text><text x="1040" y="565" class="small">secondary views follow current event</text>
+<text x="958" y="604" class="label">Escape</text><text x="1040" y="604" class="small">returns to prior task focus exactly</text>
+<rect x="958" y="632" width="358" height="50" rx="10" class="callout"/>
+<text x="980" y="663" class="label">Mechanism: event identity coordinates the lenses.</text>
+
+<text x="56" y="742" class="small">Time alone is too ambiguous under parallel agents. CMUX should bind time to task + event + runtime/revision identity, then use that tuple as the causal cursor.</text>
+</svg>
