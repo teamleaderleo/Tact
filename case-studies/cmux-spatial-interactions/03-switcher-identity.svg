@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="720" viewBox="0 0 1400 720">
+<style>
+text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#f3f3f5}.title{font-size:30px;font-weight:700}.kicker{font-size:14px;letter-spacing:1.6px;fill:#9b9ba3}.head{font-size:19px;font-weight:650}.label{font-size:15px}.small{font-size:13px;fill:#a7a7af}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}.panel{fill:#17171b;stroke:#34343b}.well{fill:#202026}.row{fill:#292930}.selected{fill:#35353e}.blue{fill:#0a84ff}.callout{fill:#24242a;stroke:#494953}
+</style>
+<rect width="1400" height="720" fill="#0f0f12"/>
+<text x="56" y="62" class="kicker">CASE 3 · COMMAND PALETTE / WORKSPACE IDENTITY</text>
+<text x="56" y="103" class="title">When search crosses workspaces, show the parent.</text>
+
+<rect x="56" y="142" width="626" height="510" rx="18" class="panel"/>
+<text x="84" y="181" class="head">Current issue flow · all surfaces</text>
+<text x="84" y="207" class="small">⌘P · app.commandPaletteSearchesAllSurfaces = true</text>
+<rect x="90" y="236" width="558" height="52" rx="12" class="well"/><text x="112" y="268" class="label">cla</text><text x="610" y="268" class="small">3 results</text>
+<rect x="90" y="304" width="558" height="58" rx="10" class="selected"/><circle cx="114" cy="333" r="5" class="blue"/><text x="134" y="338" class="label">claude</text>
+<rect x="90" y="370" width="558" height="58" rx="10" class="row"/><text x="134" y="404" class="label">claude</text>
+<rect x="90" y="436" width="558" height="58" rx="10" class="row"/><text x="134" y="470" class="label">claude</text>
+<rect x="100" y="527" width="538" height="80" rx="12" class="callout"/>
+<text x="120" y="555" class="label">The result exists. The owning workspace is invisible.</text>
+<text x="120" y="580" class="small">Changing the query reorders results anyway, so position cannot rescue identity.</text>
+
+<rect x="718" y="142" width="626" height="510" rx="18" class="panel"/>
+<text x="746" y="181" class="head">Alternative · hierarchical row identity</text>
+<text x="746" y="207" class="small">workspace first · surface second · local context trails</text>
+<rect x="752" y="236" width="558" height="52" rx="12" class="well"/><text x="774" y="268" class="label">cla</text><text x="1270" y="268" class="small">3 results</text>
+<text x="772" y="318" class="small">WORKSPACE</text><text x="965" y="318" class="small">SURFACE</text><text x="1198" y="318" class="small">CONTEXT</text>
+<rect x="752" y="333" width="558" height="58" rx="10" class="selected"/><circle cx="776" cy="362" r="5" class="blue"/><text x="798" y="367" class="label">Backend</text><text x="965" y="367" class="label">claude</text><text x="1198" y="367" class="small">split 2</text>
+<rect x="752" y="399" width="558" height="58" rx="10" class="row"/><text x="798" y="433" class="label">Docs</text><text x="965" y="433" class="label">claude</text><text x="1198" y="433" class="small">tab 1</text>
+<rect x="752" y="465" width="558" height="58" rx="10" class="row"/><text x="798" y="499" class="label">Release</text><text x="965" y="499" class="label">claude</text><text x="1198" y="499" class="small">tab 3</text>
+<rect x="764" y="553" width="530" height="54" rx="12" class="callout"/>
+<text x="784" y="586" class="label">Same search. The landing context is legible before Return.</text>
+
+<text x="56" y="687" class="small">This case is semantic identity, not a spatial-memory problem. Context can appear only in all-surface mode or when labels collide.</text>
+</svg>
