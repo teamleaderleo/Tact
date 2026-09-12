@@ -56,6 +56,7 @@ Prefer a prototype that settles a live disagreement over another essay that rest
 
 ## Runnable lab
 
+- [`prototypes/cmux-surface-navigator/`](prototypes/cmux-surface-navigator/) — live native cmux surface navigation with independent flat/grouped and density toggles, grounded in the September 12 current-upstream audit.
 - [`experiments/microcraft/`](experiments/microcraft/) — blind one-variable A/B drills for typography, spacing, alignment, hierarchy, contrast, material, icon weight, density, motion duration, and easing. This is the recurring craft-training loop.
 - [`prototypes/microphone-clutch/`](prototypes/microphone-clutch/) — pointer/keyboard vs voice-only vs mixed selection + voice, with deterministic recognition/referent/intent failures and repair-cost instrumentation.
 - [`prototypes/causal-debugger/`](prototypes/causal-debugger/) — one-stage causal debugging thread from visible browser failure through runtime, request/log, source, edit, rebuild, replay, and proof; the shared-cause case forces two human tasks to converge on one edit/rebuild and tests task identity against a lower-level causal graph.
