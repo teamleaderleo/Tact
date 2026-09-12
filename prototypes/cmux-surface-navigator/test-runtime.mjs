@@ -30,7 +30,7 @@ assert.ok(button('Compact'));
 const second = button('Shell 2');
 assert.ok(second, 'surface rows must be native buttons');
 host.__dispatch(second.id, 'tap', '{}');
-assert.deepEqual(actions[0], { kind: 'cmux', method: 'surface.focus', params: { workspace_id: 'w2', surface_id: 'surface2' } });
+assert.deepEqual(actions[0], { kind: 'cmux', method: 'surface.focus', params: { workspace_id: 'w2', surface_id: 'panel2' } });
 host.__dispatch(button('Grouped').id, 'tap', '{}');
 host.__dispatch(button('Compact').id, 'tap', '{}');
 assert.equal(button('Shell 2').id, second.id, 'toggling must preserve the native row node');

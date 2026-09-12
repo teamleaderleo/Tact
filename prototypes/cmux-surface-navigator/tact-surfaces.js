@@ -11,13 +11,15 @@ function surfaceRows(workspaces, search) {
   const rows = [];
   for (const w of workspaces || []) {
     for (const t of w.tabs || []) {
-      // A panel id is not a surface id. Missing identity is visible but inert.
+      // At the pinned upstream head, surface.focus indexes ws.panels by id.
+      // t.surfaceId is the Bonsplit tab UUID and fails that API lookup, despite
+      // the current sidebar docs. Verified with the running app and dispatcher.
       const title = t.title || "Untitled surface";
       const context = w.title || "Untitled workspace";
       if (needle && ![title, context, t.directory, t.branch]
         .some(value => String(value || "").toLowerCase().includes(needle))) continue;
       rows.push({ key: w.id + ":" + t.id, workspaceId: w.id,
-        surfaceId: t.surfaceId, title, context,
+        surfaceId: t.id, title, context,
         focused: Boolean(w.selected && t.focused) });
     }
   }
@@ -40,7 +42,8 @@ function choice(label, active, action) {
   return Button(label, action, [Text(label).font(11).weight("semibold")
     .paddingHorizontal(8).paddingVertical(5).cornerRadius(6)
     .background(() => active() ? "#80808033" : null)
-    .hoverBackground("#80808022")]);
+    .hoverBackground("#80808022").lineLimit(1)])
+    .frame({ width: label.length * 7 + 20 });
 }
 
 sidebar(() => VStack({ spacing: 6 }, [
@@ -53,10 +56,12 @@ sidebar(() => VStack({ spacing: 6 }, [
   TextField("", { placeholder: "Find a surface or workspace", autofocus: false,
     onEdit: text => { setQuery(text || ""); setPage(0); } }),
   Divider(),
-  Text(() => matches().length ? "" : "No matching surfaces").font(12).secondary(),
+  Text(() => matches().length ? "" : "No matching surfaces").font(12).secondary()
+    .frame({ height: () => matches().length ? 0 : 18 }),
   ForEach({ items: visible, key: row => row.key }, row =>
     VStack({ spacing: 2 }, [
-      Text(() => row().heading).font(11).weight("semibold").secondary(),
+      Text(() => row().heading).font(11).weight("semibold").secondary()
+        .frame({ height: () => row().heading ? 16 : 0 }),
       Button(() => row().title, () => focusSurface(row()), [HStack({ spacing: 6 }, [
         Circle({ size: 6 }).fill(() => row().focused ? "accent" : "clear"),
         VStack({ spacing: 2 }, [

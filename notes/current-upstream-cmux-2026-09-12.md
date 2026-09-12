@@ -13,7 +13,7 @@ blindly rebased. Build/launch verification is recorded in the trial README.
 | Candidate | Current evidence and classification |
 | --- | --- |
 | Surface-first vertical navigation alongside horizontal tabs | **Prototype possible in user space.** Reactive JS sidebars expose workspaces and tabs, stable row identity, and direct actions. The trial changes the navigator, leaving native tabs intact. |
-| Surface identity and cross-workspace focus | **Partially solved.** `tabs[].surfaceId` is the public surface identity; `tabs[].id` is a panel identity. Some older examples still conflate them. Trial passes both workspace and surface identity and refuses missing surface IDs. Verify actual focus after clicking. |
+| Surface identity and cross-workspace focus | **Obsolete / wrong assumption in current docs.** Live verification found that `tabs[].surfaceId` is a Bonsplit UUID and returns not found from `surface.focus`. The handler indexes `ws.panels[surfaceID]`, accepting `tabs[].id`, which matches `surface.list`. Using this verified ID with the owning workspace now focuses the correct terminal in both directions. |
 | Workspace groups, drag/reorder | **Prototype possible in user space.** `Examples/CustomSidebars/workspaces.js` implements grouped reordering and group actions. That is workspace ordering, not a license to reinterpret a surface drag. Our first trial deliberately has no drag operation. |
 | Global surface search | **Partially solved.** `app.commandPaletteSearchesAllSurfaces` and the `panel-sessions.js` example exist. Trial adds local search with parent context; it makes no claim to replace the global palette. |
 | Minimal mode and sidebar appearance | **Partially solved.** Current settings and native custom-sidebar surfaces supply substantial customization. Recheck the exact desired layout in a running build before proposing new chrome. |
@@ -43,3 +43,20 @@ Relevant files: `docs/custom-sidebars.md`, `web/data/cmux.schema.json`,
 The strongest immediate experiment is #36: flat vs grouped access to the same
 live surfaces. Grouping and density are independent toggles. Keep/Change/Reject
 remains **unresolved** until Leo uses it; fixture tests cannot provide that judgment.
+
+## Live verification addendum
+
+The tagged app at `b1d62030f` built and passed strict signature verification.
+Three sequential unchanged builds through Terminal Kit took 84.28, 47.39 and
+45.56 seconds (median 47.39); the first upstream build took 1,362.62 seconds.
+These are local wall-clock observations, not a controlled comparison against the
+old fork. The new custom sidebar validated and rendered natively. Grouping,
+density, live search, focus across two workspaces and the Default Workspaces
+escape route were exercised. Native screenshots and accessibility state were
+inspected during the session. The tagged app visibly labels itself as a dev build.
+
+The identity mismatch above was found only through live interaction: the
+initial source-doc-based prototype rendered correctly but its surface clicks
+failed. The corrected fixture and real-runtime tests now encode the actual
+dispatcher contract. This is evidence for keeping the #41 prerequisite, not
+for treating a successful parser test as a successful interaction.
