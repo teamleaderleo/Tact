@@ -121,3 +121,11 @@ Before the meeting, spend the next use session on one navigation comparison and
 record the result. Then choose between the real selection-handoff slice and an
 independent receipt-backed attention item. Adding more mock surfaces before that
 would not resolve the central uncertainty.
+
+## Real local-agent follow-up
+
+[Claude/Codex integration trials](cmux-agent-integration-trials-2026-09-12.md) now
+provide native launch, question and resume evidence. The strongest follow-ups are
+stale Feed decisions, disagreement between attention projections, and a managed
+build replacing a running app. Keep these separate from the bounded startup and
+row-width fixes already implemented.

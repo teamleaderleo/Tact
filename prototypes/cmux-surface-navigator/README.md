@@ -104,8 +104,11 @@ audited upstream. Fixture and actual-runtime tests cover mode identity, stable
 Home positions during agent-state changes, quiet filtering, unknown states,
 missing links, search, section ordering and exact focus. The tagged native app
 passed validation/reload, Home/Triage toggles, All states, empty/search states,
-terminal focus and narrow rendering. The live app had one terminal and no tracked
-agents; status transitions are runtime-fixture evidence, not real-fleet dogfood.
+terminal focus and narrow rendering. That initial pass had one terminal and no tracked agents. A subsequent
+[real Claude/Codex trial](../../notes/cmux-agent-integration-trials-2026-09-12.md)
+covered launch, file reading, questions, exit/resume and app restoration. It
+exposed status disagreements and premature row truncation; the width issue is
+fixed, while lifecycle/focus findings remain open. This is not real-fleet coverage.
 
 See the [inquiry map](../../notes/cmux-inquiry-map-2026-09-12.md) for comparison
 questions and existing causal-debugging / adversarial-audit work. Judgment remains

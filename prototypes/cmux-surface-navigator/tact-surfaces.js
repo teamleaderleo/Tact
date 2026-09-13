@@ -124,8 +124,8 @@ sidebar(() => VStack({ spacing: 6 }, [
             .font(10).secondary().lineLimit(1).truncation("tail"),
           Text(() => row().agentCount ? `${STATUS[row().status].label} · ${row().agentCount} agent${row().agentCount === 1 ? "" : "s"}` : "")
             .font(10).color(() => row().status === "needs_input" ? "#E6A040" : "secondary")
-            .lineLimit(1).frame({ height: () => row().agentCount ? 14 : 0 })]),
-        Spacer()])
+            .lineLimit(1).frame({ height: () => row().agentCount ? 14 : 0 })])
+          .frame({ maxWidth: "infinity", alignment: "leading" })])
         .paddingHorizontal(8).paddingVertical(() => compact() ? 3 : 7)
         .cornerRadius(6).background(() => row().focused ? "#80808033" : null)
         .hoverBackground("#80808022")])
