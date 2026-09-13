@@ -68,6 +68,8 @@ The lab is now ahead of the human evidence. Run the prototypes, keep observation
 
 ## Research notes
 
+- [`notes/cmux-inquiry-map-2026-09-12.md`](notes/cmux-inquiry-map-2026-09-12.md) — current CMUX experiments, evidence limits, comparison questions, and the next navigation / selection-handoff / independent-audit inquiries.
+
 - [`notes/operator-loop.md`](notes/operator-loop.md) — concrete human-use protocol for the current prototypes: what Leo should run, what to notice, what to defer, and how to record evidence without turning Tact into another job.
 - [`notes/starting-points.md`](notes/starting-points.md) — first principles, practice loops, agent-attention questions, and issue-sized exercises.
 - [`notes/leo-interface-instincts.md`](notes/leo-interface-instincts.md) — Leo's product preferences across ChatGPT, browsers, games, notes, email, macOS, calendars, car sites, and a first map of competing design values.

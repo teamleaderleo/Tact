@@ -76,3 +76,38 @@ the active surface; it is not proof of a persistent selected-tab state in every
 unfocused pane. Data refresh cadence and keyboard access are host capabilities.
 
 Judgment: **Unresolved** pending human use. No speedup or preference claim yet.
+
+## Home / Triage extension (#37)
+
+Home follows host surface order, with agent-state salience on the existing rows.
+Triage projects the same objects into Needs input and Unknown state sections;
+All states also includes Working, Idle, Ended (outcome unknown), and No agent
+signal. Routine work is quiet by default. Flat/Grouped applies to Home; Compact
+applies to both. Pagination controls appear only when needed. Search filters the
+current mode and retains its query when switching; mode changes reset the page.
+
+Agents join only through the explicit `agent.panelId` → `tab.id` relation.
+Unlinked agents are counted without inventing a target. Workspace unread counts
+are not assigned to an arbitrary surface. Multiple sessions on one surface show
+the highest-priority reported state and an agent count. This is a status
+projection, not an obligation compiler or independent audit. Exported snapshots
+may be delayed or bounded; no complete/fresh fleet-coverage claim is made.
+
+The Home mode adds no persisted ordering: explicit host/user reordering still
+changes it. Reopening the view resets Home, normal density, Flat, and focused
+Triage filtering. Returning to Home preserves the current local controls.
+
+September 12 extension verification: latest upstream was fetched at
+`942c24e25b36f7046200260f80955da742d56bf2`; the specific sidebar runtime, docs,
+data builder, agent projection and focus handler were unchanged from the prior
+audited upstream. Fixture and actual-runtime tests cover mode identity, stable
+Home positions during agent-state changes, quiet filtering, unknown states,
+missing links, search, section ordering and exact focus. The tagged native app
+passed validation/reload, Home/Triage toggles, All states, empty/search states,
+terminal focus and narrow rendering. The live app had one terminal and no tracked
+agents; status transitions are runtime-fixture evidence, not real-fleet dogfood.
+
+See the [inquiry map](../../notes/cmux-inquiry-map-2026-09-12.md) for comparison
+questions and existing causal-debugging / adversarial-audit work. Judgment remains
+**Unresolved** until human use, including whether a separate Triage mode earns its
+switching cost.

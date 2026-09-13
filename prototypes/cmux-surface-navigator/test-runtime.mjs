@@ -39,3 +39,25 @@ assert.equal(button('Shell 2'), undefined);
 host.__dispatch(second.id, 'tap', '{}');
 assert.equal(actions.length, 1, 'removed row handlers must be disposed');
 console.log('Actual upstream sidebar runtime: mount, native buttons, exact focus, stable toggles and disposal passed.');
+const liveFixture = [{ id:'triage',title:'Triage fixture',tabs:[
+  {id:'routine',title:'Routine'},{id:'attention',title:'Decision'}],agents:[
+  {id:'agent1',panelId:'routine',status:'working'},
+  {id:'agent2',panelId:'attention',status:'needs_input'}]}];
+host.__setData('workspaces', JSON.stringify(liveFixture));
+const homeRoutine = button('Routine').id;
+const homeDecision = button('Decision').id;
+liveFixture[0].agents[0].status = 'needs_input';
+host.__setData('workspaces', JSON.stringify(liveFixture));
+assert.equal(button('Routine').id, homeRoutine, 'attention changes preserve Home native identity');
+liveFixture[0].agents[0].status = 'working';
+host.__setData('workspaces', JSON.stringify(liveFixture));
+host.__dispatch(button('Triage').id, 'tap', '{}');
+assert.equal(button('Routine'), undefined, 'routine work stays out of default Triage');
+assert.equal(button('Decision').id, homeDecision, 'shared objects retain identity across modes');
+host.__dispatch(button('Decision').id, 'tap', '{}');
+assert.deepEqual(actions.at(-1), {kind:'cmux',method:'surface.focus',params:{workspace_id:'triage',surface_id:'attention'}});
+host.__dispatch(button('All states').id, 'tap', '{}');
+assert.ok(button('Routine'));
+host.__dispatch(button('Home').id, 'tap', '{}');
+assert.ok(button('Routine'));
+console.log('Actual runtime: live attention updates, Home/Triage projection, routine filter and exact actions passed.');

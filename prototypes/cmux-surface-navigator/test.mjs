@@ -39,3 +39,29 @@ context.data.workspaces = () => [{ id: 'many', title: 'Many', tabs: [{ id: 'surv
 assert.equal(vm.runInContext('currentPage()', context), 0, 'closing surfaces must clamp the page');
 assert.equal(vm.runInContext('visible().length', context), 1);
 console.log('Surface identity, search, bounded paging, stable toggle identity and lifecycle checks passed.');
+const attentionFixture = [
+  {id:'a', title:'Same', tabs:[{id:'p1',title:'shell'},{id:'p2',title:'shell'},{id:'p3',title:'other'}], agents:[
+    {id:'session1',panelId:'p1',surfaceId:'wrong-namespace',status:'working'},
+    {id:'session2',panelId:'p2',status:'needs_input'},
+    {id:'session3',panelId:'p3',status:'future-status'},
+    {id:'unlinked',surfaceId:'p1',status:'needs_input'}]},
+  {id:'b', title:'Same', tabs:[{id:'p4',title:'shell'}], agents:[{id:'ended',panelId:'p4',status:'ended'}]}
+];
+context.fixture = attentionFixture;
+const evaluate = code => vm.runInContext(code, context);
+assert.equal(evaluate('unlinkedAgents(fixture)'), 1, 'never guess the missing panel relation');
+assert.equal(evaluate('surfaceRows(fixture, "")[0].status'), 'working');
+assert.equal(evaluate('projectRows(surfaceRows(fixture, ""), "triage", false).map(r=>r.surfaceId).join()'), 'p2,p3');
+assert.equal(evaluate('projectRows(surfaceRows(fixture, ""), "triage", true).map(r=>r.surfaceId).join()'), 'p2,p3,p1,p4');
+const homeKeys = evaluate('surfaceRows(fixture, "").map(r=>r.key).join()');
+attentionFixture[0].agents[0].status = 'needs_input';
+assert.equal(evaluate('surfaceRows(fixture, "").map(r=>r.key).join()'), homeKeys, 'attention must not move Home rows');
+assert.equal(evaluate('projectRows(surfaceRows(fixture, ""), "triage", false).map(r=>r.surfaceId).join()'), 'p1,p2,p3', 'equal priority retains host order');
+assert.equal(evaluate('STATUS.ended.label'), 'Ended · outcome unknown', 'ended never means verified success');
+assert.equal(evaluate('projectRows(surfaceRows(fixture, "other"), "triage", false).length'), 1);
+context.data.workspaces = () => attentionFixture;
+evaluate('selectMode("triage"); setAllStates(false); setPage(9)');
+assert.equal(evaluate('currentPage()'), 0);
+evaluate('selectMode("home")');
+assert.equal(evaluate('visible().map(r=>r.key).join()'), homeKeys);
+console.log('Home/Triage: stable positions, explicit identity, unknown states, quiet filtering and mode recovery passed.');
