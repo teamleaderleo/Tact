@@ -1,88 +1,131 @@
-# cmux visit packet
+# cmux visit — what to show, what to say
 
-Material prepared for the cmux founding-team visit. Every page here follows the same shape, from Tact [#53](https://github.com/teamleaderleo/Tact/issues/53) §5:
+Running order comes from Tact [#67](https://github.com/teamleaderleo/Tact/issues/67). **Their problem beats prepared material.** Everything in this directory is supporting evidence for a conversation, not the conversation.
 
-```text
-show the artifact
-state the user job
-state the seam
-show one precedent / alternative
-ask the unresolved question
-stop
-```
-
-Each page stands alone and is short enough to open in the room. Every counted claim is reproduced by a script in [`evidence/`](evidence/): the Python ones parse a cmux checkout and run nothing, and `ax-buttons.swift` reads a running app's accessibility tree without pressing anything. The screenshot-based pages say exactly how the images were captured.
-
-**Baseline for all measurements:** `manaflow-ai/cmux` at `e9ec596d1`, measured 2026-09-17.
+If you read one thing before walking in, read this file. The pages behind it are §6 material — pull them when the topic arrives, not to fill time.
 
 ---
 
-## The five pages
+## The order
 
-| page | the artifact | the question it ends on |
-| --- | --- | --- |
-| [**sidebar-density**](sidebar-density.md) | Two screenshots of the same nine workspaces, one config change apart | Is the workspace list glanceable furniture, or a status surface you read? |
-| [**accessibility-labels**](accessibility-labels.md) | Every tab bar button announces its SF Symbol name | What would have caught this? |
-| [**shortcut-namespace**](shortcut-namespace.md) | **A corrected negative result** — I claimed a namespace defect; cmux already implements the VS Code `when`-clause model | Is the `[`/`]` modifier family a designed accelerator, or where actions go when the namespace is full? |
-| [**appdelegate-ownership**](appdelegate-ownership.md) | A third of the "20,000-line AppDelegate" is `#if DEBUG` | Is the in-process UI-test harness deliberate, or where fixture code accumulated? |
-| [**build-loop**](build-loop.md) | 58 real build receipts: 34 minutes cold, 32 seconds warm | What is a founding-team member's actual edit-to-see-it time today? |
+| # | slot | what you actually show | when to use it |
+| --- | --- | --- | --- |
+| 0 | **Their workflow** | nothing — you ask | always, first |
+| 1 | **Your cmux + the sidebar** | the running app | always |
+| 2 | **Primary object** | a question | always |
+| 3 | **Navigation vs attention** | a thesis | once 1–2 are alive |
+| 4 | **Extensibility** | terminal-kit + the fork | if customization comes up |
+| 5 | **Build loop** | [`build-loop.md`](build-loop.md) | if it turns engineering-heavy |
+| 6 | **Small craft cases** | the pages below | only if the topic arrives |
 
-**One of these comes with a fix already written and verified**: `accessibility-labels` ships as [teamleaderleo/bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1) — 223 tests passing, and confirmed by reading the accessibility tree of two cmux builds at the same commit that differ only in that submodule. The first version of the patch passed all 223 tests and still broke an accessibility identifier; only the live read caught it.
-
-### Reading order if there is time for one
-
-**sidebar-density** — it has pictures, the finding is visible in three seconds, and the unresolved question is the one only they can answer.
-
-### Reading order if there is time for two
-
-Add **accessibility-labels**. It is small, it is unambiguous, the correct strings already exist in their codebase, and the patch is written, tested and verified against a real build — so it demonstrates the whole loop (notice → trace to source → fix → verify → catch your own regression) rather than just the noticing.
-
-If contributor experience is the better topic for the room, use **build-loop** instead; it is the least likely of the five to read as criticism.
-
-### If the conversation turns to code
-
-**appdelegate-ownership** is the page with a standing argument: two mechanical seams worth ~3,900 lines.
-
-**shortcut-namespace** is a negative result and is included deliberately. I thought I had found a namespace defect; cmux turned out to already implement the VS Code `when`-clause model, with priority-aware collision detection, refusal of dead bindings, and a rejection banner in Settings. The page says what I got wrong and why. It is worth showing precisely because it is the failure mode the AppDelegate page warns about — asserting absence without searching for the mechanism.
+Short visit: 0, 1, 2. That is a useful meeting on its own.
 
 ---
 
-## What these pages are not
+## 0. Their workflow
 
-They are not a code review, and they are deliberately not a list of things that are wrong.
+No artifact. Ask, then follow the thread.
 
-Three of the five findings are **defensible decisions with a visible cost**, not mistakes:
+- What stays open all day?
+- What do you jump between?
+- What do you re-check by hand because cmux does not surface it?
+- What have you customized internally that the product does not do?
+- What annoys you right now?
+- What is cmux in a year?
 
-- `cmd+r` meaning reload in a browser and rename on a tab is correct in both places, and cmux resolves it declaratively rather than by accident.
-- An in-process UI-test harness driven by environment variables is a real tactic for making native UI tests trustworthy. The cost is 2,700 lines sharing a file with window lifecycle.
-- Nine sidebar detail flags defaulting to on is generous, not careless. The cost is that a user expresses one preference nine times.
+If they name a real problem, stop running this list and work that problem. Capture it in a [#67](https://github.com/teamleaderleo/Tact/issues/67) comment using the template at the bottom of that issue.
 
-The build loop is not about cmux's choices at all — it is about what an outside contributor hits before they can change anything.
+## 1. Your cmux + the sidebar — the lead
 
-The accessibility labels are the one plain bug in the set, and it is a small one with the patch attached. It is here because of what it implies about testing, not to make a point about the bug.
+**Show:** the running app, used normally. Not a slide, not a diff.
 
-Where I am guessing, the pages say so. Where a claim needs their answer to be worth anything, the page stops and asks instead of concluding.
+The fork's work: [cmux#57](https://github.com/teamleaderleo/cmux/pull/57) — one sidebar over Claude, Codex and OpenCode, open tabs above searchable history, plus a collapsible Spaces navigator that groups live tabs by their actual tile. Demonstrate the behavior; do not tour the diff (173 files).
 
-## The prototypes these connect to
+**Say:** "I use it all day, the sidebar is where the day happens, so that's where I started changing things."
 
-Four interaction prototypes exist as issues and running code rather than as pages here. They are the "show the artifact" material if the conversation goes toward interaction design rather than evidence:
+**Ask:** **When you use cmux all day, what is the thing you think you are navigating?**
 
-| prototype | issue | runnable |
+Backing if they want detail: [`sidebar-density.md`](sidebar-density.md) (two screenshots one config flag apart), Tact [#61](https://github.com/teamleaderleo/Tact/issues/61).
+
+## 2. Primary object
+
+The highest-value product question behind everything else.
+
+Candidates cmux currently organizes by: workspace, surface, conversation, project, agent, delegated task.
+
+**Ask:** **Which identity should survive switching, restore, history and handoff?**
+
+If they have a strong answer, use it to kill or redirect the fork work. Related: Tact [#36](https://github.com/teamleaderleo/Tact/issues/36), [#37](https://github.com/teamleaderleo/Tact/issues/37), [#39](https://github.com/teamleaderleo/Tact/issues/39), [#54](https://github.com/teamleaderleo/Tact/issues/54).
+
+## 3. Navigation vs attention
+
+Navigation: where is the thing I already know? Attention: what needs me now? Different jobs, currently one list.
+
+**Say:** "Keep the work context. Keep the receipts. Surface the few moments that need a person."
+
+**Ask:** **With 20–100 pieces of delegated work alive, how should the human know which two deserve judgment?**
+
+Related: Tact [#52](https://github.com/teamleaderleo/Tact/issues/52), [#55](https://github.com/teamleaderleo/Tact/issues/55), [#40](https://github.com/teamleaderleo/Tact/issues/40), [#61](https://github.com/teamleaderleo/Tact/issues/61).
+
+## 4. Extensibility
+
+The concrete version of this question is on the table already: everything useful I built needed either a core fork or terminal-kit.
+
+**Ask:** **Which parts of how I use cmux should be possible without carrying a core fork?**
+
+Their internal setup is the interesting half of this answer. Related: Tact [#45](https://github.com/teamleaderleo/Tact/issues/45), [#47](https://github.com/teamleaderleo/Tact/issues/47), [#48](https://github.com/teamleaderleo/Tact/issues/48), [#49](https://github.com/teamleaderleo/Tact/issues/49), [#62](https://github.com/teamleaderleo/Tact/issues/62); [`default-config.md`](default-config.md).
+
+## 5. Build loop
+
+**Show:** [`build-loop.md`](build-loop.md) — 58 real receipts from writing the sidebar work, not a benchmark.
+
+**Ask:** **What is your actual edit → build → launch → see-it loop internally?**
+
+Glaeda gets one sentence unless they ask: keep the hottest reusable build state whose identity and validity can be proved. Related: Tact [#63](https://github.com/teamleaderleo/Tact/issues/63), [#44](https://github.com/teamleaderleo/Tact/issues/44).
+
+## 6. Small craft cases
+
+Supporting examples. Use the one that matches what they are already talking about.
+
+| page | one-line version | issue |
 | --- | --- | --- |
-| Home can stay put; Triage can move | [#37](https://github.com/teamleaderleo/Tact/issues/37) | [`prototypes/cmux-surface-navigator/`](../../prototypes/cmux-surface-navigator/) |
-| Keep the thing I pointed at, across browser → terminal → agent → source → proof | [#39](https://github.com/teamleaderleo/Tact/issues/39) | [`prototypes/causal-debugger/`](../../prototypes/causal-debugger/) |
-| Native-Mac microcraft: Quick Look, selection vs focus, boring window behavior | [#38](https://github.com/teamleaderleo/Tact/issues/38) | [`experiments/microcraft/`](../../experiments/microcraft/) |
-| Surface-first navigation with simultaneous vertical + horizontal tabs | [#36](https://github.com/teamleaderleo/Tact/issues/36) | [`prototypes/cmux-surface-navigator/`](../../prototypes/cmux-surface-navigator/) |
+| [**accessibility-labels**](accessibility-labels.md) | every surface tab-bar button announced its SF Symbol name; found live, traced, patched, verified against two builds | [#64](https://github.com/teamleaderleo/Tact/issues/64) |
+| [**shortcut-namespace**](shortcut-namespace.md) | I called a defect that was not one — cmux already implements the VS Code `when`-clause model | [#59](https://github.com/teamleaderleo/Tact/issues/59) |
+| [**appdelegate-ownership**](appdelegate-ownership.md) | a third of `AppDelegate.swift` is `#if DEBUG`; the seam is the UI-test harness, not the line count | [#60](https://github.com/teamleaderleo/Tact/issues/60) |
+| [**default-config**](default-config.md) | no way to say "pin this to today's default" | [#62](https://github.com/teamleaderleo/Tact/issues/62) |
 
-## The working fork
+Strongest of the four is accessibility-labels: it is a complete loop with a patch attached ([bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1)) and it takes thirty seconds to explain.
 
-[`teamleaderleo/cmux` PR #57](https://github.com/teamleaderleo/cmux/pull/57) — unified Claude/Codex/OpenCode conversation sidebar promoted into the native window, plus a collapsible spaces-and-tiles navigator.
+---
 
-The PR is based on upstream `e9ec596d1`. Its base branch is pinned to that commit (`base/upstream-e9ec596d`) so the diff shows **the work and not the fast-forward**: 100 files, +4,237 / −219. Reviewing it against the fork's `main` instead renders 5,280 files and +1.17M lines, essentially all of it upstream history.
+## Numbers, exactly
 
-**Before showing it:** the PR head is `60b026fdc`, and the local branch is three commits further on (the fork-`main` merge, the Ghostty semantic-integration pin, and the native-Ghostty build profile) — 75 files / +2,922 / −190 that are not pushed. The PR body describes some of that unpushed work, so the prose currently claims more than the diff contains. Either push and let the PR grow, or trim the description to the pushed scope; the second keeps it at the reviewable size that repointing the base bought.
+Quote these and nothing rounder.
 
-## Running the evidence
+| claim | number | source |
+| --- | --- | --- |
+| warm app rebuild | median **32s** (n=32, min 22s) | [`build-loop.md`](build-loop.md) |
+| cold / new cache generation | median **~19 min** (1,157s), worst **34 min** (2,019s) | same |
+| receipts behind both | **58**, 2026-09-12 → 09-15 | [`evidence/build-times.py`](evidence/build-times.py) |
+| `AppDelegate.swift` inside `#if DEBUG` | **32.4%** (6,594 of 20,325) | [`evidence/appdelegate.py`](evidence/appdelegate.py) |
+| named test scaffolding in that file | **72 members / 2,749 lines**, 71 gated | same |
+| default chords | **128 over 43 keys**; 13 chords carry 2 actions | [`evidence/shortcuts.py`](evidence/shortcuts.py) |
+| sidebar detail flags defaulting on | **9** | [`evidence/config-drift.py`](evidence/config-drift.py) |
+| tab-bar buttons announcing an icon name | **7 of 7**, now fixed | [`evidence/ax-buttons.swift`](evidence/ax-buttons.swift) |
+
+"About half a minute warm, twenty to thirty-five minutes cold" is the safe spoken version.
+
+**Baseline for every measurement:** `manaflow-ai/cmux` at `e9ec596d1`, 2026-09-17.
+
+## What stays out unless asked
+
+- [cmux#58](https://github.com/teamleaderleo/cmux/pull/58) — the 4,239-commit upstream sync. It is real work and it is not a demo.
+- Glaeda internals.
+- Line-count archaeology as an argument in itself.
+- The Tact research program, the prototype list, the issue backlog.
+- A feature tour of anything.
+
+## Reproducing the evidence
 
 ```bash
 cd evidence
@@ -92,27 +135,13 @@ python3 config-drift.py  ~/Projects/cmux ~/.config/cmux/cmux.json
 python3 build-times.py   ~/Projects/cmux
 ```
 
-No dependencies beyond the standard library. Each script parses files and prints a table; none of them build, launch, or modify anything.
+Standard library only. Each script parses files and prints a table; none build, launch or modify anything.
 
-One more reads a *running* app rather than the source — it is how the accessibility defect was found and how the fix was verified:
+The live accessibility probe reads a running app and presses nothing:
 
 ```bash
 swiftc -O ax-buttons.swift -o ax-buttons
 ./ax-buttons $(pgrep -f "cmux.app/Contents/MacOS/cmux" | head -1)
 ```
 
-It needs the calling process to be trusted for Accessibility, and it only copies attributes — it never presses anything.
-
----
-
-## Index
-
-- [`sidebar-density.md`](sidebar-density.md) · screenshots, nine default-on detail flags
-- [`accessibility-labels.md`](accessibility-labels.md) · the tab bar announces icons; fix submitted
-- [`shortcut-namespace.md`](shortcut-namespace.md) · corrected negative result: cmux already does this well
-- [`appdelegate-ownership.md`](appdelegate-ownership.md) · 32.4% `#if DEBUG`, two mechanical seams
-- [`build-loop.md`](build-loop.md) · 58 receipts, 37× warm-vs-cold, and what receipts bought
-- [`default-config.md`](default-config.md) · 29 overrides, 16 matching the default, 11 undeclared — the supporting inventory
-- [`evidence/`](evidence/) · four analysis scripts, one live accessibility probe, four screenshots
-
-Umbrella issues: Tact [#53](https://github.com/teamleaderleo/Tact/issues/53) (visit index), [#35](https://github.com/teamleaderleo/Tact/issues/35) (interaction thesis), [#52](https://github.com/teamleaderleo/Tact/issues/52) (persistent delegated work).
+Screenshot method for the sidebar pair: `tk customization off|on` to flip config (cmux hot-reloads it), then `screencapture -x -o -l<window-id>` by window id so the window is never raised or resized.
