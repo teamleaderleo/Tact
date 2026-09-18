@@ -11,7 +11,7 @@ ask the unresolved question
 stop
 ```
 
-Each page stands alone and is short enough to open in the room. Every counted claim is reproduced by a script in [`evidence/`](evidence/) that reads the cmux checkout and executes nothing; the two screenshot-based pages say exactly how the images were captured.
+Each page stands alone and is short enough to open in the room. Every counted claim is reproduced by a script in [`evidence/`](evidence/): the Python ones parse a cmux checkout and run nothing, and `ax-buttons.swift` reads a running app's accessibility tree without pressing anything. The screenshot-based pages say exactly how the images were captured.
 
 **Baseline for all measurements:** `manaflow-ai/cmux` at `e9ec596d1`, measured 2026-09-17.
 
@@ -110,7 +110,7 @@ It needs the calling process to be trusted for Accessibility, and it only copies
 - [`shortcut-namespace.md`](shortcut-namespace.md) · corrected negative result: cmux already does this well
 - [`appdelegate-ownership.md`](appdelegate-ownership.md) · 32.4% `#if DEBUG`, two mechanical seams
 - [`build-loop.md`](build-loop.md) · 58 receipts, 37× warm-vs-cold, and what receipts bought
-- [`default-config.md`](default-config.md) · 29 overrides, 16 pins, 11 undeclared — the supporting inventory
+- [`default-config.md`](default-config.md) · 29 overrides, 16 matching the default, 11 undeclared — the supporting inventory
 - [`evidence/`](evidence/) · four analysis scripts, one live accessibility probe, four screenshots
 
 Umbrella issues: Tact [#53](https://github.com/teamleaderleo/Tact/issues/53) (visit index), [#35](https://github.com/teamleaderleo/Tact/issues/35) (interaction thesis), [#52](https://github.com/teamleaderleo/Tact/issues/52) (persistent delegated work).
