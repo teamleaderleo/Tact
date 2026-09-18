@@ -80,6 +80,21 @@ Three ideas are doing the work, and they are the transferable part:
 
 That is the only reason this page can exist. The 58 data points were not collected for a demo; they are a by-product of the loop recording what it did. Interrupted runs get a `quarantine-<key>.json` rather than leaving a cache that silently lies.
 
+## The safety property, observed live
+
+While preparing this packet I rebuilt cmux against a patched dependency and got:
+
+```json
+{"schema_version": 1, "state": "refused",
+ "reason": "cache was interrupted; choose a new --generation for a cold rebuild"}
+```
+
+An earlier build had been interrupted. Rather than reuse a cache it could not prove consistent, the runtime **refused and said what to do instead**. That is the third property above doing its job unprompted: the quarantine record was written when the interruption happened, and the next run read it.
+
+The cost was real — a new generation means a genuinely cold build, back to the top row of the table. That is the trade being made deliberately: *losing acceleration state may cost time; it must not produce a wrong binary.*
+
+It also exposed a gap on my side rather than Glaeda's: `tk cmux warm` passes no `--generation` through, so the remedy the refusal names is unreachable from the wrapper (terminal-kit [#50](https://github.com/teamleaderleo/terminal-kit/issues/50)). A correct refusal that the tooling cannot act on still reads like a crash.
+
 ## The honest limits
 
 - **Not a controlled benchmark.** These are real builds with real change sizes. The bucket boundaries (600s, 120s) are my labels on a natural distribution, not a protocol. The right claim is "this is what the loop did," not "warm builds are 37× faster than cold ones under matched conditions."
