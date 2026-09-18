@@ -82,7 +82,7 @@ That is the only reason this page can exist. The 58 data points were not collect
 
 ## The safety property, observed live
 
-While preparing this packet I rebuilt cmux against a patched dependency and got:
+A rebuild of cmux against a patched dependency, run while this packet was being prepared, returned:
 
 ```json
 {"schema_version": 1, "state": "refused",
@@ -93,7 +93,7 @@ An earlier build had been interrupted. Rather than reuse a cache it could not pr
 
 The cost was real — a new generation means a genuinely cold build, back to the top row of the table. That is the trade being made deliberately: *losing acceleration state may cost time; it must not produce a wrong binary.*
 
-It also exposed a gap on my side rather than Glaeda's, and cleaning up afterwards showed it was worse than it first looked.
+It also exposed a gap in the `tk` wrapper rather than in Glaeda, and the cleanup showed it was worse than it first looked.
 
 The quarantine is **terminal**. `inspect()` reads `quarantine-<key>.json` and raises unconditionally, and there is no un-quarantine path in the tool. Meanwhile `tk cmux warm` always uses the `default` generation and cannot pass another label. So a single ctrl-C during a build **permanently disables the wrapper's primary command for that checkout** — in this case since 2026-09-13 (`exit_code: 130, signal: 2`), four days, silently.
 
@@ -116,7 +116,7 @@ Both receipts correctly recorded `"clean": false`, because the submodule pin was
 
 ## The honest limits
 
-- **Not a controlled benchmark.** These are real builds with real change sizes. The bucket boundaries (600s, 120s) are my labels on a natural distribution, not a protocol. The right claim is "this is what the loop did," not "warm builds are 37× faster than cold ones under matched conditions."
+- **Not a controlled benchmark.** These are real builds with real change sizes. The bucket boundaries (600s, 120s) are labels applied to a natural distribution, not a protocol. The right claim is "this is what the loop did," not "warm builds are 37× faster than cold ones under matched conditions."
 - **Cold is still cold.** Nothing here makes a first build fast. It makes the *second through fiftieth* fast, and it stops accidental invalidation from sending you back to the first.
 - **It is one machine.** No claim about CI, other hardware, or other developers.
 - **It buys disk.** Seven cache generations are tens of gigabytes. That is the trade.
@@ -134,7 +134,7 @@ Three reasons, in increasing order of interest:
 
 ## The unresolved questions for the room
 
-- What is a founding-team member's actual median edit-to-see-it time on the native app today? If it is 32 seconds, this page is redundant and I would like to know what they did. If it is minutes, that is the highest-leverage thing an incoming contributor could fix, and it is invisible from outside.
+- What is a founding-team member's actual median edit-to-see-it time on the native app today? If it is 32 seconds, this page is redundant and the useful follow-up is how they got there. If it is minutes, that is the highest-leverage thing an incoming contributor could fix, and it is invisible from outside.
 - Is there an internal build-caching story already? `scripts/select-ci-xcode.sh` and the tagged DerivedData in `scripts/reload.sh` suggest parts of one.
 - Would cmux want build receipts as a first-class artifact, or is that a developer-tools concern that should stay outside the product?
 

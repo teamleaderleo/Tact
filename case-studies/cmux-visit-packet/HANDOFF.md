@@ -10,13 +10,14 @@ Written 2026-09-18 for whoever picks this up next. Scope is **cmux, terminal-kit
 | Visit packet | [Tact PR#58](https://github.com/teamleaderleo/Tact/pull/58), branch `packet/cmux-visit` | unmerged, so every packet link resolves only on the branch |
 | Conversation sidebar + Spaces navigator | [cmux#57](https://github.com/teamleaderleo/cmux/pull/57), 173 files | demo the running app, never the diff |
 | Per-folder "new chat" | merged into the #57 branch as `4c190f2c5` | done and verified |
-| Fork CI runner policy | [cmux#59](https://github.com/teamleaderleo/cmux/pull/59), extracted from #57 | mergeable; drops 59 files from #57 |
+| Fork CI runner policy | [cmux#59](https://github.com/teamleaderleo/cmux/pull/59), extracted from #57 | conflict-free, but 8 checks fail (`policy`, `workflow-guard-tests`, `protocol contract`, …), so not merged. Would drop 59 files from #57 |
 | Fork main upstream sync | [cmux#58](https://github.com/teamleaderleo/cmux/pull/58), 4,239 commits, 12 conflicts | unmerged; **no app build has been run against the merge result** |
-| `CMUX_RELOAD_KEEP_RUNNING` | [cmux#60](https://github.com/teamleaderleo/cmux/pull/60), branch `contrib/reload-keep-running` | **blocked**: see "What is blocked" |
+| `CMUX_RELOAD_KEEP_RUNNING` | upstream [manaflow-ai/cmux#12962](https://github.com/manaflow-ai/cmux/pull/12962), branch `contrib/reload-keep-running`; fork #60 closed | open; cubic's two findings fixed; **no full tagged app build has run on it** |
+| Root agent notes | upstream [manaflow-ai/cmux#12964](https://github.com/manaflow-ai/cmux/pull/12964) | open; verbatim moves out of the root `CLAUDE.md`, 21.3 KB → 14.4 KB |
 | Workspace templates | [terminal-kit#51](https://github.com/teamleaderleo/terminal-kit/pull/51) | unmerged |
 | Spaces design argument | [Tact#71](https://github.com/teamleaderleo/Tact/issues/71) | open question for the founders, not a task |
-| Local build loop | [Tact#74](https://github.com/teamleaderleo/Tact/issues/74) | a background agent is investigating the 64 s no-op; its result is not in yet |
-| Accessibility fix | [bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1), [Tact#64](https://github.com/teamleaderleo/Tact/issues/64) | unmerged; the #57 build pins the fixed submodule already |
+| Local build loop | [Tact#74](https://github.com/teamleaderleo/Tact/issues/74) | root cause posted there (three malformed `project.pbxproj` objects); Codex is continuing the build-time work |
+| Accessibility fix | upstream [manaflow-ai/bonsplit#243](https://github.com/manaflow-ai/bonsplit/pull/243), one line; fork [bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1), [Tact#64](https://github.com/teamleaderleo/Tact/issues/64) | upstream PR open, cubic clean. Fork #1 is stacked on the unrelated `showsTabCloseButton` commit, so a fresh branch went upstream. The #57 build pins the fixed submodule already |
 
 ## The running dev build
 
@@ -59,7 +60,7 @@ Screenshot without disturbing the session: `screencapture -x -o -l<windowId>`. I
 
 ## What is blocked
 
-**Opening a PR against `manaflow-ai/cmux` is refused by the permission classifier** ("Create Public Surface"). The branch is pushed and based on `upstream/main`; Leo has to run the `gh pr create` himself or add a Bash permission rule. Do not route around it.
+Opening PRs against `manaflow-ai/*` worked on 2026-09-18 once Leo said go ahead in chat: push the branch to the fork over SSH, then `gh pr create --repo manaflow-ai/<repo> --head teamleaderleo:<branch>`. It is still publishing, so ask first.
 
 **Pushing a branch based on `upstream/main` over HTTPS is rejected** — the OAuth token lacks `workflow` scope and such a branch carries `.github/workflows/` files. Push over SSH instead: `git push git@github.com:teamleaderleo/cmux.git <branch>`.
 
@@ -101,6 +102,6 @@ An earlier pass claimed cmux had 13 undeclared chord collisions resolved by stat
 
 The first accessibility patch passed all 223 Bonsplit tests and still broke `paneTabBarControl.*` identifiers. A unit suite cannot see what the accessibility tree exposes. Only reading the live tree caught it — hence `evidence/live-ui/`.
 
-## Known writing debt
+## Writing debt
 
-The packet pages and several Tact issues use first person for agent work — "I was wrong", "I tried it", "my first patch". [Tact#68](https://github.com/teamleaderleo/Tact/issues/68) says agent work stays agent work and must not be written as Leo's first-person claims. That voice needs fixing across [shortcut-namespace.md](shortcut-namespace.md), [accessibility-labels.md](accessibility-labels.md), [appdelegate-ownership.md](appdelegate-ownership.md), [sidebar-density.md](sidebar-density.md), and Tact #59, #64 and #74.
+First-person agent claims were removed from the packet pages on 2026-09-18 (`build-loop.md`, `shortcut-namespace.md`, `sidebar-density.md`, the README index row) and from Tact #59, #64 and #74. The README's **Say:** and **Ask:** lines stay first person; they are Leo's spoken lines.

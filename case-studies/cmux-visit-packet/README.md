@@ -90,7 +90,7 @@ Supporting examples. Use the one that matches what they are already talking abou
 | page | one-line version | issue |
 | --- | --- | --- |
 | [**accessibility-labels**](accessibility-labels.md) | every surface tab-bar button announced its SF Symbol name; found live, traced, patched, verified against two builds | [#64](https://github.com/teamleaderleo/Tact/issues/64) |
-| [**shortcut-namespace**](shortcut-namespace.md) | I called a defect that was not one — cmux already implements the VS Code `when`-clause model | [#59](https://github.com/teamleaderleo/Tact/issues/59) |
+| [**shortcut-namespace**](shortcut-namespace.md) | An agent pass called a defect that was not one — cmux already implements the VS Code `when`-clause model | [#59](https://github.com/teamleaderleo/Tact/issues/59) |
 | [**appdelegate-ownership**](appdelegate-ownership.md) | a third of `AppDelegate.swift` is `#if DEBUG`; the seam is the UI-test harness, not the line count | [#60](https://github.com/teamleaderleo/Tact/issues/60) |
 | [**default-config**](default-config.md) | no way to say "pin this to today's default" | [#62](https://github.com/teamleaderleo/Tact/issues/62) |
 

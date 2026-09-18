@@ -50,13 +50,13 @@ if matchConfiguredShortcut(event: event, action: .groupSelectedWorkspaces) {
 }
 ```
 
-**Collisions are detected, tested and refused.** `ShortcutWhenClause.bindingsCollide` does priority-aware, most-specific-wins overlap detection, cites VS Code in its own docs, names the `⌃1` pair I flagged, and refuses to save a **dead binding** — a clause implied by the winner's, which could never fire. `ShortcutListModel.detectConflict` rejects the rebind and raises a banner in Settings. Tests in `ShortcutWhenClauseTests.swift`. `shortcuts.when` in `cmux.json` has a real parser; unknown context keys parse to always-false, again matching VS Code.
+**Collisions are detected, tested and refused.** `ShortcutWhenClause.bindingsCollide` does priority-aware, most-specific-wins overlap detection, cites VS Code in its own docs, names the `⌃1` pair the first pass flagged, and refuses to save a **dead binding** — a clause implied by the winner's, which could never fire. `ShortcutListModel.detectConflict` rejects the rebind and raises a banner in Settings. Tests in `ShortcutWhenClauseTests.swift`. `shortcuts.when` in `cmux.json` has a real parser; unknown context keys parse to always-false, again matching VS Code.
 
 ## The Settings screenshot
 
 ![Settings, Keyboard Shortcuts](evidence/settings-keyboard-shortcuts.png)
 
-I first captioned this as "no collision indicator." Wrong reading: the indicator is a rejection banner raised when you attempt a colliding rebind, so it is not visible in a resting pane.
+An earlier pass captioned this "no collision indicator." Wrong reading: the indicator is a rejection banner raised when you attempt a colliding rebind, so it is not visible in a resting pane.
 
 What is fair: at rest, the list does not show which chords are shared or which context governs them. The system knows and acts on it; the list does not display it until you trip it.
 
@@ -67,7 +67,7 @@ What is fair: at rest, the list does not show which chords are shared or which c
 
 ## The method failure
 
-I reasoned from one screenshot and one function to a conclusion about the whole system. `bindingsCollide`, `ShortcutWhenClause` and `shortcutContext` were each one `grep` away. Do not assert a mechanism is absent without searching for it.
+The first pass reasoned from one screenshot and one function to a conclusion about the whole system. `bindingsCollide`, `ShortcutWhenClause` and `shortcutContext` were each one `grep` away. Do not assert a mechanism is absent without searching for it.
 
 ## The question for the room
 

@@ -85,7 +85,7 @@ Items 2–4 are small and independent. Item 1 is the one that matters.
 
 If it is furniture, the defaults are inverted and #1 above is the fix. If it is a status surface, then the row should be showing attention state and not branch/path, and the interesting build is a different one — closer to Tact #55's decision cards than to more boolean flags.
 
-I do not think this can be answered from outside. It depends on how the founding team actually uses their own sidebar, which is question one in Tact #53 §1.
+This cannot be answered from outside. It depends on how the founding team actually uses their own sidebar, which is question one in Tact #53 §1.
 
 ---
 
