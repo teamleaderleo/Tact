@@ -54,6 +54,10 @@ Use issues and notes for small, concrete hunts:
 
 Prefer a prototype that settles a live disagreement over another essay that restates one.
 
+## Case studies
+
+- [`case-studies/cmux-visit-packet/`](case-studies/cmux-visit-packet/) — four standalone pages prepared for the cmux founding-team visit, each ending on a question only they can answer: default sidebar density (with before/after screenshots), the shortcut namespace and the dispatcher that pays for it, an `AppDelegate` ownership map that reframes the line-count argument, and 58 real build receipts. Every number is reproduced by a script in [`evidence/`](case-studies/cmux-visit-packet/evidence/) that parses a cmux checkout and executes nothing.
+
 ## Runnable lab
 
 - [`prototypes/cmux-surface-navigator/`](prototypes/cmux-surface-navigator/) — live native cmux surface navigation with independent flat/grouped and density toggles, grounded in the September 12 current-upstream audit.
