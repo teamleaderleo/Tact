@@ -93,7 +93,13 @@ An earlier build had been interrupted. Rather than reuse a cache it could not pr
 
 The cost was real — a new generation means a genuinely cold build, back to the top row of the table. That is the trade being made deliberately: *losing acceleration state may cost time; it must not produce a wrong binary.*
 
-It also exposed a gap on my side rather than Glaeda's: `tk cmux warm` passes no `--generation` through, so the remedy the refusal names is unreachable from the wrapper (terminal-kit [#50](https://github.com/teamleaderleo/terminal-kit/issues/50)). A correct refusal that the tooling cannot act on still reads like a crash.
+It also exposed a gap on my side rather than Glaeda's, and cleaning up afterwards showed it was worse than it first looked.
+
+The quarantine is **terminal**. `inspect()` reads `quarantine-<key>.json` and raises unconditionally, and there is no un-quarantine path in the tool. Meanwhile `tk cmux warm` always uses the `default` generation and cannot pass another label. So a single ctrl-C during a build **permanently disables the wrapper's primary command for that checkout** — in this case since 2026-09-13 (`exit_code: 130, signal: 2`), four days, silently.
+
+That is the honest shape of it: the refusal is correct and the receipts made the cause findable in minutes, but *correct refusal plus a wrapper that cannot act on it* equals an outage. Removing the two quarantined generations (11 GB, unusable by design) restored `glaeda-apple plan` to `state: cold` and the command works again. Tracked as terminal-kit [#50](https://github.com/teamleaderleo/terminal-kit/issues/50); the fix is a `--generation` passthrough and a `tk doctor` check that counts quarantined generations.
+
+The transferable lesson is not "add a flag." It is that **a safety mechanism needs a supported exit**, and whoever wraps it owns providing one.
 
 ## The loop, demonstrated on this packet's own work
 
