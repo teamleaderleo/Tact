@@ -92,6 +92,15 @@ python3 build-times.py   ~/Projects/cmux
 
 No dependencies beyond the standard library. Each script parses files and prints a table; none of them build, launch, or modify anything.
 
+One more reads a *running* app rather than the source — it is how the accessibility defect was found and how the fix was verified:
+
+```bash
+swiftc -O ax-buttons.swift -o ax-buttons
+./ax-buttons $(pgrep -f "cmux.app/Contents/MacOS/cmux" | head -1)
+```
+
+It needs the calling process to be trusted for Accessibility, and it only copies attributes — it never presses anything.
+
 ---
 
 ## Index
@@ -102,6 +111,6 @@ No dependencies beyond the standard library. Each script parses files and prints
 - [`appdelegate-ownership.md`](appdelegate-ownership.md) · 32.4% `#if DEBUG`, two mechanical seams
 - [`build-loop.md`](build-loop.md) · 58 receipts, 37× warm-vs-cold, and what receipts bought
 - [`default-config.md`](default-config.md) · 29 overrides, 16 pins, 11 undeclared — the supporting inventory
-- [`evidence/`](evidence/) · four scripts and four screenshots
+- [`evidence/`](evidence/) · four analysis scripts, one live accessibility probe, four screenshots
 
 Umbrella issues: Tact [#53](https://github.com/teamleaderleo/Tact/issues/53) (visit index), [#35](https://github.com/teamleaderleo/Tact/issues/35) (interaction thesis), [#52](https://github.com/teamleaderleo/Tact/issues/52) (persistent delegated work).
