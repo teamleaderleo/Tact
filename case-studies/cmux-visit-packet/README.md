@@ -1,5 +1,7 @@
 # cmux visit packet
 
+**Start here:** [`BRIEF.md`](BRIEF.md) is the compact room talk track. The pages below are the deeper evidence and appendix material.
+
 Material prepared for the cmux founding-team visit. Every page here follows the same shape, from Tact [#53](https://github.com/teamleaderleo/Tact/issues/53) §5:
 
 ```text
@@ -76,11 +78,13 @@ Four interaction prototypes exist as issues and running code rather than as page
 
 ## The working fork
 
-[`teamleaderleo/cmux` PR #57](https://github.com/teamleaderleo/cmux/pull/57) — unified Claude/Codex/OpenCode conversation sidebar promoted into the native window, plus a collapsible spaces-and-tiles navigator.
+[`teamleaderleo/cmux` PR #57](https://github.com/teamleaderleo/cmux/pull/57) is the larger interaction experiment: unified Claude/Codex/OpenCode conversation navigation plus native spaces-and-tiles controls.
 
-The PR is based on upstream `e9ec596d1`. Its base branch is pinned to that commit (`base/upstream-e9ec596d`) so the diff shows **the work and not the fast-forward**: 100 files, +4,237 / −219. Reviewing it against the fork's `main` instead renders 5,280 files and +1.17M lines, essentially all of it upstream history.
+The PR now points at head `381dc8091` and contains 173 changed files / +7,159 / −409 against its pinned upstream base. The older packet warning about three local-only commits has aged out.
 
-**Before showing it:** the PR head is `60b026fdc`, and the local branch is three commits further on (the fork-`main` merge, the Ghostty semantic-integration pin, and the native-Ghostty build profile) — 75 files / +2,922 / −190 that are not pushed. The PR body describes some of that unpushed work, so the prose currently claims more than the diff contains. Either push and let the PR grow, or trim the description to the pushed scope; the second keeps it at the reviewable size that repointing the base bought.
+For the visit, **show the running behavior rather than reviewing the diff**. The useful questions are about navigation, restore, attention, history, and what belongs in a supported customization layer.
+
+[`teamleaderleo/cmux` PR #58](https://github.com/teamleaderleo/cmux/pull/58) is the upstream-sync PR. GitHub renders roughly 6,282 files because it carries 4,239 upstream commits; the meaningful review surface is the 12 conflict resolutions described in the PR. Its own remaining verification note is a native macOS app build.
 
 ## Running the evidence
 
