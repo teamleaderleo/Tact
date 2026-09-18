@@ -79,16 +79,26 @@ terminal.focusTextBoxOnNewTerminals         = False
 ...
 ```
 
-Why would anyone write a setting equal to its default? Because **a config file cannot say "keep this where it is."** Writing the value is the only way to be sure a future release does not move it.
+How they got there matters less than what they now mean. This config is generated from a `terminal-kit` preset, so most of these were chosen once as *this is the value I want*, and upstream has since either always agreed or moved to agree. A few may have been written defensively, to stop a future release moving them. **From the file alone, those cases are indistinguishable.**
 
-The cost is that the file now cannot distinguish two very different statements:
+cmux does have a layering model — `cmux.json` overrides the value saved in Settings, which overrides the built-in default, and the generated template says so:
 
-- *"I chose `false` here and I care"*, and
-- *"this happened to be `false` and I wrote it down defensively."*
+```text
+// Uncomment and edit any setting to make it file-managed.
+// Remove a setting to fall back to the value saved in Settings.
+```
 
-Nobody can tell them apart — not the user six months later, not a support conversation, and not cmux itself when it wants to know whether a default change is safe to ship.
+So writing a value *is* the way to hold it, and that works. What the file cannot express is **intent**:
 
-**The product question:** is there room for an explicit three-state model — *unset (follow the default)*, *pinned (hold today's default)*, *overridden (my value)*? That would let cmux move defaults confidently, and let Settings show a user which of their choices are actually choices. It also turns "we changed a default and broke people's setups" from a guess into a query.
+- *"I chose this value and I care"*,
+- *"I am holding today's default deliberately"*, and
+- *"this agreed with the default when it was written, and I have not thought about it since."*
+
+All three look identical on disk. Nobody can tell them apart — not the user six months later, not a support conversation, and not cmux when it wants to know whether changing a default is safe to ship.
+
+**The product question:** the layering already exists; the missing axis is intent. Is there room to distinguish *pinned (hold today's default)* from *overridden (my value)* — a marker, or simply a `cmux.json` lint that reports "16 of your settings now match the default"? Either would let cmux move defaults confidently and let a user see which of their choices are still choices. It turns "we changed a default and broke people's setups" from a guess into a query.
+
+The cheap version needs no format change at all: `config-drift.py` in this directory already computes it.
 
 ## 3. The 11 undeclared settings are a discoverability gap
 
