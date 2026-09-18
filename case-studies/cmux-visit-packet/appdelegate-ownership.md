@@ -48,7 +48,7 @@ That is a much more interesting problem, and it suggests a different first move.
 | 161 | L8647 | `performNewWorkspaceCreationAction` |
 | 149 | L2151 | `deferTerminateForOwnedCleanupAndFreshSnapshot` |
 
-Two of the top three are keyboard-event routing. That is not a coincidence — see [`shortcut-namespace.md`](shortcut-namespace.md).
+Two of the top three are keyboard-event routing. That is about the amount of *input-state* precedence cmux resolves (IME composition, modals and sheets, command-palette arming, escape suppression), not about the shortcut table — see [`shortcut-namespace.md`](shortcut-namespace.md), which corrects an earlier claim of mine on exactly that point.
 
 ## What this says about decomposition
 
@@ -71,7 +71,9 @@ The payback is not tidiness. It is that a contributor reading `AppDelegate.swift
 
 ### Seam 2 — the shortcut dispatch tail (~1,127 lines, mechanical)
 
-Covered in detail in [`shortcut-namespace.md`](shortcut-namespace.md). The short version: `handleCustomShortcut` divides into a 622-line ordered-precedence prologue that must stay ordered, and a 1,127-line tail of 76 `match → route` branches that a registry expresses better. Extract the tail, leave the prologue alone.
+`handleCustomShortcut` divides into a 622-line prologue resolving input state (IME composition, modals and sheets, command-palette arming, escape suppression) that must stay ordered, and a 1,127-line tail matching 76 actions. Extract the tail, leave the prologue alone.
+
+This is the weaker of the two seams and I want to mark it as such. Sampling the tail, only **2 of 40** parsed branches are a pure single routing call — the rest carry per-action handling that a `[ShortcutAction: (Context) -> Bool]` registry would not absorb without inventing somewhere for that code to live. The context gating that *would* have made this mechanical already happens upstream in the `when` clauses ([`shortcut-namespace.md`](shortcut-namespace.md)), so the tail is the residue after the easy part was already factored out. Treat the line count here as an upper bound on the payoff, not an estimate of it.
 
 ### Together
 
@@ -87,6 +89,6 @@ Seams 1 and 2 are ~3,900 lines, both mechanical, both reviewable as pure moves, 
 
 ## Related
 
-- [`shortcut-namespace.md`](shortcut-namespace.md) — why the dispatcher is the size it is.
+- [`shortcut-namespace.md`](shortcut-namespace.md) — a corrected negative result; also where the dispatcher's prologue is explained.
 - [`default-config.md`](default-config.md) — what a heavy user overrides and what that implies.
 - Tact #44 (contributor loop), #46 (public vs internal `AGENTS.md`), #53 §4.
