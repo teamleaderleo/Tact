@@ -13,7 +13,7 @@
 | | count |
 | --- | ---: |
 | overridden — differs from the schema default | **29** |
-| pinned — written out, identical to the default | **16** |
+| written out, identical to the default | **16** |
 | no default declared in the schema | **11** |
 
 Three separate findings, one per row.
@@ -58,7 +58,7 @@ Default is an almost-untinted sidebar that does not follow the terminal backgrou
 
 **The product question:** should these be presets with names (`quiet` / `detailed`, `lean` / `generous`, `unified` / `distinct`) that a user picks and then deviates from, rather than N booleans each user rediscovers? `terminal-kit` already ships exactly that, as [`config/cmux/sidebar-presets.json`](https://github.com/teamleaderleo/terminal-kit/blob/main/config/cmux/sidebar-presets.json) with `quiet` and `details` groups, because ten checkboxes is not a decision a user wants to make ten times.
 
-## 2. The 16 pinned settings are a real gap
+## 2. The 16 settings that match the default say nothing about why
 
 These are written into the config file with values *identical to the current default*:
 
@@ -113,7 +113,7 @@ nextSurface    cmd+shift+]   ->   ctrl+tab
 prevSurface    cmd+shift+[   ->   ctrl+shift+tab
 ```
 
-That single rebind is the most interesting line in the whole file. It moves surface cycling off the overloaded `[`/`]` family and onto the tab-cycling chord every browser and editor already uses — and it is the practical answer to the open question in [`shortcut-namespace.md`](shortcut-namespace.md).
+That single rebind is the most interesting line in the whole file. It moves surface cycling off the crowded `[`/`]` family — seven actions across six modifier depths — and onto the tab-cycling chord every browser and editor already uses. It is one user's practical answer to the learnability question left open in [`shortcut-namespace.md`](shortcut-namespace.md), not a correctness fix: cmux resolves that family correctly already.
 
 **The cheap fix:** emit the Swift defaults into the published schema. It is a build step, it makes the schema self-documenting, and it would remove most of the reason this config is as long as it is.
 
