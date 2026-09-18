@@ -1,127 +1,125 @@
-# The shortcut namespace is full, and the dispatcher is paying for it
+# The shortcut namespace is crowded — and cmux already solved the hard part
 
 **Status:** measured against `manaflow-ai/cmux` at `e9ec596d1`, 2026-09-17.
-**Method:** static extraction from `ShortcutAction+Defaults.swift` and `Sources/AppDelegate.swift`. Read-only; nothing was executed.
+**Method:** static extraction from `ShortcutAction+Defaults.swift`, `KeyboardShortcutActionContext.swift`, `ShortcutWhenClause.swift` and `Sources/AppDelegate.swift`. Read-only; nothing was executed.
 **Reproduce:** [`evidence/shortcuts.py`](evidence/shortcuts.py), [`evidence/appdelegate.py`](evidence/appdelegate.py).
+
+> **This page is a corrected negative result.** An earlier draft claimed cmux had 13 undeclared chord collisions resolved only by statement order, with no test and no UI signal. **That was wrong on every count**, and the section below says exactly how. I am leaving the correction visible because the way I got it wrong is more useful than the finding would have been.
 
 ---
 
-## The user job
-
-Reach any of ~128 actions without stopping to think, and keep reaching them as the app grows.
-
 ## What is actually there
 
-cmux declares **128 default chords over 43 distinct keys**. 114 of those chords are distinct, which means **13 chords are bound to more than one action** — 27 actions in total share a chord with another action.
+cmux declares **128 default chords over 43 distinct keys**. 114 are distinct, so **13 chords carry more than one action** — 27 actions in total. 70 of 114 chords need two or more modifiers.
 
-| chord | actions sharing it |
-| --- | --- |
-| `cmd+0` | `browserZoomReset`, `canvasZoomReset`, `markdownZoomReset` |
-| `cmd+[` | `browserBack`, `focusHistoryBack` |
-| `cmd+]` | `browserForward`, `focusHistoryForward` |
-| `cmd+-` | `browserZoomOut`, `markdownZoomOut` |
-| `cmd+=` | `browserZoomIn`, `markdownZoomIn` |
-| `cmd+r` | `browserReload`, `renameTab` |
-| `cmd+shift+r` | `browserHardReload`, `renameWorkspace` |
-| `cmd+shift+a` | `focusTextBoxInput`, `simulatorToggleAppearance` |
-| `cmd+shift+g` | `groupSelectedWorkspaces`, `toggleReactGrab` |
-| `cmd+shift+h` | `simulatorHome`, `triggerFlash` |
-| `ctrl+1` | `selectSurfaceByNumber`, `switchRightSidebarToFiles` |
-| `ctrl+n` | `commandPaletteNext`, `diffViewerScrollDownEmacs` |
-| `ctrl+p` | `commandPalettePrevious`, `diffViewerScrollUpEmacs` |
-
-Most of these are **defensible**: `cmd+r` meaning reload in a browser and rename on a tab is the right answer in each context. They are collisions resolved by focus, not mistakes.
-
-The second pattern is modifier depth. Distinct default chords by modifier count:
-
-| modifiers | chords |
-| ---: | ---: |
-| 0 | 4 |
-| 1 | 40 |
-| 2 | 53 |
-| 3 | 17 |
-
-**70 of 114 chords need two or more modifiers.** The `[` and `]` keys carry seven actions each:
+The `[` and `]` keys each carry **seven** actions across six modifier depths:
 
 ```text
-]   cmd                 focusHistoryForward
-    cmd                 browserForward
-    cmd+ctrl            nextSidebarTab
-    cmd+shift           nextSurface
-    cmd+shift+opt       moveSurfaceRight
-    cmd+shift+ctrl      moveSurfaceToNextPane
-    cmd+opt+ctrl        moveWorkspaceDown
+]   cmd            focusHistoryForward        cmd+shift+opt   moveSurfaceRight
+    cmd            browserForward             cmd+shift+ctrl  moveSurfaceToNextPane
+    cmd+ctrl       nextSidebarTab             cmd+opt+ctrl    moveWorkspaceDown
+    cmd+shift      nextSurface
 ```
 
-Six modifier depths on one key. Every new "move this thing that way" action has been added by taking the same key and adding a modifier.
+That much is true and reproducible. What I got wrong was the conclusion I drew from it.
 
-## The seam: this is why `handleCustomShortcut` is 1,749 lines
+## What I assumed, and what is actually the case
 
-`AppDelegate.handleCustomShortcut` (L14527–16275) is the single largest member of `AppDelegate.swift` — 8.6% of the file. It is not a switch: **221 `if`/`else if` branches, 6 `case` labels, max nesting depth 6.**
+I saw `cmd+r` bound to both `browserReload` and `renameTab`, found a 1,749-line `handleCustomShortcut`, and concluded the overlaps were resolved imperatively by the order of `if` statements. I wrote that cmux used "an imperative precedence chain" where VS Code uses declarative `when` clauses.
 
-It splits cleanly in two:
+**cmux implements the VS Code model.** It is not an approximation of it — the doc comment says so by name.
 
-| region | lines | share | what it does |
-| --- | ---: | ---: | --- |
-| ordered-precedence prologue | 622 | 36% | IME marked text, modal/sheet suppression, command-palette arming and escape suppression, address-bar focus, chord-prefix state |
-| action dispatch tail | 1,127 | 64% | 76 `matchConfiguredShortcut(event:action:)` branches, largely `match → route to focused dock` |
+### 1. Every action declares a context
 
-The prologue is not accidental complexity, and it should not be "cleaned up" by flattening. **It is the runtime cost of the 13 context-resolved collisions above.** Deciding whether `cmd+r` means reload or rename requires knowing what has focus, whether an IME composition is open, whether a palette is armed, and whether a sheet is up — and that decision has to happen before any action matching.
+`KeyboardShortcutActionContext.swift` maps each action to a `ShortcutContext`, and each context to a `ShortcutWhenClause` built from a real algebra (`.and`, `.or`, `.not`, `.atom`, `.key`):
 
-The two findings are one finding: *the shortcut table's ambiguity is resolved imperatively, once, in the largest function in the app.*
+```swift
+case .nonBrowserPanel:    return .and(.not(.atom(.browserFocus)), .not(.atom(.sidebarFocus)))
+case .outsideBrowserPanel: return .not(.atom(.browserFocus))
+case .browserPanel:       return .atom(.browserFocus)
+case .viewerPanel:        return .or(.atom(.browserFocus), .atom(.markdownFocus))
+```
 
-## What the settings UI shows about this
+`matchConfiguredShortcut(event:action:)` evaluates the clause *before* matching the stroke:
+
+```swift
+if !shortcutWhenClauseAllows(action: action, event: event) { return false }
+```
+
+So **9 of the 13 collisions are resolved by mutually exclusive contexts**, not by ordering:
+
+| chord | action / context | action / context |
+| --- | --- | --- |
+| `cmd+r` | `browserReload` · `browserPanel` | `renameTab` · `nonBrowserPanel` |
+| `cmd+[` | `browserBack` · `browserPanel` | `focusHistoryBack` · `outsideBrowserPanel` |
+| `cmd+=` | `browserZoomIn` · `browserOrFilePreviewTextEditor` | `markdownZoomIn` · `markdownPanel` |
+| `ctrl+n` | `commandPaletteNext` · `commandPaletteVisible` | `diffViewerScrollDownEmacs` · `viewerPanel` |
+
+These pairs cannot both fire. The overlap is *declared*, which is the opposite of what I claimed.
+
+### 2. The remaining four are deliberate, and documented in the source
+
+Four pairs do have overlapping clauses, because one side is `.application` (→ `.always`): `cmd+shift+g`, `cmd+shift+a`, `cmd+shift+h`, `ctrl+1`.
+
+I expected to find the later action unreachable. Instead:
+
+```swift
+if matchConfiguredShortcut(event: event, action: .groupSelectedWorkspaces) {
+    // Only consume the event when grouping actually happened; otherwise
+    // fall through so the dispatcher reaches the later
+    // `.toggleReactGrab` check (default ⌘⇧G collides with React Grab
+    // and grouping returns false when no multi-selection exists).
+    if handleGroupSelectedWorkspacesShortcut(...) { return true }
+}
+```
+
+The collision is named in a comment, and resolved by conditional consumption — consume only if the action actually did something, otherwise fall through. The same pattern appears on `toggleFocusedWorkspaceGroupCollapsed`, with a comment about preserving rebinding.
+
+### 3. Collisions are detected, tested, and refused in the UI
+
+`ShortcutWhenClause.bindingsCollide(_:lhsHasPriority:_:rhsHasPriority:)` implements priority-aware, most-specific-wins overlap detection. Its own documentation cites VS Code and calls out one of the very pairs I flagged:
+
+> *The shipped defaults rely on this: Select Surface `⌃1…9` coexists with the sidebar's `⌃1…5`, which win only while the sidebar is focused.*
+
+It also refuses to let a user save a **dead binding** — a clause that implies the winner's, and so could never fire, is reported as a collision rather than silently accepted.
+
+It is wired into `ShortcutListModel.detectConflict`, which rejects the rebind and raises a dismissible conflict banner in Settings (`ShortcutListRowView`). `shortcuts.when` in `cmux.json` has a real parser, and unknown context keys parse to an always-false clause — again matching VS Code.
+
+Tests live in `ShortcutWhenClauseTests.swift`, including the priority-aware collision cases.
+
+### What this means for the Settings screenshot
 
 ![Settings, Keyboard Shortcuts](evidence/settings-keyboard-shortcuts.png)
 
-The Keyboard Shortcuts pane is a **flat list of action → chord rows**. It is clean, it supports rebinding and per-row reset, and it exposes chords (`Shortcut Chords: add tmux-style multi-step shortcuts in cmux.json`) and hint discovery (`Show Shortcut Hints While Holding Modifier Keys`).
+I originally captioned this as showing "no collision indicator." That was an inference from a static screenshot of a pane in its resting state. The indicator is a **rejection banner that appears when you attempt a colliding rebind** — not a passive annotation, so of course it is not visible here.
 
-What it does not show is any of the structure above:
+What is fair to say about this pane is narrower and less interesting: in its resting state it does not *show* which chords are shared or what context governs them. The information exists and the system acts on it; the list just does not display it until you trip it.
 
-- **no collision indicator.** `cmd+r` is bound to both `browserReload` and `renameTab`; nothing in this list says so, and assigning a chord already in use gives no signal here.
-- **no context.** The thing that makes those collisions *correct* — that they resolve by focus — is invisible, so a user cannot tell a deliberate overload from a mistake.
-- **no view of the `[`/`]` family.** The seven actions stacked on `]` appear as seven unrelated rows.
+## What actually survives
 
-This is the same finding as the dispatcher, seen from the front: **the precedence rules are real, load-bearing, and expressed nowhere the user can see.** They exist only as the order of `if` statements in `handleCustomShortcut`.
+Two things, neither a defect:
 
-That also makes the first proposal below cheaper than it looks — a chord table that a test can assert is also a table this pane could render.
+1. **Modifier depth is a learnability question, not a correctness one.** Seven actions on `]` across six depths is real. The system resolves them correctly; a new user still has to acquire them.
+2. **`handleCustomShortcut` is still 1,749 lines** with a 622-line ordered prologue. But I mis-attributed its purpose: the prologue is IME marked text, modal and sheet suppression, command-palette arming and escape suppression — *input-state* precedence, not collision resolution. Collision resolution is in the when-clauses. The size argument stands on its own footing in [`appdelegate-ownership.md`](appdelegate-ownership.md); it is not evidence of a namespace problem.
 
-## The precedent
+## What I should have done
 
-Browsers, editors, and terminals solve this three ways, and cmux currently uses only the third:
+Searched for the mechanism before asserting its absence. `bindingsCollide`, `ShortcutWhenClause`, and `shortcutContext` were each one `grep` away. I reasoned from a screenshot and one function to a conclusion about the whole system.
 
-1. **Responder chain / first-responder ownership** (AppKit's own answer). The focused view claims `cmd+r` and the delegate never sees it. cmux partly does this, but `handleCustomShortcut` runs at `performKeyEquivalent`/`sendEvent` level and re-derives focus itself.
-2. **Declarative `when` clauses** (VS Code). Each binding carries a context predicate; the dispatcher is a table plus a context evaluator. Collisions become data, and the precedence is inspectable and user-overridable.
-3. **Imperative precedence chain** (current cmux). Correct, fast to extend by one more `if`, and it is the thing that grows without bound.
-
-cmux already has a `when`-clause concept — `globalSearchShortcutWhenClauseAllows(event:)` appears inside the prologue. The primitive exists; it just is not the dispatcher's organizing principle.
-
-## The proposal, smallest first
-
-**Do not** rewrite the prologue. It encodes real precedence knowledge that took incidents to learn, and flattening it into a table would lose that.
-
-Do this instead, in order:
-
-1. **Make the table observable.** Emit the 128-chord table (and its 13 collisions) as a build-time artifact and assert on it in a test. Today a new binding can silently collide; nothing fails.
-2. **Give the tail a registry.** The 76 `match → route` branches are mechanical. A `[ShortcutAction: (Context) -> Bool]` registry moves them out of the delegate without touching the prologue. That is ~1,100 lines leaving `AppDelegate.swift` with no behavior change and no precedence risk.
-3. **Only then** consider promoting the prologue's implicit predicates into named, testable `when` clauses — one at a time, each with the collision it exists to resolve named in a test.
-
-Step 2 alone is a ~5% reduction in `AppDelegate.swift` with a mechanical, reviewable diff.
+That is precisely the failure mode this packet's [`appdelegate-ownership.md`](appdelegate-ownership.md) opens by warning about — the outside engineer who read a file listing rather than the file. Worth keeping visible.
 
 ## The unresolved question for the room
 
-Modifier stacking on a key family is a deliberate, learnable pattern — `[`/`]` always means "previous/next thing", and the modifier picks *which* thing. That is real spatial consistency, and it is arguably better than 128 unrelated mnemonics.
+The correctness question is closed. The remaining one is genuinely open and is about teaching, not architecture:
 
-So the question is not "is this too many modifiers." It is:
+> **Is the `[`/`]` modifier family a designed accelerator that users should be taught, or is it where actions go when the namespace is full?**
 
-> **Is the `[`/`]` family a designed accelerator that new users should be taught, or is it where actions go when the namespace is full?**
-
-The answer changes what step 3 should be. If it is designed, the docs and the modifier-hold hints should teach the family explicitly, and the dispatcher should be organized around it. If it is pressure relief, the growth path needs somewhere else to go — and `ctrl+tab` for surface cycling (what this fork's config does) is the first thing to reclaim.
+There is a `showModifierHoldHints` setting that reveals chips while Cmd or Control is held, which suggests the former. If it is designed, the family deserves to be taught explicitly — "`[`/`]` is always previous/next, the modifier picks *which* thing" is a one-sentence mental model that the current flat list does not convey.
 
 ---
 
 ## Related
 
-- [`appdelegate-ownership.md`](appdelegate-ownership.md) — where the 1,749 lines sit in the wider file.
-- [`default-config.md`](default-config.md) — the 29 defaults this fork's config overrides, including the surface-cycling rebind.
-- Tact #53 §4 (contributor/repository questions), Tact #56 (design language audit).
+- [`appdelegate-ownership.md`](appdelegate-ownership.md) — the dispatcher's size, argued without this page's mistake.
+- [`default-config.md`](default-config.md) — the two surface-cycling rebinds this fork actually makes.
+- Tact #59 (corrected), fieldwork #948 (closed as a negative result).

@@ -23,7 +23,7 @@ Each page stands alone and is short enough to open in the room. Every counted cl
 | --- | --- | --- |
 | [**sidebar-density**](sidebar-density.md) | Two screenshots of the same nine workspaces, one config change apart | Is the workspace list glanceable furniture, or a status surface you read? |
 | [**accessibility-labels**](accessibility-labels.md) | Every tab bar button announces its SF Symbol name | What would have caught this? |
-| [**shortcut-namespace**](shortcut-namespace.md) | 128 default chords, 13 of them bound to two or more actions | Is the `[`/`]` modifier family a designed accelerator, or where actions go when the namespace is full? |
+| [**shortcut-namespace**](shortcut-namespace.md) | **A corrected negative result** — I claimed a namespace defect; cmux already implements the VS Code `when`-clause model | Is the `[`/`]` modifier family a designed accelerator, or where actions go when the namespace is full? |
 | [**appdelegate-ownership**](appdelegate-ownership.md) | A third of the "20,000-line AppDelegate" is `#if DEBUG` | Is the in-process UI-test harness deliberate, or where fixture code accumulated? |
 | [**build-loop**](build-loop.md) | 58 real build receipts: 34 minutes cold, 32 seconds warm | What is a founding-team member's actual edit-to-see-it time today? |
 
@@ -41,7 +41,9 @@ If contributor experience is the better topic for the room, use **build-loop** i
 
 ### If the conversation turns to code
 
-**appdelegate-ownership** and **shortcut-namespace** are two halves of one finding: the shortcut table has 13 context-resolved chord collisions, and resolving them imperatively is a 622-line prologue inside the largest function in the app. Read the shortcut page first; the AppDelegate page is the wider context.
+**appdelegate-ownership** is the page with a standing argument: two mechanical seams worth ~3,900 lines.
+
+**shortcut-namespace** is a negative result and is included deliberately. I thought I had found a namespace defect; cmux turned out to already implement the VS Code `when`-clause model, with priority-aware collision detection, refusal of dead bindings, and a rejection banner in Settings. The page says what I got wrong and why. It is worth showing precisely because it is the failure mode the AppDelegate page warns about — asserting absence without searching for the mechanism.
 
 ---
 
@@ -51,7 +53,7 @@ They are not a code review, and they are deliberately not a list of things that 
 
 Three of the five findings are **defensible decisions with a visible cost**, not mistakes:
 
-- `cmd+r` meaning reload in a browser and rename on a tab is correct in both places. The cost is that something has to decide, early, which context you are in.
+- `cmd+r` meaning reload in a browser and rename on a tab is correct in both places, and cmux resolves it declaratively rather than by accident.
 - An in-process UI-test harness driven by environment variables is a real tactic for making native UI tests trustworthy. The cost is 2,700 lines sharing a file with window lifecycle.
 - Nine sidebar detail flags defaulting to on is generous, not careless. The cost is that a user expresses one preference nine times.
 
@@ -96,7 +98,7 @@ No dependencies beyond the standard library. Each script parses files and prints
 
 - [`sidebar-density.md`](sidebar-density.md) · screenshots, nine default-on detail flags
 - [`accessibility-labels.md`](accessibility-labels.md) · the tab bar announces icons; fix submitted
-- [`shortcut-namespace.md`](shortcut-namespace.md) · 128 chords, 13 collisions, a 1,749-line dispatcher
+- [`shortcut-namespace.md`](shortcut-namespace.md) · corrected negative result: cmux already does this well
 - [`appdelegate-ownership.md`](appdelegate-ownership.md) · 32.4% `#if DEBUG`, two mechanical seams
 - [`build-loop.md`](build-loop.md) · 58 receipts, 37× warm-vs-cold, and what receipts bought
 - [`default-config.md`](default-config.md) · 29 overrides, 16 pins, 11 undeclared — the supporting inventory
