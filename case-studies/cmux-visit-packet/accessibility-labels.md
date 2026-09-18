@@ -1,7 +1,7 @@
 # Every surface tab bar button announces its icon, not its name
 
 **Status:** read from the live accessibility tree of a running cmux on 2026-09-17, then traced to source and fixed.
-**Fix:** [teamleaderleo/bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1) — `swift build` clean, `swift test` 223 tests / 0 failures.
+**Fix:** [teamleaderleo/bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1) — `swift build` clean, `swift test` 223 tests / 0 failures, **and verified end to end against two builds of cmux that differ only in this submodule.**
 
 ---
 
@@ -23,15 +23,17 @@ Those are not names. They are **SF Symbol identifiers** and the generic system d
 
 Here is what each button actually is:
 
-| button | announced | should be |
+| button | announced | the name it already has |
 | --- | --- | --- |
-| `cmux.newTerminal` | `terminal` | New Terminal Tab |
-| `cmux.newBrowser` | `Globe` | New Browser Tab |
+| `cmux.newTerminal` | `terminal` | New Tab (Terminal) |
+| `cmux.newBrowser` | `Globe` | New Tab (Browser) |
 | `cmux.splitRight` | `square.split.2x1` | **Split Right** |
 | `cmux.splitDown` | `square.split.1x2` | **Split Down** |
-| custom action, `title: "Copy Cmd"` | `Copy` | Copy Cmd |
-| custom action, `title: "Copy Screen"` | `Screen Sharing` | Copy Screen |
-| custom action, `title: "Copy Path"` | `Move` | Copy Path |
+| custom action, `title: "Copy Last Command"` | `Copy` | Copy Last Command |
+| custom action, `title: "Copy Visible Screen"` | `Screen Sharing` | Copy Visible Screen |
+| custom action, `title: "Copy Current Path"` | `Move` | Copy Current Path |
+
+The right-hand column is not aspirational — it is the tooltip each button already carries, confirmed by reading the fixed build. Hovering has always shown it; the screen reader has never had it.
 
 ## The user job
 
@@ -72,21 +74,47 @@ The accessibility of a control ends up depending on an unrelated interaction pro
 
 ## The fix
 
-One move, to where the identifier and tooltip already live and already apply to both branches:
+Label the `Button` where it is built, which is the canonical way to name an icon-only SwiftUI button:
 
 ```swift
-splitActionButton(button, tooltips: tooltips)
-    .accessibilityIdentifier(splitActionButtonAccessibilityIdentifier(button))
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(splitActionButtonTooltip(button, tooltips: tooltips))
-    .safeHelp(splitActionButtonTooltip(button, tooltips: tooltips))
+} else {
+    Button {
+        performSplitActionButton(button)
+    } label: {
+        splitActionButtonIcon(button.icon)
+    }
+    .buttonStyle(SplitActionButtonStyle(appearance: appearance, layout: tabBarLayout))
+    .accessibilityLabel(splitActionButtonTooltip(button, tooltips: tooltips))   // added
+}
 ```
 
-No behavior change for sighted users; tooltips, hit targets and styling are untouched. The mouse-down branch keeps `.accessibilityAddTraits(.isButton)` because its overlay-driven element is not a real `Button`.
+One line, in the one branch that was missing it. The call site and the mouse-down branch are untouched, so the `accessibilityIdentifier` is unaffected. No behavior change for sighted users; tooltips, hit targets and styling are the same.
+
+The label source is `splitActionButtonTooltip` — already the single source of truth for this button's name, and already used for the hover tooltip.
 
 Submitted as [teamleaderleo/bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1).
 
-**Not yet verified end to end.** The Bonsplit suite passes, but cmux has not been rebuilt and its accessibility tree re-read. The source path is unambiguous; the confirmation is still owed.
+### Verified end to end — and the first attempt was wrong
+
+Two builds of cmux at the **same commit** (`381dc8091`), on the same machine, differing only in the `vendor/bonsplit` pin, each read with the same accessibility-API probe:
+
+| button | control (`075cc0d`) | fixed (`b2d1da9`) |
+| --- | --- | --- |
+| `paneTabBarControl.newTerminal` | `terminal` | **New Tab (Terminal)** |
+| `paneTabBarControl.newBrowser` | `Globe` | **New Tab (Browser)** |
+| `paneTabBarControl.splitRight` | `square.split.2x1` | **Split Right** |
+| `paneTabBarControl.splitDown` | `square.split.1x2` | **Split Down** |
+| `…custom.terminal-kit.copyCommand` | `Copy` | **Copy Last Command** |
+| `…custom.terminal-kit.copyScreen` | `Screen Sharing` | **Copy Visible Screen** |
+| `…custom.terminal-kit.copyPath` | `Move` | **Copy Current Path** |
+
+Every button kept `AXPress` and kept its `paneTabBarControl.*` identifier.
+
+That last column is the point of doing this. **My first patch broke the identifier.** It moved `.accessibilityElement(children: .ignore)` to the call site, where it wrapped the row *after* `.accessibilityIdentifier(…)` — so the inner icon's identifier surfaced instead, and `paneTabBarControl.newTerminal` became `terminal`. UI tests locate these buttons by identifier, so the "fix" would have broken them.
+
+The revised patch applies `.accessibilityLabel` to the `Button` in the `else` branch directly — the canonical way to name an icon-only SwiftUI button — and leaves the call site and the mouse-down branch untouched.
+
+Nothing in the Bonsplit test suite caught that regression; both versions passed all 223 tests. Only reading the live accessibility tree did.
 
 ## The precedent
 
@@ -103,6 +131,8 @@ The interesting question is not "will you take this patch." It is:
 The accessibility label was wrong for every button in a visible, frequently-used control, and nothing failed. There is an `accessibilityIdentifier` on each of these buttons for UI tests, so the tests can find them — by identifier, which is exactly the channel that does *not* exercise the label.
 
 A ten-line test asserting that every `SplitActionButton`'s exposed label equals its tooltip would have caught it and would keep catching it. Whether that is worth having — and whether there are other controls in the same shape — is a question about how much the team wants accessibility to be a tested property rather than a reviewed one.
+
+The sharper version of the question comes from my own mistake above: the identifier regression also passed 223 tests. A unit suite cannot see what the accessibility tree actually exposes, because that is a property of the composed view hierarchy at runtime. Whatever the answer is, it probably has to run the app.
 
 Related: the custom-action API has the same shape. Anyone configuring `ui.surfaceTabBar.buttons` in `cmux.json` gets a `title` that becomes a tooltip and never an accessibility label, so this affects extension authors too, not just built-ins.
 

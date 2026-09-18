@@ -95,6 +95,19 @@ The cost was real — a new generation means a genuinely cold build, back to the
 
 It also exposed a gap on my side rather than Glaeda's: `tk cmux warm` passes no `--generation` through, so the remedy the refusal names is unreachable from the wrapper (terminal-kit [#50](https://github.com/teamleaderleo/terminal-kit/issues/50)). A correct refusal that the tooling cannot act on still reads like a crash.
 
+## The loop, demonstrated on this packet's own work
+
+Fixing the accessibility bug in [`accessibility-labels.md`](accessibility-labels.md) needed a cmux build against a patched `vendor/bonsplit`. That produced two receipts in the same generation:
+
+| run | what changed | elapsed |
+| --- | --- | ---: |
+| first | new `a11y-verify` generation (cold) | **1,070s** |
+| second | one line in one Swift file in a submodule | **73s** |
+
+14×, in the same session, on the work this packet describes. The second run is the one that made the fix reviewable: the first attempt at the patch turned out to break an accessibility identifier, and at 73 seconds finding that out and re-verifying cost minutes rather than the rest of the evening.
+
+Both receipts correctly recorded `"clean": false`, because the submodule pin was dirty at the time. That is the provenance working: neither number can later be mistaken for a build of committed source.
+
 ## The honest limits
 
 - **Not a controlled benchmark.** These are real builds with real change sizes. The bucket boundaries (600s, 120s) are my labels on a natural distribution, not a protocol. The right claim is "this is what the loop did," not "warm builds are 37× faster than cold ones under matched conditions."

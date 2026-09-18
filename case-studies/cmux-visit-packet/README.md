@@ -27,7 +27,7 @@ Each page stands alone and is short enough to open in the room. Every counted cl
 | [**appdelegate-ownership**](appdelegate-ownership.md) | A third of the "20,000-line AppDelegate" is `#if DEBUG` | Is the in-process UI-test harness deliberate, or where fixture code accumulated? |
 | [**build-loop**](build-loop.md) | 58 real build receipts: 34 minutes cold, 32 seconds warm | What is a founding-team member's actual edit-to-see-it time today? |
 
-**One of these comes with a fix already written**: `accessibility-labels` ships as [teamleaderleo/bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1), build clean and 223 tests passing.
+**One of these comes with a fix already written and verified**: `accessibility-labels` ships as [teamleaderleo/bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1) — 223 tests passing, and confirmed by reading the accessibility tree of two cmux builds at the same commit that differ only in that submodule. The first version of the patch passed all 223 tests and still broke an accessibility identifier; only the live read caught it.
 
 ### Reading order if there is time for one
 
@@ -35,7 +35,7 @@ Each page stands alone and is short enough to open in the room. Every counted cl
 
 ### Reading order if there is time for two
 
-Add **accessibility-labels**. It is small, it is unambiguous, the correct strings already exist in their codebase, and the patch is already written and tested — so it demonstrates the loop (notice → trace to source → fix → verify) rather than just the noticing.
+Add **accessibility-labels**. It is small, it is unambiguous, the correct strings already exist in their codebase, and the patch is written, tested and verified against a real build — so it demonstrates the whole loop (notice → trace to source → fix → verify → catch your own regression) rather than just the noticing.
 
 If contributor experience is the better topic for the room, use **build-loop** instead; it is the least likely of the five to read as criticism.
 
