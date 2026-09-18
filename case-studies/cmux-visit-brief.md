@@ -191,9 +191,13 @@ These are good material once the discussion asks for them. They are weaker openi
 
 There are three concrete cleanup items.
 
-### 1. Make cmux PR #57 tell the truth about its pushed diff
+### 1. Reconcile the packet with the now-pushed PR #57 head
 
-The current PR description includes validation/details from three local commits that were absent from the pushed head when the packet audited it. The branch has since moved, so re-check the exact head before the meeting and make the prose match what GitHub actually shows.
+The packet captured a real mismatch at the time: GitHub showed `60b026fdc` while three later local commits lived at `381dc8091`.
+
+That specific mismatch is now resolved. GitHub currently shows PR #57 at **`381dc8091`**, so the three commits the packet called “unpushed” have since reached the PR.
+
+The packet warning and the corrective PR comment are therefore stale as status notes. Before the meeting, make the packet say the current truth and do one final body-vs-diff read.
 
 Keep the reviewable comparison against the pinned upstream base if possible; that is much easier to discuss than dragging the entire fork history into the diff.
 
