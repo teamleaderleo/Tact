@@ -80,6 +80,8 @@ Four interaction prototypes exist as issues and running code rather than as page
 
 The PR is based on upstream `e9ec596d1`. Its base branch is pinned to that commit (`base/upstream-e9ec596d`) so the diff shows **the work and not the fast-forward**: 100 files, +4,237 / −219. Reviewing it against the fork's `main` instead renders 5,280 files and +1.17M lines, essentially all of it upstream history.
 
+**Before showing it:** the PR head is `60b026fdc`, and the local branch is three commits further on (the fork-`main` merge, the Ghostty semantic-integration pin, and the native-Ghostty build profile) — 75 files / +2,922 / −190 that are not pushed. The PR body describes some of that unpushed work, so the prose currently claims more than the diff contains. Either push and let the PR grow, or trim the description to the pushed scope; the second keeps it at the reviewable size that repointing the base bought.
+
 ## Running the evidence
 
 ```bash
