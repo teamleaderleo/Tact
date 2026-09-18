@@ -29,7 +29,11 @@ Three specific things are worth pointing at, and none of them is "it's too dense
 
 The first row's subtitle is **"Claude Code login successful."**
 
-That was true once, for a few seconds, some time ago. `showNotificationMessage` surfaces the *last* notification with no decay, so a row's most prominent secondary text is whatever last happened to fire — which, for a healthy workspace, is usually the least interesting thing about it. A workspace that is fine shows the same kind of message as one that needs you.
+That was true once, for a few seconds, some time ago.
+
+This is not just an inference from the screenshot — the path is unconditional in source. `TerminalNotificationStore.latestNotification(forTabId:)` returns `indexes.latestByTabId[tabId]` with **no read filter**, and that feeds `latestNotificationText` on the row snapshot (`TerminalController+ControlSystemContext.swift`). Marking a workspace read does not clear it: `markRead(forTabId:)` sets `isRead = true` on each notification but leaves it in the store, so `latestByTabId` still resolves. Only an explicit `clearLatestNotification(forTabId:)` / removal drops it.
+
+So a row's most prominent secondary text is whatever last happened to fire, and it stays after you have read it. For a healthy workspace that is usually the least interesting thing about it — and a workspace that is fine shows the same kind of message as one that needs you.
 
 This is Tact #52's thesis meeting a real default: **healthy activity should be quiet**, and this is the shape of it not being quiet.
 
