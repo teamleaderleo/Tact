@@ -37,7 +37,7 @@ If they name a real problem, stop running this list and work that problem. Captu
 
 ## 1. Your cmux + the sidebar — the lead
 
-**Show:** the running app, used normally. Not a slide, not a diff.
+**Show:** the running app, used normally. Not a slide, not a diff. Screenshots, demo steps and the launch command: [`fork-sidebar.md`](fork-sidebar.md).
 
 The fork's work: [cmux#57](https://github.com/teamleaderleo/cmux/pull/57) — one sidebar over Claude, Codex and OpenCode, open tabs above searchable history, plus a collapsible Spaces navigator that groups live tabs by their actual tile. Demonstrate the behavior; do not tour the diff (173 files).
 
