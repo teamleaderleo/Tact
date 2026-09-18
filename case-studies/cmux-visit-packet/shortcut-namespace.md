@@ -70,6 +70,22 @@ The prologue is not accidental complexity, and it should not be "cleaned up" by 
 
 The two findings are one finding: *the shortcut table's ambiguity is resolved imperatively, once, in the largest function in the app.*
 
+## What the settings UI shows about this
+
+![Settings, Keyboard Shortcuts](evidence/settings-keyboard-shortcuts.png)
+
+The Keyboard Shortcuts pane is a **flat list of action → chord rows**. It is clean, it supports rebinding and per-row reset, and it exposes chords (`Shortcut Chords: add tmux-style multi-step shortcuts in cmux.json`) and hint discovery (`Show Shortcut Hints While Holding Modifier Keys`).
+
+What it does not show is any of the structure above:
+
+- **no collision indicator.** `cmd+r` is bound to both `browserReload` and `renameTab`; nothing in this list says so, and assigning a chord already in use gives no signal here.
+- **no context.** The thing that makes those collisions *correct* — that they resolve by focus — is invisible, so a user cannot tell a deliberate overload from a mistake.
+- **no view of the `[`/`]` family.** The seven actions stacked on `]` appear as seven unrelated rows.
+
+This is the same finding as the dispatcher, seen from the front: **the precedence rules are real, load-bearing, and expressed nowhere the user can see.** They exist only as the order of `if` statements in `handleCustomShortcut`.
+
+That also makes the first proposal below cheaper than it looks — a chord table that a test can assert is also a table this pane could render.
+
 ## The precedent
 
 Browsers, editors, and terminals solve this three ways, and cmux currently uses only the third:
