@@ -27,7 +27,9 @@ DECL = re.compile(
     r"\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)?"
 )
 
-TEST_NAME = re.compile(r"UITest|UiTest|uiTest|TestIfNeeded|forTest|Testing|testOnly", re.I)
+# "Testing" alone matches production names like cmuxEventAllowsFirstResponderHitTesting,
+# so match the test-seam suffixes cmux actually uses instead.
+TEST_NAME = re.compile(r"UITest|UiTest|uiTest|TestIfNeeded|ForTesting|GuardTesting|testOnly", re.I)
 
 
 def debug_lines(lines):
@@ -76,11 +78,14 @@ def main():
     found = members(lines)
 
     for member in found:
+        # Gating is decided by the DECLARATION line. A span-overlap fraction
+        # misclassifies members whose enclosing `#if DEBUG` starts above them.
+        member["gated"] = member["start"] in debug
         span = set(range(member["start"], member["end"] + 1))
         member["debug"] = len(span & debug) / len(span)
 
-    production = [m for m in found if m["debug"] <= 0.5]
-    debugside = [m for m in found if m["debug"] > 0.5]
+    production = [m for m in found if not m["gated"]]
+    debugside = [m for m in found if m["gated"]]
 
     print(f"{TARGET}: {len(lines)} lines, {len(found)} top-level members")
     print(f"  inside #if DEBUG : {len(debug):6d} lines ({100 * len(debug) / len(lines):.1f}%)")
@@ -90,14 +95,17 @@ def main():
           f"{sum(m['lines'] for m in debugside):6d} lines")
 
     harness = [m for m in found if TEST_NAME.search(m["name"])]
-    gated = [m for m in harness if m["debug"] > 0.9]
-    print(f"\n## test-harness members (by name)")
-    print(f"  total            : {len(harness):4d} members, "
+    gated = [m for m in harness if m["gated"]]
+    ungated = [m for m in harness if not m["gated"]]
+    print("\n## test-harness members (by name)")
+    print(f"  total          : {len(harness):4d} members, "
           f"{sum(m['lines'] for m in harness):6d} lines")
-    print(f"  fully DEBUG-gated: {len(gated):4d} members, "
+    print(f"  DEBUG-gated    : {len(gated):4d} members, "
           f"{sum(m['lines'] for m in gated):6d} lines")
-    print(f"  not DEBUG-gated  : {len(harness) - len(gated):4d} members, "
-          f"{sum(m['lines'] for m in harness) - sum(m['lines'] for m in gated):6d} lines")
+    print(f"  NOT DEBUG-gated: {len(ungated):4d} members, "
+          f"{sum(m['lines'] for m in ungated):6d} lines")
+    for member in sorted(ungated, key=lambda m: -m["lines"]):
+        print(f"      {member['lines']:5d}  L{member['start']:<6} {member['name']}")
 
     print("\n## largest production-side members")
     for member in sorted(production, key=lambda m: -m["lines"])[:12]:

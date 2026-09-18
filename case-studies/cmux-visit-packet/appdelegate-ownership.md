@@ -21,9 +21,11 @@ This is that artifact. The headline is that **the line count is misleading in cm
 | inside `#if DEBUG` | 6,594 | **32.4%** |
 | production | 13,731 | 67.6% |
 
-A third of the file does not ship. Measured by top-level member instead of raw lines: 720 production-side members holding 14,744 lines, and 205 debug-side members holding 5,538 lines.
+A third of the file does not ship. Measured by top-level member instead of raw lines: 724 production-side members holding 15,299 lines, and 201 debug-side members holding 4,983 lines.
 
-Of the debug side, **73 members / 2,753 lines are named test scaffolding** — `setupTerminalCmdClickUITestIfNeeded` alone is 792 lines. 64 of those 73 members (2,682 lines) are fully `#if DEBUG`-gated. They are driven by `CMUX_UI_TEST_*` environment variables and exist so UI tests can plant fixtures and read state back.
+Of the debug side, **72 members / 2,749 lines are named test scaffolding** — `setupTerminalCmdClickUITestIfNeeded` alone is 792 lines. They are driven by `CMUX_UI_TEST_*` environment variables and exist so UI tests can plant fixtures and read state back.
+
+**71 of those 72 are `#if DEBUG`-gated.** The gating here is genuinely disciplined; the single exception is `installWindowResponderSwizzlesForTesting` (13 lines), and reading it shows it is benign — its body only forces evaluation of swizzles that are production behaviour anyway, with its one test-only call correctly `#if DEBUG`-gated inside.
 
 So the honest statement is not "you have a 20,000-line AppDelegate." It is:
 
@@ -56,14 +58,14 @@ The domain clustering is the weakest part of this analysis and I want to be stra
 
 The two seams worth naming are the ones where the *evidence*, not the taxonomy, points:
 
-### Seam 1 — the UI-test harness (2,682 lines, mechanical, zero release risk)
+### Seam 1 — the UI-test harness (2,749 lines, mechanical, zero release risk)
 
-64 members, already `#if DEBUG`-gated, already communicating through a documented env-var protocol. Moving them behind one injected `UITestHarness` type is close to a pure move:
+71 members, already `#if DEBUG`-gated, already communicating through a documented env-var protocol. Moving them behind one injected `UITestHarness` type is close to a pure move:
 
 - `AppDelegate.swift` drops ~13% with no production behavior change;
 - the harness becomes independently greppable and testable;
 - the env-var protocol becomes a real interface instead of 30 scattered `ProcessInfo.processInfo.environment[...]` reads;
-- the 9 members that are *not* fully DEBUG-gated (71 lines, e.g. `installWindowResponderSwizzlesForTesting`, `sessionSnapshotForTesting`) get audited on the way out — some of those probably want to be gated and currently are not.
+- the gating stops being something a reviewer has to keep getting right by hand, because the whole component moves behind one boundary.
 
 The payback is not tidiness. It is that a contributor reading `AppDelegate.swift` to understand window lifecycle currently walks through 2,700 lines of fixture plumbing to get there.
 
@@ -73,7 +75,7 @@ Covered in detail in [`shortcut-namespace.md`](shortcut-namespace.md). The short
 
 ### Together
 
-Seams 1 and 2 are ~3,800 lines, both mechanical, both reviewable as pure moves, and neither requires agreeing on what an app delegate is "supposed" to own. That is the whole proposal.
+Seams 1 and 2 are ~3,900 lines, both mechanical, both reviewable as pure moves, and neither requires agreeing on what an app delegate is "supposed" to own. That is the whole proposal.
 
 ## The unresolved questions for the room
 
