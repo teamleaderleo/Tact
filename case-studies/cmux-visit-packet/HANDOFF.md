@@ -66,9 +66,13 @@ Screenshot without disturbing the session: `screencapture -x -o -l<windowId>`. I
 ## Measurements that already exist — do not redo them
 
 - 58 build receipts, 2026-09-12 → 09-15: warm median **32 s** (n=32, min 22 s), cold/new-cache median **~19 min** (1,157 s), worst **34 min** (2,019 s). Those warm builds contained real changes.
-- A **no-op** build on the current tree: **64 s**. 6 of 7 script phases run, 7 CodeSign steps run. `Build wireguard-go` is the only phase that gets skipped.
-- Removing `alwaysOutOfDate = 1` from `Write Extension Point` and `Build Diff Sidecar` **does not help** — same phases, same codesign steps, 102 s. The experiment failed; the cheap answer is ruled out.
+- A **no-op** build on the current tree: **~97-101 s**. An earlier 64 s figure in [Tact#74](https://github.com/teamleaderleo/Tact/issues/74) was a single unreliable reading; two clean measurements gave 100.7 s and 97.4 s.
+- **Root cause, found and fixed:** three malformed objects in `cmux.xcodeproj/project.pbxproj` make Xcode synthesize nondeterministic guids into the project PIF, so the build-description signature never matches and Xcode re-plans every build. Fixing all three: **~97-101 s → ~72-75 s**, with build-description reuse confirmed across successive builds. Fixing only one of the three is not enough. Details and the three objects: [Tact#74](https://github.com/teamleaderleo/Tact/issues/74#issuecomment-5737520409).
+- `Localizable.xcstrings` is 15.4 MB; `xcstringstool compile --dry-run` takes ~21 s on it purely to enumerate output paths. That is the single biggest item the build-description cache skips.
+- The **CodeSign cascade is not a cost** — all 7 steps total 1.67 s. The six re-running script phases total ~14.6 s, and 12.5 s of that is the unnamed `'Run Script'` phase rebuilding `bin/ghostty` and `bin/cmux-cua`. That phase declares zero inputs and outputs and is the top remaining target, untested.
+- Removing `alwaysOutOfDate = 1` from `Write Extension Point` and `Build Diff Sidecar` **does not help**. That experiment failed; the cheap answer is ruled out.
 - `Compress Markdown Viewer Assets` runs in 0.07 s standalone and has its own content cache. It is not the cost.
+- Per-step timings come from parsing the `.xcactivitylog` (gzip + Apple SLF0; a `*` token carries `TaskMetrics` JSON with `wcDuration` in microseconds). No `-showBuildTimingSummary` needed.
 - `AppDelegate.swift`: 32.4% inside `#if DEBUG`; 72 members / 2,749 lines of named test scaffolding, 71 of 72 gated.
 - 128 default chords over 43 keys; 13 chords carry two actions; cmux resolves them with `when` clauses.
 - 7 of 7 surface tab-bar buttons announced an SF Symbol name before [bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1).
