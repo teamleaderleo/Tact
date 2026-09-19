@@ -73,6 +73,15 @@ Everything the tag exists for: bundle id, socket, state files, the app copy `cmu
 - CI builds clean on ephemeral runners: slots do not apply. CI's lever is the compilation cache (always-clean builds lose nothing), which is already in place for Release and proposed for Debug.
 - Cross-machine sharing: a remote compilation cache service is the only candidate, **UNTESTED**.
 
+## How it composes with a merge queue
+
+`main` moves about 5 times an hour (~3,500 commits in 30 days), so a slot warmed at `main` is stale within ~12 minutes on average, and any one of those commits can be the 620 s kind. Slots alone would keep a background warmer rebuilding almost constantly. The pieces that make it work together:
+
+1. **Merge queue**: `main` advances in batches (1-2 times an hour instead of 5), so a warm slot stays valid several times longer.
+2. **The queue's CI build is the trigger.** The `merge_group` run builds exactly the commit that becomes `main`. Seed CI's compilation cache from that run (today's proposal seeds from the push to `main`, which builds the same content a second time), and let the same event tell fleet warmers to fast-forward.
+3. **A `warm-main` ref.** When a fleet warmer has finished building `main` in its idle slots it advances `refs/heads/warm-main` to that commit. Agents branch new tasks from `warm-main`, not from the tip. Every task's first build is then the 36 s case by construction; being a few minutes behind the tip costs nothing because the queue re-validates against the real tip at merge time, on CI machines.
+4. **Cost**: each merge group is another CI run on the macOS runners that are already the bottleneck. It only nets out together with cancelling superseded runs, not routing docs/workflow-only changes to macOS, the Debug cache seed and balanced shards.
+
 ## Rollout
 
 1. Land the `reload.sh` default behind the slot marker (no behaviour change outside slots) with a test that the DerivedData path resolves to the slot and that the lock is taken and released.
