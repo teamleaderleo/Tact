@@ -67,7 +67,7 @@ The app module is one cache unit: any edit inside it forfeits the whole module. 
 
 **4d. Hybrid is dead.** Seed a tag with the cache on (135 s), then build the same tag with the cache off: everything recompiles (776 s), because the setting flip changes every compile command.
 
-**4e. Slots (the default worth building).** A tag only changes bundle id, names and socket, none of which are Swift inputs. New tag into an already-warm DerivedData: **35.7 s, 0 Swift compiles** (vs 953 s fresh); no-op 26 s; switching back 26.9 s; a third tag carrying a one-line edit 59.1 s. Design: [build-slots-design.md](build-slots-design.md). Cloning a DerivedData to a new path does not work (absolute paths; confirmed independently).
+**4e. Slots (the default worth building).** A tag only changes bundle id, names and socket, none of which are Swift inputs. New tag into an already-warm DerivedData: **35.7 s, 0 Swift compiles** (vs 953 s fresh); no-op 26 s; switching back 26.9 s; a third tag carrying a one-line edit 59.1 s. **Middle case: same slot, one newer upstream commit merged (package interface change + pbxproj file-list change): 620.1 s, nearly everything recompiled.** So slots only pay off if kept warm at the code tasks start from. Design: [build-slots-design.md](build-slots-design.md). Cloning a DerivedData to a new path does not work (absolute paths; confirmed independently).
 
 ## 5. `ContentView.swift` split (#13048)
 
