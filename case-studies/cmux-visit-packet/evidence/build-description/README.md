@@ -27,6 +27,7 @@ Upstream fix: manaflow-ai/cmux#12976. Fork equivalent: teamleaderleo/cmux#69.
 | --- | --- |
 | `slf.py` | Tokenizer for Apple's SLF0 format (the gzip'd `.xcactivitylog`). |
 | `timings.py <log.xcactivitylog>` | Per-tool wall clock from `TaskMetrics.wcDuration`. Works on any build Xcode already produced; no `-showBuildTimingSummary` needed. |
+| `buildprofile.py <log.xcactivitylog> [--wall S]` | Where a build's wall clock went: parallelism timeline, serial stretches, slowest single tasks, share of the machine used, task-seconds by target. Works on any existing log, no rebuild. Task timestamps are completion times, so intervals are `[end - duration, end]`. |
 | `anom3.py <project.pbxproj>` | Finds duplicate object ids, orphaned file references, and variant-group children missing their `.lproj/` prefix. |
 | `variant.py <project.pbxproj>` | Dumps just the `PBXVariantGroup` objects. |
 | `pifloop.sh <worktree> <derived-data> <n> <label>` | Loads the project `n` times with `xcodebuild -showBuildSettings` and counts distinct `PROJECT@` entries in the PIF cache. One key means the cache can hit. ~10 s per load after the first; no build. **Deletes `<derived-data>` first.** |
