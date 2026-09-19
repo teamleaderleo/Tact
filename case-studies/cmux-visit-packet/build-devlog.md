@@ -65,7 +65,9 @@ The app module is one cache unit: any edit inside it forfeits the whole module. 
 
 **4c. It destroys incremental builds (decisive).** In a warm tag with the cache on, no-op 27.8 s, then one comment line in a small app-target file: **603.9 s**, the entire app target recompiled (cache off: ~38 s, 3 files). So it must not be a `reload.sh` default. It is fine for CI (always clean builds) and one-shot builds.
 
-**4d. Hybrid is dead.** Seed a tag with the cache on (135 s), then build the same tag with the cache off: everything recompiles, because the setting flip changes every compile command.
+**4d. Hybrid is dead.** Seed a tag with the cache on (135 s), then build the same tag with the cache off: everything recompiles (776 s), because the setting flip changes every compile command.
+
+**4e. Slots (the default worth building).** A tag only changes bundle id, names and socket, none of which are Swift inputs. New tag into an already-warm DerivedData: **35.7 s, 0 Swift compiles** (vs 953 s fresh); no-op 26 s; switching back 26.9 s; a third tag carrying a one-line edit 59.1 s. Design: [build-slots-design.md](build-slots-design.md). Cloning a DerivedData to a new path does not work (absolute paths; confirmed independently).
 
 ## 5. `ContentView.swift` split (#13048)
 
@@ -89,8 +91,9 @@ Run for #13007 (09-18): compile admission 1,015 s (compile 814 s, no compilation
 
 ## 8. Open
 
-- **Slots** (being measured): reuse a warm DerivedData via `reload.sh --derived-data` and change only the tag. If a tag switch costs seconds, the fleet default should be a pool of warm slots per machine instead of a fresh DerivedData per tag: no cold builds, cache off, incremental loop intact.
-- `reload.sh` overhead outside `xcodebuild` (~17-24 s per run): timestamped trace queued.
+- Slots, realistic cases (being measured): same slot with newer `main` merged in; same DerivedData from a different worktree path (expected to invalidate everything, which is why a slot is a worktree + DerivedData pair).
+- `reload.sh` overhead outside `xcodebuild`: my `bash -x` trace was useless (reload.sh buffers its own output into a log, so the trace arrived in one lump). An independent measurement puts the script's own logic at ~1 s and the rest in helper/TUI install, app copy, signing and launch checks; work to make those steps skip when unchanged is in progress elsewhere.
+- Type-check hotspot splits (branch `perf/typecheck-hotspots`): before/after per-file compile seconds being measured.
 - Corrected split A/B, n=2 per edit site per arm.
 - Moving code out of the app module into packages: needs a dependency map of `Sources/`.
 - Remote compilation cache service for the fleet (`COMPILATION_CACHE_REMOTE_SERVICE_PATH`): untested.
