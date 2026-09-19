@@ -18,6 +18,7 @@ Written 2026-09-18 for whoever picks this up next. Scope is **cmux, terminal-kit
 | Workspace templates | [terminal-kit#51](https://github.com/teamleaderleo/terminal-kit/pull/51) | unmerged |
 | Spaces design argument | [Tact#71](https://github.com/teamleaderleo/Tact/issues/71) | open question for the founders, not a task |
 | Local build loop | [Tact#74](https://github.com/teamleaderleo/Tact/issues/74) | root cause posted there (three malformed `project.pbxproj` objects); Codex is continuing the build-time work |
+| Project-resource repair | upstream [manaflow-ai/cmux#12976](https://github.com/manaflow-ai/cmux/pull/12976) | open. Verification its description was missing is [in the comments](https://github.com/manaflow-ai/cmux/pull/12976#issuecomment-5738251395): 3 loads → 3 PIF keys pristine, 5 → 5 with the orphan alone repaired, 7 → 1 with both. Fork [cmux#69](https://github.com/teamleaderleo/cmux/pull/69) is the same change and is superseded — close it |
 | Accessibility fix | upstream [manaflow-ai/bonsplit#243](https://github.com/manaflow-ai/bonsplit/pull/243), one line; fork [bonsplit#1](https://github.com/teamleaderleo/bonsplit/pull/1), [Tact#64](https://github.com/teamleaderleo/Tact/issues/64) | upstream PR open, cubic clean. Fork #1 is stacked on the unrelated `showsTabCloseButton` commit, so a fresh branch went upstream. The #57 build pins the fixed submodule already |
 
 ## The running dev build
