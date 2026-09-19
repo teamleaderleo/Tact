@@ -1,0 +1,12 @@
+### SENSITIVITY: anomalies 1+3 fixed, anomaly 2 injected (== fork state)  wt=<scratch>/wt-pristine
+pbxproj mtime/size: 1789780529 2155515
+load 1: rc=0 37.2s  distinct PROJECT@ pifs now: 1
+    PROJECT@v11_mod=9dff336327fd1e649e4876512a1fcc8c_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+load 2: rc=0 9.3s  distinct PROJECT@ pifs now: 2
+    PROJECT@v11_mod=6dc3455f40ec266059785075d3d7b872_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+    PROJECT@v11_mod=9dff336327fd1e649e4876512a1fcc8c_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+load 3: rc=0 10.4s  distinct PROJECT@ pifs now: 3
+    PROJECT@v11_mod=219e2e5ce4663c0c138b1e06f237cd2e_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+    PROJECT@v11_mod=6dc3455f40ec266059785075d3d7b872_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+    PROJECT@v11_mod=9dff336327fd1e649e4876512a1fcc8c_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+pbxproj mtime/size after: 1789780529 2155515

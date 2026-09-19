@@ -1,0 +1,12 @@
+### PRISTINE upstream/main e91468b846 (anomalies 1+3 present)  wt=<scratch>/wt-pristine
+pbxproj mtime/size: 1789779661 2155464
+load 1: rc=0 99.9s  distinct PROJECT@ pifs now: 1
+    PROJECT@v11_mod=3f36999e57d70ccf8b6d6bd5b5a201db_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+load 2: rc=0 10.4s  distinct PROJECT@ pifs now: 2
+    PROJECT@v11_mod=3f36999e57d70ccf8b6d6bd5b5a201db_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+    PROJECT@v11_mod=46ecd90b9be4b11ab4cd68e90b471186_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+load 3: rc=0 10.7s  distinct PROJECT@ pifs now: 3
+    PROJECT@v11_mod=3f36999e57d70ccf8b6d6bd5b5a201db_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+    PROJECT@v11_mod=46ecd90b9be4b11ab4cd68e90b471186_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+    PROJECT@v11_mod=fa53346439317e3fb0c31f82348b24ab_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+pbxproj mtime/size after: 1789779661 2155464

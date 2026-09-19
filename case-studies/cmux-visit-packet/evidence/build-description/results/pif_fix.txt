@@ -1,0 +1,9 @@
+### FIX BRANCH ce1a392 (anomalies 1+3 fixed, 2 never present)  wt=<scratch>/wt-xcodeproj-cache
+pbxproj mtime/size: 1789779262 2155515
+load 1: rc=0 108.0s  distinct PROJECT@ pifs now: 1
+    PROJECT@v11_mod=3ec5fa1ab24d62338dd66ac030843a46_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+load 2: rc=0 10.0s  distinct PROJECT@ pifs now: 1
+    PROJECT@v11_mod=3ec5fa1ab24d62338dd66ac030843a46_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+load 3: rc=0 9.8s  distinct PROJECT@ pifs now: 1
+    PROJECT@v11_mod=3ec5fa1ab24d62338dd66ac030843a46_hash=b8a004fb84f0cbdf2516cef41548d515plugins=1OJSG6M1FOV3XYQCBH7Z29RZ0FPR9XDE1-json
+pbxproj mtime/size after: 1789779262 2155515
