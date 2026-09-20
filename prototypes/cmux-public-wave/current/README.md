@@ -55,6 +55,10 @@ Live attempt on 2026-09-20: default `cmux ls --json` found no default live socke
 
 Promotion: implement a pure native CurrentWorkQueryService over the atomic catalog and existing sidebar/attention owners, add the durable identity bridge from lane A, then expose the same payload in CLI and a debug/sidebar consumer. The thread ledger remains separately sourced with its own observation/head provenance. This prototype is enough to review that boundary, not enough to claim the live success criterion is met.
 
+## Live reader evidence
+
+A read-only `surface.catalog` request with `refresh: false` succeeded against the existing `glaeda-native` build (`4c190f2c5`) on 2026-09-20: 37 resources and 37 projections, reduced once and rendered as JSON and text. The aggregate-only [receipt](live-read-receipt.json) contains no workspace names, paths, or session content. That older build exposed zero stable projection identity fields. This proves the collector can read the live older protocol; it does not verify the pending native identity implementation, Cloud freshness, or agent attention.
+
 ## Native promotion seam, audited at b334a7deeb0ff65bc9ee4d1c6a2bf7d454795110
 
 The next native slice can put pure Sendable/Codable input/output values and reduction in the existing `Packages/macOS/CmuxCore` package, with standalone Swift Testing tests. An injected `Sources/Surfaces/CurrentWorkQueryService.swift` should capture existing owners synchronously in one main-actor turn, then reduce/encode off-main. A new read-only `current.list` socket method can serve `cmux current --json` and its text rendering. **These native current-work files/commands are a design, not shipped by this prototype.**
