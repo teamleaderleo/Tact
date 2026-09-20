@@ -1,4 +1,3 @@
-import copy
 import json
 import os
 from pathlib import Path
@@ -115,6 +114,12 @@ class TransactionTests(unittest.TestCase):
         self.receipt.write_text('{}')
         with self.assertRaises(Conflict):
             self.install()
+
+    def test_receipt_cannot_replace_lock_file(self):
+        self.receipt = self.root / ".cmux-pack.lock"
+        with self.assertRaises(Conflict):
+            self.install()
+        self.assertFalse(self.target.exists())
 
 
 if __name__ == "__main__":

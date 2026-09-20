@@ -131,7 +131,7 @@ def lock(target):
 def apply(owner, plan, receipt):
     target = Path(plan["target"])
     receipt = Path(receipt)
-    if receipt.resolve() == target.resolve() or receipt.exists():
+    if receipt.resolve() in {target.resolve(), (target.parent / ".cmux-pack.lock").resolve()} or receipt.exists():
         raise Conflict("receipt must be a new path distinct from config")
     with lock(target) as guard:
         fcntl.flock(guard, fcntl.LOCK_EX)
@@ -199,7 +199,7 @@ def main():
         print(json.dumps({"manifest": manifest, "owner": HELPER, "scope": "global profile sidebar preferences"}, indent=2))
     elif args.op == "preview":
         target = args.profile / "cmux.json"
-        if args.plan.resolve() == target.resolve() or args.plan.exists():
+        if args.plan.resolve() in {target.resolve(), (target.parent / ".cmux-pack.lock").resolve()} or args.plan.exists():
             raise Conflict("plan must be a new path distinct from config")
         plan = preview(owner, target, json.loads(args.manifest.read_text()))
         write(args.plan, encoded(plan))
