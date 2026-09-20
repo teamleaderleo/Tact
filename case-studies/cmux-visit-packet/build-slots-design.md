@@ -37,7 +37,25 @@ So a tag switch costs about 10 s over a no-op, and switching back costs nothing 
 | new tag on the newer code | **620.1 s** | 4,829 app-target + ~1,070 in packages: nearly everything |
 | no-op after it | 30.3 s | 0 |
 
-Still better than 953 s, but not by much. Five changed app files did not cause this; an interface change in a package that most of the app imports, and/or a changed file list for the app target, did (not yet separated: **UNTESTED** which of the two, and whether adding one file to the app target alone forces a whole-module rebuild). Either way the lesson is the same: a slot only pays off when it was last built on (nearly) the code the task starts from.
+Still better than 953 s, but not by much. A replay of seven consecutive `main` commits in one warm slot (below) separates the causes: the rebuild comes from an interface change in a low-level package most of the app imports (`CmuxControlSocket`, `CmuxSettings`), **not** from adding a file to the app target (that cost 437 compiles, not ~4,800). Either way the lesson is the same: a slot only pays off when it was last built on (nearly) the code the task starts from.
+
+### Replay: what a warmer would actually do
+
+Seven consecutive first-parent `main` commits, built incrementally in one slot through `reload.sh`; a new task tag tried right after commits 3 and 6.
+
+| # | what the commit touched | time | app-target Swift compiles |
+|---|---|---|---|
+| 1 | (settle) | 38.2 s | 0 |
+| 2 | iOS app + iOS packages only | 39.4 s | 0 |
+| 3 | `CmuxSettings`, `CmuxControlSocket`, 5 app files, CLI | **540.5 s** | 4,829 |
+| 3t | new task tag right after | 41.8 s | 0 |
+| 4 | 1 app file; a file added to the test target | 66.9 s | 3 |
+| 5 | 38 app files, `CmuxCloudMachines` | **366.6 s** | 1,969 |
+| 6 | 5 app files; a file **added to the app target** | 127.9 s | 437 |
+| 6t | new task tag right after | 37.3 s | 0 |
+| 7 | `.github`, docs, tests only | 28.9 s | 0 |
+
+About 20 minutes of warmer build time for seven tip moves, 75% of it in two commits. Commits that touch no macOS build input compile nothing, so a warmer can advance past them without building. A task that starts from the warmed commit gets the ~40 s first build every time, including right after the 540 s rebuild. File count does not predict cost (5 app files: 437 compiles; 38: 1,969; 1: 3).
 
 ## Design
 

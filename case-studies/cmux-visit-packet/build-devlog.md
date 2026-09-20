@@ -91,8 +91,8 @@ Run for #13007 (09-18): compile admission 1,015 s (compile 814 s, no compilation
 
 ## 8. Open
 
-- Slots, realistic cases (being measured): same slot with newer `main` merged in; same DerivedData from a different worktree path (expected to invalidate everything, which is why a slot is a worktree + DerivedData pair).
-- `reload.sh` overhead outside `xcodebuild`: my `bash -x` trace was useless (reload.sh buffers its own output into a log, so the trace arrived in one lump). An independent measurement puts the script's own logic at ~1 s and the rest in helper/TUI install, app copy, signing and launch checks; work to make those steps skip when unchanged is in progress elsewhere.
+- Slots: seven-commit `main` replay done (see the design doc): 0-compile for commits outside the macOS build, 540 s for a low-level package interface change, 437 compiles when a file is added to the app target (not a whole-module rebuild). Still untested: same DerivedData from a different worktree path.
+- `reload.sh` overhead outside `xcodebuild`: my `bash -x` trace was useless (reload.sh buffers its own output into a log, so the trace arrived in one lump). An independent measurement puts the script's own logic at ~1 s and the rest in helper/TUI install, app copy, signing and launch checks; #13087 skips those steps when the built app and the staged values are unchanged: warm no-op ~21 s -> ~11 s. Its first version keyed reuse on `git diff` and would have reused a stale app after a commit (caught by Greptile, not by my validation, which only tried an uncommitted edit); the key is now a fingerprint of the built app (Info.plist, signing seal, executables).
 - Type-check hotspot splits (branch `perf/typecheck-hotspots`): before/after per-file compile seconds being measured.
 - Corrected split A/B, n=2 per edit site per arm.
 - Moving code out of the app module into packages: needs a dependency map of `Sources/`.
