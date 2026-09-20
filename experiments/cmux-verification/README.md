@@ -2,8 +2,8 @@
 
 The implementation lives in [CMUX PR #13248](https://github.com/manaflow-ai/cmux/pull/13248),
 branch `tools/verification-receipts`, at
-`5564d9ceffd1922a5e8966806a9f4c760293fe47`.
-The [contributor guide](https://github.com/manaflow-ai/cmux/blob/5564d9ceffd1922a5e8966806a9f4c760293fe47/docs/verification-receipts.md)
+`3cf4d4442fbfc9a99abb7ec750a16d6def4597dc`.
+The [contributor guide](https://github.com/manaflow-ai/cmux/blob/3cf4d4442fbfc9a99abb7ec750a16d6def4597dc/docs/verification-receipts.md)
 is the owning contract. This directory contains findings only.
 
 The initial single-test receipt wrapper added little value to local iteration.
@@ -14,7 +14,8 @@ production checks locally and in CI:
 python3 scripts/verify-local.py
 python3 scripts/verify-local.py --only project --only test-wiring
 python3 scripts/verify-local.py --receipt /tmp/cmux-preflight.json
-python3 scripts/verify-local.py --only swift-syntax --swift path/to/Changed.swift
+python3 scripts/verify-local.py --swift-changed
+python3 scripts/verify-local.py --only swift-syntax --swift-changed origin/main
 ```
 
 It checks localization, project configuration, generated policy, test-target
@@ -28,7 +29,7 @@ target membership makes the same command pass without a native build.
 - Real full preflight on observed CMUX HEAD `543a7b4529929d8b04d885ad0f058da24874cc89`:
   eight checks passed, five normalizer tests executed, zero skipped. About 13 seconds
   of child-command execution on this Mac is one observation, not a benchmark.
-- 34 focused tests passed across the receipt adapter and local command. They cover
+- 42 focused tests passed across the receipt adapter and local command. They cover
   the real wiring failure/repair, zero-test rejection, source drift, interruption,
   bounded diagnostics, missing tools, schema refusal and command invocation.
 - Existing CI routing tests pass. The workflow change and tooling tests retain
@@ -38,6 +39,31 @@ target membership makes the same command pass without a native build.
 - A later real full preflight on observed HEAD `89116fba0e529543841be58894a39d9705d40a28`
   passed all eight checks, executing five normalizer tests and skipping zero, with
   21.494 seconds of child-command execution. Source remains dirty-qualified.
+
+## Composition and discovery
+
+`--swift-changed` selects current staged/unstaged/nonignored untracked Swift;
+an explicit base ref adds committed changes since its merge-base. Automatic
+selection excludes the managed `.glaeda/apple-build/` cache, which a real trial
+otherwise selected as a generated Swift test runner. Explicit file selection is
+still available.
+
+`--swift-stdin0` accepts NUL-delimited checkout-relative paths and filters Swift;
+`--receipt -` emits JSON on stdout with diagnostics on stderr. A real Git diff
+pipeline selected and parsed five Swift files at observed HEAD
+`89116fba0e529543841be58894a39d9705d40a28`, retaining dirty-source qualification;
+`swift-selected.json` records that scope. An empty selection is `skipped` with
+`reason: no_swift_inputs`, exits 0, and makes no parsing-pass claim. This does not
+relax zero-executed-test rejection. Pipeline callers must use `pipefail` to retain
+upstream failures.
+
+Help now groups common checks, composition and execution controls. The testing
+skill gives a short quick start, `--list` reveals underlying commands, and detailed
+references cover scope and receipts. All 43 checked relative links and the skill
+validator pass. A new skill index separates app operation from repository work.
+The broader 22-skill audit found that Cloud VM's approximately 8,300-word entry
+point concatenates two versions with conflicting plan guidance; reconciliation
+is tracked in [CMUX #13261](https://github.com/manaflow-ai/cmux/issues/13261).
 
 ## Improvements grounded in recent iteration
 
