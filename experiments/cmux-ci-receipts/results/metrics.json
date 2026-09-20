@@ -1,0 +1,241 @@
+{
+  "after": {
+    "artifact_download_step": {
+      "n": 1,
+      "p50_seconds": 11.0,
+      "p95_seconds": 11.0,
+      "total_seconds": 11.0
+    },
+    "attempts": 476,
+    "cancelled_attempt_seconds": 11921.0,
+    "cancelled_job_seconds": 6487.0,
+    "checkout_seconds": 19081.0,
+    "ci_status_wait": {
+      "n": 24,
+      "p50_seconds": 734.0,
+      "p95_seconds": 1433.55
+    },
+    "classes_seconds": {
+      "nightly_release": 3178.0,
+      "other": 6699.0,
+      "pr_admission": 55265.0,
+      "seed": 0.0
+    },
+    "compile_result_wait": {
+      "n": 10,
+      "p50_seconds": 1285.0,
+      "p95_seconds": 1422.2
+    },
+    "complexity_checkout_seconds": 11974.0,
+    "incomplete_job_durations": 35,
+    "jobs": 1063,
+    "merge_failure_tail": [],
+    "merged_prs": 2,
+    "monetary_estimate": null,
+    "retry_seconds": 1401.0,
+    "run_conclusions": {
+      "action_required": 15,
+      "cancelled": 45,
+      "failure": 33,
+      "skipped": 135,
+      "success": 246
+    },
+    "runner_seconds": 65142.0,
+    "runners_seconds": {
+      "blacksmith/linux": 21945.0,
+      "blacksmith/macos": 2319.0,
+      "github_or_unknown/linux": 13282.0,
+      "warp/macos": 27596.0
+    },
+    "runs": 474,
+    "seconds_per_merged_pr": 32571.0,
+    "suite_shapes": {
+      "compile_without_observed_unit_test_steps": 17,
+      "unknown_or_routed_away": 9
+    },
+    "workflow_seconds": {
+      ".github/workflows/agent-notification-tests.yml": 379.0,
+      ".github/workflows/auth-refresh-tests.yml": 829.0,
+      ".github/workflows/ci.yml": 31142.0,
+      ".github/workflows/cla-policy-guard.yml": 587.0,
+      ".github/workflows/cla.yml": 315.0,
+      ".github/workflows/claude.yml": 0.0,
+      ".github/workflows/cli-pipe-regressions.yml": 4369.0,
+      ".github/workflows/cloud-machine-tests.yml": 260.0,
+      ".github/workflows/cloud-task-local-tests.yml": 24.0,
+      ".github/workflows/cloud-vm-guest-install.yml": 129.0,
+      ".github/workflows/indexnow.yml": 35.0,
+      ".github/workflows/ios-appstore-upload.yml": 402.0,
+      ".github/workflows/ios-testflight.yml": 381.0,
+      ".github/workflows/localization-catalog.yml": 97.0,
+      ".github/workflows/merge-group-fail-fast.yml": 0.0,
+      ".github/workflows/nightly.yml": 2395.0,
+      ".github/workflows/remote-daemon.yml": 465.0,
+      ".github/workflows/test-depot.yml": 1700.0,
+      ".github/workflows/test-e2e.yml": 4528.0,
+      ".github/workflows/testbox-broker-guard.yml": 435.0,
+      ".github/workflows/web-complexity-trusted.yml": 8401.0,
+      ".github/workflows/web-complexity.yml": 4294.0,
+      ".github/workflows/web-validation.yml": 3975.0
+    }
+  },
+  "before": {
+    "artifact_download_step": {
+      "n": 168,
+      "p50_seconds": 12.0,
+      "p95_seconds": 621.15,
+      "total_seconds": 17566.0
+    },
+    "attempts": 672,
+    "cancelled_attempt_seconds": 109680.0,
+    "cancelled_job_seconds": 45177.0,
+    "checkout_seconds": 39804.0,
+    "ci_status_wait": {
+      "n": 49,
+      "p50_seconds": 1955.0,
+      "p95_seconds": 4896.4
+    },
+    "classes_seconds": {
+      "merge_validation": 33883.0,
+      "nightly_release": 1228.0,
+      "other": 16054.0,
+      "pr_admission": 376402.0,
+      "seed": 0.0
+    },
+    "compile_result_wait": {
+      "n": 29,
+      "p50_seconds": 1322.0,
+      "p95_seconds": 1629.0
+    },
+    "complexity_checkout_seconds": 20262.0,
+    "incomplete_job_durations": 65,
+    "jobs": 2102,
+    "merge_failure_tail": [
+      {
+        "attempt": 1,
+        "first_failure_at": "2026-09-20T08:40:18Z",
+        "run_id": 35497790789,
+        "runner_seconds_after_failure": 2.0
+      },
+      {
+        "attempt": 1,
+        "first_failure_at": "2026-09-20T08:19:27Z",
+        "run_id": 35497814823,
+        "runner_seconds_after_failure": 1316.0
+      },
+      {
+        "attempt": 1,
+        "first_failure_at": "2026-09-20T08:40:18Z",
+        "run_id": 35497855557,
+        "runner_seconds_after_failure": 3.0
+      }
+    ],
+    "merged_prs": 0,
+    "monetary_estimate": null,
+    "retry_seconds": 37758.0,
+    "run_conclusions": {
+      "cancelled": 79,
+      "failure": 34,
+      "skipped": 127,
+      "success": 428
+    },
+    "runner_seconds": 427567.0,
+    "runners_seconds": {
+      "blacksmith/linux": 49658.0,
+      "blacksmith/macos": 7949.0,
+      "github_or_unknown/linux": 22561.0,
+      "github_or_unknown/unknown": 0.0,
+      "github_or_unknown/windows": 0.0,
+      "warp/macos": 347399.0
+    },
+    "runs": 668,
+    "seconds_per_merged_pr": null,
+    "suite_shapes": {
+      "compile_without_observed_unit_test_steps": 18,
+      "full_suite_steps_reached": 28,
+      "unknown_or_routed_away": 6
+    },
+    "workflow_seconds": {
+      ".github/workflows/agent-notification-tests.yml": 11777.0,
+      ".github/workflows/auth-refresh-tests.yml": 472.0,
+      ".github/workflows/ci-status-fallback.yml": 12.0,
+      ".github/workflows/ci.yml": 358156.0,
+      ".github/workflows/cla-policy-guard.yml": 922.0,
+      ".github/workflows/cla.yml": 454.0,
+      ".github/workflows/claude.yml": 0.0,
+      ".github/workflows/cli-pipe-regressions.yml": 3412.0,
+      ".github/workflows/cloud-command-deadlines.yml": 305.0,
+      ".github/workflows/cloud-vm-guest-install.yml": 92.0,
+      ".github/workflows/cloud-vm-image-reachability.yml": 104.0,
+      ".github/workflows/cmux-tui-artifacts.yml": 1619.0,
+      ".github/workflows/cmux-tui-sdks.yml": 3021.0,
+      ".github/workflows/cmux-tui-spec.yml": 125.0,
+      ".github/workflows/cmux-tui.yml": 3368.0,
+      ".github/workflows/indexnow.yml": 0.0,
+      ".github/workflows/ios-appstore-upload.yml": 397.0,
+      ".github/workflows/ios-testflight.yml": 372.0,
+      ".github/workflows/iroh-v2.yml": 332.0,
+      ".github/workflows/localization-catalog.yml": 70.0,
+      ".github/workflows/merge-group-policy-checks.yml": 13.0,
+      ".github/workflows/nightly.yml": 425.0,
+      ".github/workflows/r2-upload-tests.yml": 16.0,
+      ".github/workflows/relay-tls.yml": 664.0,
+      ".github/workflows/reload-build.yml": 2037.0,
+      ".github/workflows/remote-daemon.yml": 112.0,
+      ".github/workflows/test-depot.yml": 5897.0,
+      ".github/workflows/test-e2e.yml": 3133.0,
+      ".github/workflows/testbox-broker-guard.yml": 836.0,
+      ".github/workflows/web-complexity-trusted.yml": 13374.0,
+      ".github/workflows/web-complexity.yml": 8252.0,
+      ".github/workflows/web-validation.yml": 7798.0
+    }
+  },
+  "supplementary": {
+    "artifact_download_step": {
+      "n": 0,
+      "p50_seconds": null,
+      "p95_seconds": null,
+      "total_seconds": 0
+    },
+    "attempts": 3,
+    "cancelled_attempt_seconds": 0,
+    "cancelled_job_seconds": 0,
+    "checkout_seconds": 168.0,
+    "ci_status_wait": {
+      "n": 0,
+      "p50_seconds": null,
+      "p95_seconds": null
+    },
+    "classes_seconds": {
+      "nightly_release": 2449.0,
+      "seed": 2701.0
+    },
+    "compile_result_wait": {
+      "n": 0,
+      "p50_seconds": null,
+      "p95_seconds": null
+    },
+    "complexity_checkout_seconds": 0,
+    "incomplete_job_durations": 0,
+    "jobs": 27,
+    "merge_failure_tail": [],
+    "merged_prs": null,
+    "monetary_estimate": null,
+    "retry_seconds": 0,
+    "run_conclusions": {
+      "success": 3
+    },
+    "runner_seconds": 5150.0,
+    "runners_seconds": {
+      "blacksmith/linux": 11.0,
+      "blacksmith/macos": 0.0,
+      "warp/macos": 5139.0
+    },
+    "runs": 3,
+    "seconds_per_merged_pr": null,
+    "suite_shapes": {},
+    "workflow_seconds": {
+      ".github/workflows/nightly.yml": 5150.0
+    }
+  }
+}
