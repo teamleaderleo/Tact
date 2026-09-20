@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "status": "prepared-not-run",
+  "scope": "Tact #87 exploratory integration supplement; not an admitted Elatura #125 resource stage",
+  "methodologyOwner": "teamleaderleo/elatura#116",
+  "sourceRevision": "b323290a0532b4080e468ab30d3a29bb7bf8d2fa",
+  "conditions": [
+    {"id":"stock","adapter":false,"browserVersion":null,"binarySha256":null,"profilePairing":null},
+    {"id":"cmux-ordinary","adapter":false,"browserVersion":null,"binarySha256":null,"profilePairing":null},
+    {"id":"cmux-adapter","adapter":true,"intervention":"read-only-observation-plus-explicit-jump","browserVersion":null,"binarySha256":null,"profilePairing":null}
+  ],
+  "comparisons": {"hostDifference":["stock","cmux-ordinary"],"adapterEffect":["cmux-ordinary","cmux-adapter"]},
+  "requirements": [
+    "Freeze a separate #87 supplement revision before live collection; do not edit or impersonate the frozen 112-run #125 plan",
+    "Record exact installed versions and binary digests; CMUX conditions must use identical binary digest and transport",
+    "Dedicated owned profiles only; raw profile paths and application targets remain in approved private locations",
+    "Same machine, OS, display, AC power, account/workload class, profile lineage, cache policy and measurement windows",
+    "Record unavoidable stock/CMUX version or engine differences separately from adapter effect",
+    "Record ordinary daemon cost in both CMUX conditions, including separately rooted daemon/broker processes",
+    "No destructive lifecycle actions or automatic message/edit submission",
+    "Abort contaminated block; preserve losing results and failed recovery evidence"
+  ],
+  "workload": {
+    "initial":"one fixed long genuine ChatGPT application lane",
+    "cohortAfterInitialGate":8,
+    "accountClass":null,"workloadToken":null,"fixtureDigest":null,
+    "singleBlocks":5,"rotationBlocks":3,
+    "conditionOrderByBlock":[["stock","cmux-ordinary","cmux-adapter"],["cmux-ordinary","cmux-adapter","stock"],["cmux-adapter","stock","cmux-ordinary"],["cmux-adapter","cmux-ordinary","stock"],["stock","cmux-adapter","cmux-ordinary"]],
+    "cooldownSeconds":60,"settleSeconds":120,"steadySeconds":600,
+    "singleReturnProbes":10,"backgroundDwellSeconds":30,"returnedDwellSeconds":10,
+    "warmupRotations":2,"recordedRotations":12,"activationDwellSeconds":15,"finalBackgroundSeconds":300,
+    "cacheState":"cold-process/canonical-profile; OS/provider caches can remain warm"
+  },
+  "machine": {"osBuild":null,"architecture":null,"memoryBytes":null,"logicalCpuCount":null,"displayPixels":null,"displayScale":null,"powerMode":null,"networkClass":null},
+  "metrics": {
+    "resourcePeriodMs":2000,
+    "primary":["whole-browser-plus-required-daemon/broker RSS bytes","whole-browser CPU percent","process count","switch-to-actionable ms","restart recovery ms","resource plateau"],
+    "attention":["bounded reads","unnecessary reads after no actionable change","screenshots","useful attention delay ms"],
+    "fidelity":["same genuine application identity","unsent draft survives","streaming continues or truthfully recovers","composer/IME usable","media/capture continuity","download continuity","human interaction supersedes jump authority","authentication recovery truthful"],
+    "noEstimatedRendererOnlySavings":true,
+    "missingMetricsRemainNull":true
+  },
+  "gates": {
+    "beforeLive":"approved build/profile and owner-issued exact host join and guarded jump available",
+    "beforeLifecycle":"all draft/stream/media/download/human blockers observed conservatively and recovery demonstrated",
+    "fidelity":"zero silent data loss, wrong application, false completion, unwanted submission or unrecoverable partial page",
+    "latency":"recorded rotation activation <=15000 ms; later promotion requires a preregistered operational improvement threshold",
+    "promotionAllowed":false
+  },
+  "result": {"liveRuns":0,"resourceUse":null,"switching":null,"recovery":null,"unnecessaryReads":null,"applicationFidelity":null}
+}

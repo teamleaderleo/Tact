@@ -1,0 +1,12 @@
+{
+  "evidence": "synthetic",
+  "descriptor": {"version":1,"laneRef":"elatura:lane:trial","generation":7,"adapter":{"id":"chatgpt","version":"1"},"capabilities":["events","observe","activate"],"state":"active","observedAt":"2026-09-20T17:00:00.000Z"},
+  "binding": {"registryId":"fixture-registry","resourceId":"fixture-resource","daemonGeneration":"daemon-A","backendId":"18446744073709551614","surfaceId":"local-11","webContentsEpoch":"contents-A","documentEpoch":"document-A","applicationGeneration":7,"windowId":"window-A","workspaceId":"workspace-A","paneId":"pane-A"},
+  "authority": {"workGeneration":"work-29","interactionEpoch":"human-3","expiresAtMs":10000},
+  "transitions": {
+    "navigation": {"applicationGeneration":8,"documentEpoch":"document-B"},
+    "daemonRecovery": {"daemonGeneration":"daemon-B","backendId":"1"},
+    "movement": {"windowId":"window-B","paneId":"pane-B"},
+    "rendererRecovery": {"webContentsEpoch":"contents-B","documentEpoch":"document-C"}
+  }
+}

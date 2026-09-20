@@ -1,0 +1,118 @@
+{
+  "evidence": "synthetic-contract",
+  "recordedAt": "2026-09-20T17:14:58.727Z",
+  "sourceMode": "immutable-git-objects",
+  "readiness": {
+    "contractReady": true,
+    "checks": [
+      {
+        "name": "elatura-source",
+        "ready": true
+      },
+      {
+        "name": "browser-source",
+        "ready": true
+      },
+      {
+        "name": "identity-source",
+        "ready": true
+      },
+      {
+        "name": "typescript",
+        "ready": true
+      },
+      {
+        "name": "python3",
+        "ready": true
+      },
+      {
+        "name": "clang++",
+        "ready": true
+      },
+      {
+        "name": "swiftc",
+        "ready": true
+      },
+      {
+        "name": "tar",
+        "ready": true
+      },
+      {
+        "name": "vitest",
+        "ready": true
+      },
+      {
+        "name": "identity-owner-sources",
+        "ready": true
+      }
+    ],
+    "live": {
+      "status": "separate-validation-gate",
+      "requires": [
+        "approved CMUX Browser build and dedicated profile",
+        "owner-issued durable-tab to current WebContents/document join",
+        "fresh navigation/renderer binding epochs on that join",
+        "atomic exact-binding and interaction-authority checked frontend jump"
+      ]
+    },
+    "nativeCmux": {
+      "host": "WKWebView",
+      "substitutesForChromiumEvidence": false
+    }
+  },
+  "pins": {
+    "elatura": "b323290a0532b4080e468ab30d3a29bb7bf8d2fa",
+    "browser": "6696b66ec83925c616f869a2d4f89454046b4eb9",
+    "identity": "2bb3c856a89c77e1e61e45a96f41c95fe422ecce"
+  },
+  "machine": {
+    "os": "darwin",
+    "osRelease": "25.6.0",
+    "architecture": "arm64",
+    "memoryBytes": 25769803776,
+    "logicalCpuCount": 10,
+    "node": "v26.8.1"
+  },
+  "adapter": {
+    "tests": 39,
+    "passed": 39
+  },
+  "elatura": {
+    "passed": true,
+    "files": [
+      "packages/core/test/application-lane-runtime.test.ts",
+      "packages/core/test/application-lane-client.test.ts",
+      "packages/core/test/application-lane-lifecycle.test.ts",
+      "packages/core/test/application-lane-interaction.test.ts",
+      "packages/core/test/application-lane-interaction-clock.test.ts"
+    ],
+    "summary": "Tests  62 passed (62)"
+  },
+  "identity": {
+    "passed": true,
+    "productionOwnerOutputPresent": true
+  },
+  "live": {
+    "status": "not-run",
+    "approvedBuildAvailable": null,
+    "exactHostPortImplemented": false
+  },
+  "untested": [
+    "real daemon restart",
+    "real renderer transition",
+    "genuine page jump",
+    "authenticated application fidelity",
+    "whole-browser resources",
+    "switch/recovery latency"
+  ],
+  "limitations": [
+    "owner-issued durable-tab to current WebContents/document join",
+    "fresh navigation/renderer binding epochs on that join",
+    "atomic exact-binding and interaction-authority checked frontend jump"
+  ],
+  "comparison": {
+    "status": "prepared-not-run",
+    "measuredValues": null,
+    "promotionAllowed": false
+  }
+}
