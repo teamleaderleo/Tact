@@ -29,7 +29,7 @@ The identity join is implemented in [CMUX PR #13247](https://github.com/manaflow
 
 The current-work prototype now has an explicit-socket, read-only collector and consumes those identity fields when present. Its JSON and text consumers share the same reduced payload. A read-only live capture from the existing older tagged build returned 37 resources/projections successfully; see the [aggregate receipt](current/live-read-receipt.json). New native identity fields were absent as expected. The full six-lane suite passes **71 tests**, including 23 current-work/collector tests. This is still a Tact consumer, not a shipped native `cmux current` command.
 
-The settings helper discrepancy discovered by packs is fixed in [CMUX PR #13250](https://github.com/manaflow-ai/cmux/pull/13250). Four actual helper subprocess regressions fail twice before the fix and all pass afterward. The fix reuses the existing generated path reference and adds the tests to the existing skill-contract CI workflow. It does not change the native settings transaction or prove effective UI state.
+The settings helper discrepancy discovered by packs is fixed in [CMUX PR #13250](https://github.com/manaflow-ai/cmux/pull/13250). Six actual helper subprocess regressions now pass. The schema-parity guard exposed 51 missing reference paths (three failures before that repair), and those rows are restored with the existing 75 preserved. The fix reuses the existing generated path reference and adds the tests to the existing skill-contract CI workflow. It does not change the native settings transaction or prove effective UI state.
 
 ## Shared contracts
 
