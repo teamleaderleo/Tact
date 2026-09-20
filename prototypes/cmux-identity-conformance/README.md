@@ -95,7 +95,43 @@ Observed on 2026-09-20: **9 harness tests pass**, including **645 upstream C++
 checks**, the added model test, Swift and Elatura cases. No authenticated content,
 profile identifiers, credentials, DOM, screenshots, or live payloads are committed.
 Native app restore, live Rust registry restart, WebContents recovery, and
-cross-machine migration remain unexecuted. #87 owns its physical trial.
+cross-machine migration remain unexecuted in this pure suite. #87 owns its physical trial.
+
+### Live native follow-up
+
+`live_native.py` exercises an explicitly selected, already-running tagged native
+app through its actual JSON socket. It creates two disposable workspaces, uses
+only their exact IDs for mutations, keeps focus unchanged, and cleans them up.
+This runner **does mutate its owned test workspaces**; it is separate from the
+read-only source fixture runner above. No credentials or remote machines are used.
+
+```sh
+python3 prototypes/cmux-identity-conformance/live_native.py \
+  --socket /tmp/cmux-debug-YOUR-TAG.sock --receipt .local/native-identity.json
+```
+
+Optional `--wait-for-reopen` pauses after closing a uniquely named test terminal.
+Invoke **History → Reopen Last Closed** once while that exact test terminal is
+the most recent closed item. The runner checks its new runtime ID and current
+catalog binding. This exercises close-history reconstruction, not app restart.
+If cleanup fails, the adjacent `.recovery.json` retains exact owned workspace IDs
+for local recovery; do not commit that file.
+
+[Live result](live-native-results.json), 2026-09-20: **8 checks passed** on native
+CMUX 0.64.22 (102), bundled CLI revision `4c190f2c5` (a downstream build, distinct
+from the pure suite's upstream pin). Real terminals with duplicate titles kept
+distinct IDs; terminal and `about:blank` browser movement preserved catalog
+resource identity and changed placement; close removed each local resource;
+the old resource reference was rejected. The test used direct JSON requests
+because the bundled CLI commands timed out while the socket itself responded.
+
+The optional History UI step timed out. A process sample found the main thread
+waiting in rendering (`CA::Layer::display_if_needed` → `__ulock_wait2`); subsequent
+mutation/cleanup requests timed out although cached reads still responded.
+Restore is **not passed**, and two owned workspaces remain pending cleanup in
+the captured result. This was a shared tag with an existing user session, so it
+was not force-restarted. The receipt preserves that incomplete outcome rather
+than converting eight successful checks into a successful whole run.
 
 ## Three highest-value incompatibilities at these pins
 

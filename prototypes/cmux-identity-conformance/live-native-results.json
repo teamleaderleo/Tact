@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "observed_at": "2026-09-20T17:11:53.013564+00:00",
+  "kind": "live-native-socket",
+  "checks": [
+    {
+      "case": "tagged socket responds",
+      "passed": true
+    },
+    {
+      "case": "duplicate titles retain distinct surface IDs",
+      "passed": true
+    },
+    {
+      "case": "local catalog resource joins current panel",
+      "passed": true
+    },
+    {
+      "case": "movement preserves resource and changes projection",
+      "passed": true
+    },
+    {
+      "case": "native browser movement preserves resource",
+      "passed": true
+    },
+    {
+      "case": "native browser close removes local resource",
+      "passed": true
+    },
+    {
+      "case": "terminal close removes local resource",
+      "passed": true
+    },
+    {
+      "case": "closed resource reference is rejected",
+      "passed": true
+    }
+  ],
+  "scope": "disposable terminals and about:blank native browser; no app/daemon restart",
+  "stale_reference_error": "vm_error",
+  "result": "failed",
+  "failure_type": "TimeoutError",
+  "owned_workspaces_removed": false,
+  "application": {
+    "name": "CMUX native tagged debug",
+    "version": "0.64.22 (102)",
+    "cli_reported_source_revision": "4c190f2c5b302bd4df4f6f66753976e2b7a5b491",
+    "source_revision_basis": "Bundled CLI metadata; process sample confirms version, not source SHA",
+    "os": "macOS 26.6.2 arm64"
+  },
+  "restore": {
+    "status": "blocked",
+    "reason": "History UI automation timed out; subsequent mutation RPCs timed out. Process sample showed main thread in CA::Layer::display_if_needed, waiting in __ulock_wait2. No app restart performed."
+  },
+  "runner_followup": "After this attempt, added persistence of exact owned workspace IDs for cleanup recovery; not rerun against the unresponsive app."
+}
