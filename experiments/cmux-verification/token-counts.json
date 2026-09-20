@@ -1,0 +1,179 @@
+{
+  "encoding": "o200k_base",
+  "tiktoken_version": "0.14.0",
+  "python_version": "3.14.6",
+  "baseline": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+  "verification_head": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+  "cloud_head": "0c0454ef4de0d7162ff4e572b81ceadbd0e6afb3",
+  "scope": "Full UTF-8 file contents including frontmatter; no prompt wrappers. Help is counted separately. Counts are not billable usage or a promise that every reference is loaded.",
+  "rows": [
+    {
+      "group": "entry_points",
+      "path": "CLAUDE.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 5689,
+      "after": 5619,
+      "saved": 70,
+      "reduction_percent": 1.2
+    },
+    {
+      "group": "entry_points",
+      "path": "skills/cmux-testing/SKILL.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 1088,
+      "after": 724,
+      "saved": 364,
+      "reduction_percent": 33.5
+    },
+    {
+      "group": "entry_points",
+      "path": "skills/cmux-dev-workflow/SKILL.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 956,
+      "after": 540,
+      "saved": 416,
+      "reduction_percent": 43.5
+    },
+    {
+      "group": "entry_points",
+      "path": "skills/cmux-cloud-vm/SKILL.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "0c0454ef4de0d7162ff4e572b81ceadbd0e6afb3",
+      "before": 13514,
+      "after": 798,
+      "saved": 12716,
+      "reduction_percent": 94.1
+    },
+    {
+      "group": "cloud_references",
+      "path": "skills/cmux-cloud-vm/references/agent-workflows.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "0c0454ef4de0d7162ff4e572b81ceadbd0e6afb3",
+      "before": 6250,
+      "after": 3871,
+      "saved": 2379,
+      "reduction_percent": 38.1
+    },
+    {
+      "group": "cloud_references",
+      "path": "skills/cmux-cloud-vm/references/commands.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "0c0454ef4de0d7162ff4e572b81ceadbd0e6afb3",
+      "before": 20969,
+      "after": 15559,
+      "saved": 5410,
+      "reduction_percent": 25.8
+    },
+    {
+      "group": "cloud_references",
+      "path": "skills/cmux-cloud-vm/references/guest.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "0c0454ef4de0d7162ff4e572b81ceadbd0e6afb3",
+      "before": 0,
+      "after": 2431,
+      "saved": -2431,
+      "reduction_percent": null
+    },
+    {
+      "group": "cloud_references",
+      "path": "skills/cmux-cloud-vm/references/sidebar-parity.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "0c0454ef4de0d7162ff4e572b81ceadbd0e6afb3",
+      "before": 3639,
+      "after": 3639,
+      "saved": 0,
+      "reduction_percent": 0.0
+    },
+    {
+      "group": "other_documentation",
+      "path": "skills/cmux-testing/references/local-vs-ci-validation.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 399,
+      "after": 648,
+      "saved": -249,
+      "reduction_percent": -62.4
+    },
+    {
+      "group": "other_documentation",
+      "path": "CONTRIBUTING.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 1484,
+      "after": 1815,
+      "saved": -331,
+      "reduction_percent": -22.3
+    },
+    {
+      "group": "other_documentation",
+      "path": "docs/contributor-verification.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 1936,
+      "after": 2002,
+      "saved": -66,
+      "reduction_percent": -3.4
+    },
+    {
+      "group": "other_documentation",
+      "path": "docs/verification-receipts.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 0,
+      "after": 2196,
+      "saved": -2196,
+      "reduction_percent": null
+    },
+    {
+      "group": "other_documentation",
+      "path": "skills/README.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 0,
+      "after": 772,
+      "saved": -772,
+      "reduction_percent": null
+    },
+    {
+      "group": "other_documentation",
+      "path": "README.md",
+      "before_ref": "9e7d3be6915e416ed538a04782864547f94fe8d8",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 6342,
+      "after": 6382,
+      "saved": -40,
+      "reduction_percent": -0.6
+    },
+    {
+      "group": "help_output",
+      "path": "verify-local.py --help",
+      "before_ref": "5564d9ceffd1922a5e8966806a9f4c760293fe47",
+      "after_ref": "a1ca66f79139f92aa4df7c4d487c41c835ad5aca",
+      "before": 232,
+      "after": 399,
+      "saved": -167,
+      "reduction_percent": -72.0
+    }
+  ],
+  "entry_point_total": {
+    "before": 21247,
+    "after": 7681,
+    "saved": 13566,
+    "reduction_percent": 63.8
+  },
+  "cloud_corpus_total": {
+    "before": 44372,
+    "after": 26298,
+    "saved": 18074,
+    "reduction_percent": 40.7
+  },
+  "all_instruction_files_total": {
+    "before": 62266,
+    "after": 46996,
+    "saved": 15270,
+    "reduction_percent": 24.5
+  }
+}

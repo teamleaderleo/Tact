@@ -2,8 +2,8 @@
 
 The implementation lives in [CMUX PR #13248](https://github.com/manaflow-ai/cmux/pull/13248),
 branch `tools/verification-receipts`, at
-`3cf4d4442fbfc9a99abb7ec750a16d6def4597dc`.
-The [contributor guide](https://github.com/manaflow-ai/cmux/blob/3cf4d4442fbfc9a99abb7ec750a16d6def4597dc/docs/verification-receipts.md)
+`a1ca66f79139f92aa4df7c4d487c41c835ad5aca`.
+The [contributor guide](https://github.com/manaflow-ai/cmux/blob/a1ca66f79139f92aa4df7c4d487c41c835ad5aca/docs/verification-receipts.md)
 is the owning contract. This directory contains findings only.
 
 The initial single-test receipt wrapper added little value to local iteration.
@@ -62,8 +62,27 @@ skill gives a short quick start, `--list` reveals underlying commands, and detai
 references cover scope and receipts. All 43 checked relative links and the skill
 validator pass. A new skill index separates app operation from repository work.
 The broader 22-skill audit found that Cloud VM's approximately 8,300-word entry
-point concatenates two versions with conflicting plan guidance; reconciliation
-is tracked in [CMUX #13261](https://github.com/manaflow-ai/cmux/issues/13261).
+point concatenates two versions with conflicting plan guidance. The completed
+consolidation is in [CMUX PR #13270](https://github.com/manaflow-ai/cmux/pull/13270),
+including the duplicated references and a dedicated guest reference. The existing
+CLI coverage guard passes and retains missing-required-file detection. The app's
+separate bundled single-file prompt is unchanged.
+
+## Final cleanup and token comparison
+
+The verifier's review finding about absolute checkout paths is fixed: the actual
+parser invocation and receipt now use `swiftc` and `./checkout-relative.swift`
+arguments. Historical example normalization is explicitly labelled. All 42 focused
+tests pass. The branch incorporates main `9e7d3be`, resolves the contributor-guide
+conflict by keeping the central ladder, and links that ladder to automatic/piped
+preflight. Both known review threads were answered and resolved.
+
+[The per-file token report](token-counts.md) includes immutable source revisions,
+new/expanded references, CLI help, JSON data and a reproducible counting command.
+With `o200k_base`, the Cloud entry point falls 94.1%, the full Cloud Markdown
+corpus falls 40.7% including moved content, and all measured instruction files
+fall 24.5%. These are text-token counts, not billed usage or an assumption that
+all references load on every task.
 
 ## Improvements grounded in recent iteration
 
