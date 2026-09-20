@@ -112,26 +112,34 @@ python3 prototypes/cmux-identity-conformance/live_native.py \
 
 Optional `--wait-for-reopen` pauses after closing a uniquely named test terminal.
 Invoke **History → Reopen Last Closed** once while that exact test terminal is
-the most recent closed item. The runner checks its new runtime ID and current
+the most recent closed item. The runner records whether the owner reused the panel ID and checks the current
 catalog binding. This exercises close-history reconstruction, not app restart.
 If cleanup fails, the adjacent `.recovery.json` retains exact owned workspace IDs
 for local recovery; do not commit that file.
 
-[Live result](live-native-results.json), 2026-09-20: **8 checks passed** on native
+[Live result](live-native-results.json), 2026-09-20: **10 checks passed** on native
 CMUX 0.64.22 (102), bundled CLI revision `4c190f2c5` (a downstream build, distinct
 from the pure suite's upstream pin). Real terminals with duplicate titles kept
 distinct IDs; terminal and `about:blank` browser movement preserved catalog
 resource identity and changed placement; close removed each local resource;
-the old resource reference was rejected. The test used direct JSON requests
-because the bundled CLI commands timed out while the socket itself responded.
+the old resource reference was rejected while closed. **History → Reopen Last
+Closed restored the exact test terminal and its current catalog binding.**
 
-The optional History UI step timed out. A process sample found the main thread
-waiting in rendering (`CA::Layer::display_if_needed` → `__ulock_wait2`); subsequent
-mutation/cleanup requests timed out although cached reads still responded.
-Restore is **not passed**, and two owned workspaces remain pending cleanup in
-the captured result. This was a shared tag with an existing user session, so it
-was not force-restarted. The receipt preserves that incomplete outcome rather
-than converting eight successful checks into a successful whole run.
+That live close-history path **reused the panel UUID**. The first restore test
+incorrectly required a new UUID; the assertion was removed and the complete
+run repeated successfully. The fixture must allow the owner's reuse policy.
+Thus the earlier manufactured changed-ID snapshots illustrate a conditional
+join gap, not the behavior of every native close/reopen. A panel/resource ID
+alone does not prove continuity of its shell process.
+
+An earlier History menu automation attempt hit a rendering wait
+(`CA::Layer::display_if_needed` → `__ulock_wait2`). After the user authorized
+restarting the shared tag, all **20 pre-existing workspace IDs** were retained,
+the test workspaces were removed, and the original selection was restored.
+The successful repeat used the standard Reopen Last Closed keyboard action.
+The receipt retains both earlier failed attempts and the final success.
+**Zero owned test workspaces remain.** No claim is made about individual process
+continuity or authenticated app contents across that restart.
 
 ## Three highest-value incompatibilities at these pins
 

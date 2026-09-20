@@ -112,6 +112,9 @@ def main():
         check("closed resource reference is rejected", not stale.get("ok"))
         receipt["stale_reference_error"] = stale.get("error", {}).get("code")
         if args.wait_for_reopen:
+            recovery_path.write_text(json.dumps({"socket": args.socket,
+                "owned_workspaces": owned, "restore_title": restore_title,
+                "restore_workspace": destination}) + "\n")
             print(f"REOPEN_READY {restore_title}: invoke History > Reopen Last Closed once", flush=True)
             deadline = time.monotonic() + 180
             restored = []
@@ -122,7 +125,10 @@ def main():
                 time.sleep(10)
             check("native close-history restores exact test terminal", len(restored) == 1)
             current = restored[0]["id"]
-            check("restore allocates a fresh runtime panel", current != terminal)
+            # The owner may reuse the old panel UUID when it is available. A new
+            # process does not require a new panel ID; observe rather than invent
+            # that lifetime guarantee.
+            receipt["restore_reused_panel_id"] = current == terminal
             current_rows, _ = catalog_row(current)
             check("restored terminal reacquires a catalog binding", len(current_rows) == 1)
             receipt["catalog_exposes_stable_identity"] = any(
