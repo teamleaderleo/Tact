@@ -14,28 +14,35 @@ this directory owns only the CMUX experiment. No Chromium files are changed.
 
 ## Reproduce
 
-Requires Node >=22, Python 3, clang++ with C++20, Swift, and the pinned Elatura
-checkout with its lockfile dependencies installed. Use task-owned checkouts at
-the revisions in `sources.json`; do not switch someone else's active branch.
-`IDENTITY_ROOT` is the #81 Tact checkout root. `BROWSER_ROOT` is CMUX Browser,
-which is distinct from native macOS `cmux`.
+Requires Node >=22, Python 3, clang++ with C++20, Swift, and Elatura's installed
+lockfile dependencies. The repositories must contain the commits in
+`sources.json`, but their current branches and uncommitted work do not matter.
+There is no separate #81 worktree requirement: its pinned objects come from
+this Tact repository. Fetch a missing owner commit without switching branches.
 
 ```sh
-ELATURA_ROOT=/Users/leoli/Projects/elatura \
-BROWSER_ROOT=/Users/leoli/Projects/private-browser-runtime \
-CMUX_ROOT=/Users/leoli/Projects/cmux \
-IDENTITY_ROOT=/Users/leoli/Projects/Tact-worktrees/identity-81 \
-node prototypes/cmux-elatura-trial/run.mjs
+node prototypes/cmux-elatura-trial/run.mjs \
+  --sources-root /Users/leoli/Projects \
+  --report prototypes/cmux-elatura-trial/results.json
 ```
 
-The command checks pins and scoped dirty state, compiles the real Elatura core
-into a disposable task-local directory, runs adapter tests and five existing
+Add `--preflight` to report missing source/tool prerequisites without compiling.
+Contract readiness and live-host requirements are separate fields. A Chromium
+binary, office access and browser socket access are not contract prerequisites.
+The root resolves `elatura`, `cmux`, and `cmux-browser` (or the existing
+`private-browser-runtime` name). `ELATURA_ROOT`, `BROWSER_ROOT`, `CMUX_ROOT`, and
+`IDENTITY_ROOT` remain optional repository-location overrides.
+
+The command materializes immutable Git objects into disposable task-local
+storage, compiles the real Elatura core, runs adapter tests and five existing
 Elatura test files, then invokes #81's production-owner runner directly. That
 runner reads its own pinned Git objects and fixtures, including actual CMUX
 Browser WindowModel/recovery/protocol tests and native identity parsers. No
 fixture or owner implementation is copied into this adapter. Build scratch and
 source symlinks are removed on exit; no browser is launched or inspected.
-The result is a content-free receipt. `results.json` records the observed run.
+Stdout is one content-free JSON receipt; progress goes to stderr. `--report`
+writes the same JSON directly, without scraping logs. `results.json` records
+the observed run. A failed prerequisite returns nonzero with readiness details.
 
 Observed: **39 adapter tests**, **62 existing Elatura tests**, and the required
 [#81 suite (PR #92)](https://github.com/teamleaderleo/Tact/pull/92) pass. The latter
@@ -118,6 +125,22 @@ is the native product and is not a substitute. An approved build/profile
 location was requested. No fleet-capacity claim was made or unapproved build
 attempted. Browser instructions require the existing HQ lease environment,
 a unique build tag/destination, and no disruption to live dogfood bundles.
+
+This is a physical-validation dependency, not an architectural-work blocker.
+The Chromium build and its approved existing artifacts belong to CMUX Browser's
+repository/build environment. Local native cmux can supply separately labeled
+WKWebView evidence; its socket currently permits only processes launched inside
+cmux. Neither that policy nor office/build access prevents contract development.
+Use the existing authorized environment when real Chromium validation is ready;
+do not equate an unavailable local bundle with an unavailable project build.
+
+Architectural work stays on the small host boundary above: the Browser owner
+supplies binding truth and performs final guarded activation; Elatura owns lane
+admission; the existing work/interaction owner supplies authority. Tact's runner
+consumes immutable owner artifacts and reports what can be verified now. A
+future UI should show stale/unavailable binding or unavailable jump capability
+as separate states from the last known health observation, and request fresh
+inspection only when a change hint or explicit user action justifies a read.
 
 ## Comparison and lifecycle gates
 
