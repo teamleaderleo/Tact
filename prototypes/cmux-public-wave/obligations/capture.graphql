@@ -1,0 +1,19 @@
+query($number: Int!) {
+  repository(owner: "manaflow-ai", name: "cmux") {
+    pullRequest(number: $number) {
+      number url headRefOid updatedAt state mergeStateStatus
+      reviewThreads(first: 50) {
+        pageInfo { hasNextPage }
+        nodes {
+          id isResolved isOutdated
+          comments(first: 50) {
+            pageInfo { hasNextPage }
+            nodes { id url body createdAt author { login } commit { oid } }
+          }
+        }
+      }
+      comments(last: 20) { nodes { id url body createdAt author { login } } }
+      reviews(last: 20) { nodes { id url state body submittedAt author { login } commit { oid } } }
+    }
+  }
+}

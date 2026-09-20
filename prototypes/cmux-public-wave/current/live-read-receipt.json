@@ -1,0 +1,22 @@
+{
+  "socket_tag": "glaeda-native",
+  "binary_revision": "4c190f2c5",
+  "request_method": "surface.catalog",
+  "refresh": false,
+  "observed_at": "2026-09-20T17:23:23.959838+00:00",
+  "resources": 37,
+  "projections": 37,
+  "payload_keys": [
+    "schema",
+    "generated_at",
+    "authority",
+    "truncated",
+    "total_observed",
+    "items"
+  ],
+  "json_serializable": true,
+  "text_bytes": 3428,
+  "stable_projection_fields_present": 0,
+  "new_identity_binary": false,
+  "scope": "Read-only cached catalog from existing older tagged build. No new stable-identity contract or native attention proof."
+}
