@@ -1,0 +1,94 @@
+{
+  "mode": "live",
+  "status": "pass",
+  "template": {
+    "workspace": {
+      "cwd": ".",
+      "layout": {
+        "direction": "horizontal",
+        "split": 0.4,
+        "children": [
+          {
+            "pane": {
+              "surfaces": [
+                {
+                  "type": "terminal",
+                  "name": "Review",
+                  "focus": true
+                }
+              ]
+            }
+          },
+          {
+            "direction": "vertical",
+            "split": 0.65,
+            "children": [
+              {
+                "pane": {
+                  "surfaces": [
+                    {
+                      "type": "browser",
+                      "name": "Docs",
+                      "url": "about:blank"
+                    }
+                  ]
+                }
+              },
+              {
+                "pane": {
+                  "surfaces": [
+                    {
+                      "type": "terminal",
+                      "name": "Tests"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "birth_records": [
+    {
+      "version": 1,
+      "slot": 0,
+      "kind": "terminal",
+      "cwd": ".",
+      "intent": {
+        "kind": "shell"
+      }
+    },
+    {
+      "version": 1,
+      "slot": 1,
+      "kind": "browser",
+      "cwd": ".",
+      "intent": {
+        "kind": "navigate",
+        "url": "about:blank"
+      }
+    },
+    {
+      "version": 1,
+      "slot": 2,
+      "kind": "terminal",
+      "cwd": ".",
+      "intent": {
+        "kind": "shell"
+      }
+    }
+  ],
+  "evidence": {
+    "workspace_instances": 3,
+    "surface_count": 3,
+    "layout_save_list_get_open_delete": true,
+    "portable_create_recapture_equal": true,
+    "scratch_cleanup": "complete"
+  },
+  "template_sha256": "1fc25cc77bcbaa896056b6c3f33efb797917e66a55e836be0e000a145e5cc20d",
+  "live_app_version": "cmux 0.64.22 (102) [4c190f2c5]",
+  "source_audit_sha": "ad34966d0641efcacc436ecd264fda9105285c49",
+  "scope": "Public layout API only. Older running app, not a current-main binary validation. Synthetic scratch workspaces only."
+}
