@@ -101,6 +101,7 @@ Do not assume these require product changes. Start by observing the real interac
 
 ## Current CMUX applied work
 
+- [`cmux-build-discovery/`](cmux-build-discovery/) — exact-source package discovery implemented in Browser, observed artifact-access failures, and focused follow-ups for durable metadata, isolated replay, and cheaper production-code feedback.
 - [`cmux-visit-packet/`](cmux-visit-packet/) — four aggressively curated conversation artifacts for the CMUX visit: Home versus Triage, durable browser selection handoff, native Quick Look-style inspection, and pane selection versus keyboard focus; includes a compact earned-vocabulary sheet.
 - [`cmux-native-macos-daily-use/`](cmux-native-macos-daily-use/) — four repeat-use native-Mac seams: titlebar/window ownership, file Quick Look, pane selection versus focus, and Accessibility focus. Includes side-by-side SVG alternatives plus notes on native sheets, menus, drag/drop, restoration, materials, and motion.
 - [`cmux-causal-selection-handoff/`](cmux-causal-selection-handoff/) — one real browser-visible failure (#10965), the existing React Grab terminal round-trip, and a working mock of a durable selection receipt through request/source/edit/build/verification.
