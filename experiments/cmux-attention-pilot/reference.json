@@ -1,0 +1,142 @@
+{
+  "schema": "tact-attention-reference/v1",
+  "reviewer": "Codex local source review (same implementation agent; not independent human adjudication)",
+  "reviewed_at": "2026-09-20T17:01:51Z",
+  "source_file": "evidence/cohort.json.gz",
+  "source_uncompressed_sha256": "0c18708ade5ee562e3a7b515d1b165845006275ad8a898fe1c051261677d7e5d",
+  "method": "Inspect raw open-thread text/commit IDs, latest check contexts, explicit rollout prose and collection omissions after the first projection, then freeze decisions before scoring. This is a self-reviewed, non-blind technical reference; it does not independently establish semantic correctness or human usefulness.",
+  "weights": "P1 = 5; other review disposition = 2; current failed checks = 3; admin paired rollout = 5. Missing provider facts alone are uncertainty, not a human obligation.",
+  "expected": [
+    {
+      "id": "13117:rollout",
+      "weight": 5,
+      "rationale": "Merged code does not establish the paired admin variable/queue rollout; public body explicitly requires both.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13117"
+    },
+    {
+      "id": "13201:checks",
+      "weight": 3,
+      "rationale": "Eight latest contexts failed, including ci-status; recovery assessment needed.",
+      "url": "https://github.com/manaflow-ai/cmux/actions/runs/35518364578/job/106104275665"
+    },
+    {
+      "id": "13201:review:PRRT_kwDORDHQWM6kIrpa",
+      "weight": 2,
+      "rationale": "Open current-head P2: packed archive link policies conflict; disposition needed.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13201#discussion_r4056782529"
+    },
+    {
+      "id": "13210:checks",
+      "weight": 3,
+      "rationale": "Compile admission, tests and ci-status failed on c0fd0357.",
+      "url": "https://github.com/manaflow-ai/cmux/actions/runs/35509915224/job/106076900878"
+    },
+    {
+      "id": "13210:review:PRRT_kwDORDHQWM6kI59-",
+      "weight": 5,
+      "rationale": "Open P1: workspace target is lost; distinct from error copy and session identity.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13210#discussion_r4056868645"
+    },
+    {
+      "id": "13210:review:PRRT_kwDORDHQWM6kI59_",
+      "weight": 2,
+      "rationale": "Open P2: user-facing error copy; separate disposition.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13210#discussion_r4056868646"
+    },
+    {
+      "id": "13210:review:PRRT_kwDORDHQWM6kI7kU",
+      "weight": 2,
+      "rationale": "Open CodeRabbit finding: session identity must be a closed invariant.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13210#discussion_r4056877881"
+    },
+    {
+      "id": "13211:checks",
+      "weight": 3,
+      "rationale": "Compile admission, tests and ci-status failed; no open review threads observed.",
+      "url": "https://github.com/manaflow-ai/cmux/actions/runs/35509912718/job/106076879191"
+    },
+    {
+      "id": "13216:checks",
+      "weight": 3,
+      "rationale": "Compile admission, tests and ci-status failed; not proof of zero executed tests.",
+      "url": "https://github.com/manaflow-ai/cmux/actions/runs/35509906353/job/106076822700"
+    },
+    {
+      "id": "13216:review:PRRT_kwDORDHQWM6kI7Wd",
+      "weight": 5,
+      "rationale": "Open P1: stale display comments can remove unrelated sources.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13216#discussion_r4056876621"
+    },
+    {
+      "id": "13216:review:PRRT_kwDORDHQWM6kI7Wg",
+      "weight": 5,
+      "rationale": "Open P1: partial deletion escapes reconciliation, a separate decision.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13216#discussion_r4056876625"
+    },
+    {
+      "id": "13229:review:PRRT_kwDORDHQWM6kI9Pj",
+      "weight": 5,
+      "rationale": "Open P1: ownership-check race requires disposition on b9627e92.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13229#discussion_r4056888171"
+    },
+    {
+      "id": "13229:review:PRRT_kwDORDHQWM6kJ6Dm",
+      "weight": 2,
+      "rationale": "Open P2: production test hook is a separate policy finding.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13229#discussion_r4057255966"
+    },
+    {
+      "id": "13229:review:PRRT_kwDORDHQWM6kJ6Do",
+      "weight": 2,
+      "rationale": "Open P2: static-only namespace is another policy decision.",
+      "url": "https://github.com/manaflow-ai/cmux/pull/13229#discussion_r4057255968"
+    }
+  ],
+  "excluded": [
+    {
+      "work": 13235,
+      "reason": "No latest failing checks or open non-outdated threads; not certified complete."
+    },
+    {
+      "work": 13240,
+      "reason": "Old resolved/outdated finding and later head do not constitute an active fix obligation; review completion unknown."
+    },
+    {
+      "work": 13114,
+      "reason": "Merged prerequisite is an observation; do not reissue its historic failures as current work."
+    },
+    {
+      "work": 13128,
+      "reason": "Merged cache code is quiet; no rollout/benefit acceptance inferred."
+    },
+    {
+      "work": 13042,
+      "reason": "Replaced by 13210; retain history without duplicating work."
+    },
+    {
+      "work": 12981,
+      "reason": "Replaced by 13211; retain history without duplicating work."
+    },
+    {
+      "work": 13053,
+      "reason": "Replaced by 13216; missing old job evidence remains in audit coverage."
+    },
+    {
+      "work": 12994,
+      "reason": "Replaced by 13229; unavailable original timeline is retained as missing."
+    }
+  ],
+  "unadjudicated": [
+    "Semantic validity of reviewer findings",
+    "Admin rollout completion",
+    "Queue ownership/causes",
+    "Executed test counts absent from check outputs",
+    "Artifact identity",
+    "Human next-action correctness and usability"
+  ],
+  "review_correction": {
+    "at": "2026-09-20T17:18:42.500030+00:00",
+    "rejected_id": "13216:missing",
+    "reason": "A transient missing job endpoint establishes uncertainty but no demonstrated human decision; the first projection incorrectly elevated an automatic-read recovery chore. Preserve it in audit/line coverage. Final reference has 14 decisions and total weight 47."
+  }
+}
