@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "elatura": {
+    "revision": "b323290a0532b4080e468ab30d3a29bb7bf8d2fa",
+    "paths": ["packages/core/src", "packages/core/test", "packages/core/tsconfig.json", "package.json", "package-lock.json", "docs/live-application-lane-benchmark.md"],
+    "owners": ["application-lane-runtime.ts", "application-lane-client.ts", "application-lane-lifecycle.ts", "application-lane-interaction.ts"]
+  },
+  "browser": {
+    "revision": "6696b66ec83925c616f869a2d4f89454046b4eb9",
+    "chromiumVersion": "151.0.7922.34",
+    "paths": ["overlay/chrome/browser/cmux_term/window_model.h", "overlay/chrome/browser/cmux_term/cmux_views.cc", "overlay/chrome/browser/cmux_term/cmux_tui_client.h", "overlay/chrome/browser/cmux_term/cmux_surface.h"],
+    "availableInternalOwners": ["SurfaceTab.backend_resource_id", "SurfaceTab.backend_id", "WebContentsForSurface", "ActivateBrowserTabForSurface", "CmuxSurface.SetLoadingChangedCallback"],
+    "missingExternalCapabilities": ["owner-issued durable-tab to current WebContents/document join", "fresh navigation/renderer binding epochs on that join", "atomic exact-binding and interaction-authority checked frontend jump"]
+  },
+  "identity": {
+    "issue": "https://github.com/teamleaderleo/Tact/issues/81",
+    "branch": "codex/81-production-identity-conformance",
+    "path": "prototypes/cmux-identity-conformance",
+    "revision": "2bb3c856a89c77e1e61e45a96f41c95fe422ecce"
+  },
+  "methodology": "https://github.com/teamleaderleo/elatura/issues/116"
+}
