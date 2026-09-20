@@ -5,7 +5,7 @@ This is the connected research and implementation artifact for
 CMUX main [`ad34966d0641efcacc436ecd264fda9105285c49`](https://github.com/manaflow-ai/cmux/commit/ad34966d0641efcacc436ecd264fda9105285c49)
 on 2026-09-20. Three parallel implementation agents covered five lanes; the
 coordinator built the pack transaction, reviewed the joins and integrated results.
-The existing CMUX checkout and its unrelated local edits were preserved.
+The first-wave audit preserved the existing CMUX checkout and its unrelated local edits. Subsequent native work uses the coordinated canonical checkout on a dedicated branch.
 
 ## Results and ownership
 
@@ -22,6 +22,14 @@ Each lane README contains source anchors, exact gaps, runnable examples,
 verification scope and unperformed checks. These are Tact prototypes, not a claim
 that `cmux current`, `cmux pack`, a new execution service, or a PR merge gate has
 shipped upstream.
+
+## Production follow-through
+
+The identity join is implemented in [CMUX PR #13247](https://github.com/manaflow-ai/cmux/pull/13247), based on `b334a7deeb0ff65bc9ee4d1c6a2bf7d454795110`. The shared catalog/VM-tree projection payload adds `stable_surface_id` and `stable_workspace_id` captured from exact current owners. Existing runtime/resource IDs and mutation selectors retain their meaning. Eight native owner tests and a scratch socket regression are authored; native execution and live verification remain pending.
+
+The current-work prototype now has an explicit-socket, read-only collector and consumes those identity fields when present. Its JSON and text consumers share the same reduced payload. The full six-lane suite passes **71 tests**, including 23 current-work/collector tests. This is still a Tact consumer, not a shipped native `cmux current` command.
+
+The settings helper discrepancy discovered by packs is fixed in [CMUX PR #13250](https://github.com/manaflow-ai/cmux/pull/13250). Four actual helper subprocess regressions fail twice before the fix and all pass afterward. The fix reuses the existing generated path reference and adds the tests to the existing skill-contract CI workflow. It does not change the native settings transaction or prove effective UI state.
 
 ## Shared contracts
 

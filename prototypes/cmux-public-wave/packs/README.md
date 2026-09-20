@@ -62,7 +62,7 @@ into the user's running app, and no native visual verification is claimed.
 
 ## Observed gap and promotion decision
 
-The current settings helper's checkout mode scans literal dotted paths from
+The audited settings helper's checkout mode scans literal dotted paths from
 `Sources/CmuxSettingsJSONPathSupport.swift`; after catalog extraction, that file
 contains no literal `sidebar.*` paths. It returns a nonempty but incomplete path
 set and rejects valid sidebar settings. The installed helper's generated
@@ -70,7 +70,7 @@ set and rejects valid sidebar settings. The installed helper's generated
 existing reference and validates changed boolean types against the schema; it
 does not silently disable validation. Reproduce via `test_owner_path_drift.py`.
 
-Promote this concrete helper validation defect upstream. Keep the installer in
+The helper defect is tracked in [CMUX #13243](https://github.com/manaflow-ai/cmux/issues/13243), with a production fix in [PR #13250](https://github.com/manaflow-ai/cmux/pull/13250). Four subprocess regressions verify checkout/installed parity and fallback (two failures before, zero after). Keep the installer in
 Tact until native effective-state readback and a supported multi-owner transaction
 exist. No new pack engine or marketplace RFC is justified by these two presets.
 
