@@ -55,6 +55,47 @@ class CurrentTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             derive(self.data, NOW)
 
+    def test_local_durable_identity_survives_runtime_rebinding(self):
+        projection = self.data["catalog"]["projections"][0]
+        projection.update(stable_surface_id="stable-surface-a", stable_workspace_id="stable-workspace-a")
+        before = next(r for r in derive(self.data, NOW)["items"] if r["placement"]["kind"] == "local")
+        self.data["catalog"]["resources"][0]["id"] = "local/terminal/new-panel"
+        projection.update(resource="local/terminal/new-panel", panel_id="new-panel", surface_id="new-panel", workspace_id="new-workspace")
+        payload = json.loads(json.dumps(derive(self.data, NOW)))
+        after = next(r for r in payload["items"] if r["placement"]["kind"] == "local")
+        self.assertNotEqual(before["ref"], after["ref"])
+        self.assertEqual(before["durable_surface_id"], after["durable_surface_id"])
+        self.assertEqual(after["projections"][0]["stable_workspace_id"], "stable-workspace-a")
+        self.assertIsNone(after["durable_work_ref"])
+        self.assertIn("local/terminal/new-panel", render(payload))
+        self.assertIn("stable surface: stable-surface-a", render(payload))
+        self.assertIn("workspace=stable-workspace-a", render(payload))
+
+    def test_cloud_projection_identity_never_becomes_resource_identity(self):
+        self.data["catalog"]["projections"].extend([
+            {"resource": "example-vm/terminal/t1", "panel_id": "p1", "stable_surface_id": "s1", "stable_workspace_id": "w1"},
+            {"resource": "example-vm/terminal/t1", "panel_id": "p2", "stable_surface_id": "s2", "stable_workspace_id": "w2"},
+        ])
+        payload = json.loads(json.dumps(derive(self.data, NOW)))
+        cloud = next(r for r in payload["items"] if r["placement"]["kind"] == "cloud")
+        self.assertEqual(cloud["ref"], "example-vm/terminal/t1")
+        self.assertIsNone(cloud["durable_surface_id"])
+        self.assertIsNone(cloud["durable_work_ref"])
+        self.assertEqual([p["stable_surface_id"] for p in cloud["projections"]], ["s1", "s2"])
+        self.assertIn("projection p2: stable surface=s2 workspace=w2", render(payload))
+
+    def test_old_catalog_has_no_invented_durable_identity(self):
+        local = next(r for r in derive(self.data, NOW)["items"] if r["placement"]["kind"] == "local")
+        self.assertIsNone(local["durable_surface_id"])
+        self.assertIsNone(local["projections"][0]["stable_surface_id"])
+
+    def test_conflicting_local_durable_identity_rejected(self):
+        first = self.data["catalog"]["projections"][0]
+        first["stable_surface_id"] = "s1"
+        self.data["catalog"]["projections"].append(dict(first, stable_surface_id="s2"))
+        with self.assertRaisesRegex(ValueError, "ambiguous durable"):
+            derive(self.data, NOW)
+
     def test_browser_detail_is_not_cwd(self):
         self.data["catalog"]["resources"][0]["kind"] = "browser"
         row = next(r for r in derive(self.data, NOW)["items"] if r["placement"]["kind"] == "local")

@@ -66,9 +66,15 @@ def derive(envelope, now, limit=100):
         state = cloud.get(resource["machine"], {})
         local = machine.get("local") is True
         fresh = freshness(observed, now, "current" if local else state.get("freshness", "unknown"), state.get("stale_reason"))
-        projections = [fields(p, ["resource", "workspace_id", "surface_id", "panel_id", "remote_workspace_id", "remote_tab_id"]) for p in catalog.get("projections") or [] if p["resource"] == ref]
+        projections = [fields(p, ["resource", "workspace_id", "surface_id", "panel_id", "stable_surface_id", "stable_workspace_id", "remote_workspace_id", "remote_tab_id"]) for p in catalog.get("projections") or [] if p["resource"] == ref]
+        stable_ids = {p["stable_surface_id"] for p in projections if p["stable_surface_id"]}
+        # A restored local panel has one durable identity. A Cloud resource may
+        # have many local projections: none of their identities names that resource.
+        if local and len(stable_ids) > 1:
+            raise ValueError("ambiguous durable local surface identity")
+        durable_surface_id = next(iter(stable_ids)) if local and stable_ids else None
         receipts = [fields(p, ["kind", "resource", "remote_workspace_id", "remote_tab_id", "receipt"]) for p in state.get("pending_writes") or [] if p.get("resource") == ref]
-        row = {"ref": ref, "identity_scope": "runtime_resource" if local else "provider_resource", "durable_work_ref": None, "label": resource.get("title"),
+        row = {"ref": ref, "identity_scope": "runtime_resource" if local else "provider_resource", "durable_work_ref": None, "durable_surface_id": durable_surface_id, "label": resource.get("title"),
                "hints": {"cwd": resource.get("detail") if resource.get("kind") == "terminal" else None, "repo": None, "project": None},
                "placement": {"kind": "local" if local else "cloud" if machine else "unknown", "machine": resource["machine"]},
                "projections": projections[:16], "agent": resource.get("agent"), "session": None,
@@ -106,6 +112,11 @@ def render(payload):
     lines = []
     for row in payload["items"]:
         lines.append(f"{row['label']} [{row['placement']['kind']}; {row['freshness']['state']}] {row['ref']}")
+        if row.get("durable_surface_id"):
+            lines.append(f"  stable surface: {row['durable_surface_id']}")
+        for projection in row.get("projections", []):
+            if projection.get("stable_surface_id") or projection.get("stable_workspace_id"):
+                lines.append(f"  projection {projection['panel_id']}: stable surface={projection.get('stable_surface_id') or 'unknown'} workspace={projection.get('stable_workspace_id') or 'unknown'}")
         for obligation in row["obligations"]:
             lines.append(f"  possible {obligation['kind']}: {obligation['provenance']['evidence']}")
     if payload["truncated"]:
