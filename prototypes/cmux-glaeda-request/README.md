@@ -88,6 +88,12 @@ one CMUX work object
 
 The same CMUX work reference can correlate both views while carrying zero Glaeda execution authority.
 
+`result.json` is the paired bounded Glaeda `planned` receipt. `observe_receipt` verifies the
+external request digest, request/work correlation, exact source, zero-authority object and allowed
+state before returning only the facts CMUX needs: work ref, state, request digest and optional
+terminal workload-receipt digest. It does not consume the resolved workload generation as CMUX
+execution authority.
+
 Run:
 
 ```sh
@@ -95,5 +101,6 @@ cd prototypes/cmux-glaeda-request
 python3 -m unittest -v
 ```
 
-The tests prove exact fixture bytes, the intentionally tiny CMUX field set, fixed operation/capability
-mapping, and source/reuse validation. No local terminal, Cloud target or Glaeda node is contacted.
+The tests prove exact request bytes, the intentionally tiny CMUX field set, fixed operation/capability
+mapping, source/reuse validation, bounded result correlation, and rejection of a false terminal result
+without workload evidence. No local terminal, Cloud target or Glaeda node is contacted.
