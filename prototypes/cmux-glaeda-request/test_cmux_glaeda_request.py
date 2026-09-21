@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import copy
 from dataclasses import fields
 import json
 from pathlib import Path
@@ -93,6 +94,28 @@ class ProjectionTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "reuse"):
             invalid_reuse.request()
+
+
+    def test_correlates_bounded_glaeda_result_to_cmux_work(self) -> None:
+        result = json.loads(Path(__file__).with_name("result.json").read_text())
+        observation = self.fixture().observe_receipt(result)
+        self.assertEqual(observation.work_ref, "cmux:work:1050")
+        self.assertEqual(observation.state, "planned")
+        self.assertEqual(
+            observation.request_sha256,
+            "sha256:c10e23961f34eaabb979f890ce830efeca737ef63f4534f0b8cf9346fadf9d60",
+        )
+        self.assertIsNone(observation.workload_receipt_sha256)
+
+        drifted = copy.deepcopy(result)
+        drifted["source"]["tree"] = "f" * 40
+        with self.assertRaisesRegex(ValueError, "correlate"):
+            self.fixture().observe_receipt(drifted)
+
+        false_terminal = copy.deepcopy(result)
+        false_terminal["state"] = "succeeded"
+        with self.assertRaisesRegex(ValueError, "missing workload evidence"):
+            self.fixture().observe_receipt(false_terminal)
 
 
 if __name__ == "__main__":
