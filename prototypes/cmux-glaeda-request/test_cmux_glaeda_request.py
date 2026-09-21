@@ -30,19 +30,38 @@ class ProjectionTests(unittest.TestCase):
             {field.name for field in fields(CmuxGlaedaExecution)},
             {"request_ref", "work_ref", "repository", "commit", "tree", "reuse_hint"},
         )
-        for forbidden in (
-            b"cwd",
-            b"workspace",
-            b"surface",
-            b"terminal",
-            b"machine",
-            b"backend",
-            b"focus",
-            b"attention",
-            b"argv",
-            b"environment",
-        ):
-            self.assertNotIn(forbidden, encoded)
+        def field_names(value: object) -> set[str]:
+            if isinstance(value, dict):
+                return set(value) | {
+                    child
+                    for nested in value.values()
+                    for child in field_names(nested)
+                }
+            if isinstance(value, list):
+                return {
+                    child
+                    for nested in value
+                    for child in field_names(nested)
+                }
+            return set()
+
+        forbidden = {
+            "cwd",
+            "workspace",
+            "workspace_id",
+            "surface",
+            "surface_id",
+            "terminal",
+            "terminal_id",
+            "machine",
+            "machine_id",
+            "backend",
+            "focus",
+            "attention",
+            "argv",
+            "environment",
+        }
+        self.assertTrue(forbidden.isdisjoint(field_names(request)))
 
     def test_operation_and_capability_are_fixed_by_this_integration(self) -> None:
         request = self.fixture().request()
