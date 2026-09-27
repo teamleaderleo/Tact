@@ -73,6 +73,7 @@ Before the CMUX visit, the most useful output is a small body of **CMUX-adjacent
 These remain useful when they answer an applied question:
 
 - [`experiments/microcraft/`](experiments/microcraft/) — blind one-variable A/B drills for typography, spacing, alignment, hierarchy, contrast, material, icon weight, density, motion duration, and easing.
+- [`experiments/thunderdome/`](experiments/thunderdome/): pairwise duels between several candidate designs across arenas (theme, accent, contrast), with a shared Elo table split by context. A config per comparison; first run picked the cmux sidebar selection style.
 - [`prototypes/microphone-clutch/`](prototypes/microphone-clutch/) — pointer/keyboard vs voice-only vs mixed selection + voice, with deterministic recognition/referent/intent failures and repair-cost instrumentation.
 - [`prototypes/causal-debugger/`](prototypes/causal-debugger/) — one-stage causal debugging thread from visible browser failure through runtime, request/log, source, edit, rebuild, replay, and proof.
 - [`prototypes/warm-field/`](prototypes/warm-field/) — cropped edge bookmarks vs scaled mini-windows vs MRU vs search over a persistent warm working set. This remains one of the more promising open interaction directions.
