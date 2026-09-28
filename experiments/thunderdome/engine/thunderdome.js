@@ -5,6 +5,8 @@
  * an optional split, and a render function. The engine supplies pairing,
  * voting UI, keyboard shortcuts, Elo (overall and per split), W-L-T, recent
  * bouts, the gallery, undo, and shared (claude.ai db) or local storage.
+ * A contender can be an image, a GIF or a video instead of markup; the two
+ * clips in a duel are restarted together so the comparison stays honest.
  * See ../README.md for the config reference.
  */
 (function (root) {
@@ -72,6 +74,31 @@
     return `${Math.floor(s / 86400)}d ago`;
   }
 
+  const VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogv)(?:[?#]|$)/i;
+
+  // A contender's `media` becomes {kind, src, poster, alt, fit, loop, aspect}.
+  // Accepts "shot.png" or {src, ...}; `defaults` is the config-level `media` block.
+  // The kind is read off the extension, so a data URI or an extension-less URL
+  // (a signed CI artifact link, say) needs an explicit `kind` or it renders as an image.
+  function mediaSpec(media, defaults) {
+    if (typeof media === "string") media = { src: media };
+    if (!media || !media.src) return null;
+    const d = defaults || {}, src = String(media.src);
+    return {
+      kind: media.kind || (VIDEO_EXT.test(src) || /^data:video\//i.test(src) ? "video" : "img"),
+      src,
+      poster: media.poster || d.poster || null,
+      alt: media.alt == null ? (d.alt || "") : media.alt,
+      fit: media.fit || d.fit || "contain",
+      loop: media.loop !== false,
+      aspect: media.aspect || d.aspect || null,
+      // Off by default: most media is an opaque screenshot or clip that brings its own
+      // surface, and a box around it reads as a second card. Turn it on for icons and
+      // anything else with transparency to sit on.
+      frame: media.frame == null ? !!d.frame : !!media.frame,
+    };
+  }
+
   function normalize(cfg) {
     if (!cfg || !cfg.id) throw new Error("Thunderdome: config needs an id");
     const contenders = (cfg.contenders || []).map(c => ({ note: "", ...c }));
@@ -88,7 +115,7 @@
     });
     return {
       k: 24, recent: 8, collection: "votes", contenderLabel: "Contender",
-      galleryTitle: "Everyone in this arena",
+      galleryTitle: "Everyone in this arena", media: {},
       ...cfg,
       contenders, dims,
       localKey: cfg.localKey || `thunderdome:${cfg.id}:local`,
@@ -138,6 +165,39 @@
     return t.content;
   }
 
+  function reducedMotion() {
+    return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  // One <img> or <video> in a box that holds its shape. A card whose height changes
+  // between duels moves the thing you are about to click, so give media an `aspect`
+  // whenever you can.
+  function mediaNode(spec, label) {
+    const box = h("div", { class: "td-media" + (spec.frame ? " td-framed" : "") });
+    const style = `object-fit:${spec.fit}` + (spec.aspect ? `;aspect-ratio:${spec.aspect}` : "");
+    // Name what failed. For an inlined data URI the path is long gone, so say that
+    // instead of printing 70 characters of base64 at someone.
+    const where = /^data:/i.test(spec.src)
+      ? `${spec.src.slice(0, spec.src.indexOf(";")) || "data:"}, inlined at build time`
+      : (spec.src.length > 72 ? spec.src.slice(0, 69) + "..." : spec.src);
+    const fail = () => box.replaceChildren(h("div", { class: "td-media-fail" },
+      h("b", { text: "Couldn't load this one." }), h("code", { text: where })));
+    let el;
+    if (spec.kind === "video") {
+      el = h("video", { src: spec.src, poster: spec.poster, loop: spec.loop, muted: true,
+        playsinline: true, preload: "auto", style, "aria-label": spec.alt || label });
+      el.muted = true;  // the attribute alone does not always stick, and autoplay needs the property
+      // Reduced motion: hand over the controls instead of moving things at them.
+      if (reducedMotion()) el.controls = true; else el.autoplay = true;
+    } else {
+      el = h("img", { src: spec.src, alt: spec.alt || label, loading: "lazy", decoding: "async", style });
+    }
+    // A blank card still looks votable, and a vote cast on one is bad data. Say it failed.
+    el.addEventListener("error", fail);
+    box.append(el);
+    return box;
+  }
+
   function start(cfg) {
     const C = normalize(cfg);
     const ids = C.contenders.map(c => c.id);
@@ -150,6 +210,7 @@
     let votes = [];
     let votesCol = null, shared = false, myLast = null;
     let note = "", noteTimer = 0;
+    let syncToken = 0, galleryIO = null;
 
     if (C.title) document.title = C.title;
 
@@ -184,6 +245,7 @@
     $.voteB = h("button", { class: "primary", onclick: () => vote("b") }, "Right wins", h("kbd", { text: "→" }));
     $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "Skip", h("kbd", { text: "S" }));
     $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "Undo my last vote", h("kbd", { text: "U" }));
+    $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos() }, "Replay both", h("kbd", { text: "R" }));
     $.status = h("div", { class: "td-status", role: "status" });
 
     const splitVals = C.split ? C.split.values : [];
@@ -198,7 +260,7 @@
       h("header", {}, h("h1", { text: C.title || C.id }), C.lede ? h("p", { class: "td-lede", html: C.lede }) : null),
       C.dims.length ? controls : null,
       $.duel,
-      h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.undo),
+      h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.replay, $.undo),
       $.status,
       h("div", { class: "td-two" },
         h("section", { class: "td-section" }, h("h2", { text: "Standings" }),
@@ -226,11 +288,24 @@
       return parts.join(", ");
     }
 
+    // c.media may be a string, an object, or a function of the arena, so one contender
+    // can hold its light and dark recordings and hand over whichever the arena asked for.
+    function mediaFor(c, a) {
+      let m = c.media;
+      if (typeof m === "function") m = m(a, { h });
+      const spec = mediaSpec(m, C.media);
+      return spec ? mediaNode(spec, c.note ? `${c.name}: ${c.note}` : c.name) : null;
+    }
+
     function renderBody(c, a) {
-      const ctx = { h, contender: c };
-      // Most specific first: contender.render, then config.render (which may wrap c.html), then c.html.
+      const ctx = { h, contender: c, media: (x, ar) => mediaFor(x || c, ar || a) };
+      // Most specific first: contender.render, then config.render, then media, then c.html.
+      // A config-wide render() wins over media so it can place the frame itself
+      // (device chrome, a caption) by calling ctx.media().
       if (typeof c.render === "function") return toNode(c.render(a, ctx));
       if (C.render) return toNode(C.render(c, a, ctx));
+      const m = mediaFor(c, a);
+      if (m) return m;
       if (typeof c.html === "function") return toNode(c.html(a, ctx));
       return toNode(c.html);
     }
@@ -250,11 +325,50 @@
       $.tag.textContent = C.tag ? C.tag(a) : defaultTag(a);
     }
 
+    // Start both sides of a duel at the same point in their loop. Clips left alone
+    // drift apart within seconds, and then you are comparing a treatment at the top of
+    // its loop against one halfway through it, which is not the question you asked.
+    // A GIF cannot be seeked at all, which is why the docs push mp4 and webm.
+    function syncDuelVideos() {
+      const vids = [...$.duel.querySelectorAll("video")];
+      $.replay.hidden = !vids.length;
+      if (!vids.length || reducedMotion()) return;
+      const token = ++syncToken;
+      const ready = v => v.readyState >= 2 ? Promise.resolve() : new Promise(res => {
+        const done = () => { v.removeEventListener("loadeddata", done); v.removeEventListener("error", done); res(); };
+        v.addEventListener("loadeddata", done); v.addEventListener("error", done);
+      });
+      // Don't hold the first clip back forever on a slow load for the second.
+      Promise.race([Promise.all(vids.map(ready)), new Promise(r => setTimeout(r, 1500))]).then(() => {
+        if (token !== syncToken) return;  // a newer duel already claimed the ring
+        for (const v of vids) {
+          try { v.currentTime = 0; } catch (e) { /* not seekable yet */ }
+          if (!reducedMotion()) { const q = v.play(); if (q && q.catch) q.catch(() => {}); }
+        }
+      });
+    }
+
+    // The duel is the comparison that has to stay smooth. Gallery clips below the fold
+    // decoding in the background are competing with it for nothing.
+    function watchGalleryVideos() {
+      if (galleryIO) galleryIO.disconnect();
+      if (typeof IntersectionObserver !== "function") return;
+      galleryIO = new IntersectionObserver(es => {
+        for (const e of es) {
+          if (!e.isIntersecting) e.target.pause();
+          else if (e.target.autoplay) { const q = e.target.play(); if (q && q.catch) q.catch(() => {}); }
+        }
+      }, { rootMargin: "120px" });
+      for (const v of $.gallery.querySelectorAll("video")) galleryIO.observe(v);
+    }
+
     function render() {
       const a = arena();
       if (C.dims.length) syncControls(a);
       $.duel.replaceChildren(...(duel ? [card(byId[duel.a], a, "Left"), card(byId[duel.b], a, "Right")] : []));
       $.gallery.replaceChildren(...C.contenders.map(c => card(c, a)));
+      syncDuelVideos();
+      watchGalleryVideos();
     }
 
     function nextDuel() {
@@ -358,6 +472,7 @@
       else if (k === "ArrowDown") vote("tie");
       else if (k === "s" || k === "S") nextDuel();
       else if (k === "u" || k === "U") undo();
+      else if (k === "r" || k === "R") syncDuelVideos();
       else return;
       e.preventDefault();
     });
@@ -381,7 +496,7 @@
     return { get votes() { return votes.slice(); }, next: nextDuel, vote, undo };
   }
 
-  const api = { start, elo, records, pickPair, pairCounts, ago, normalize, resolveArena };
+  const api = { start, elo, records, pickPair, pairCounts, ago, normalize, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -18,6 +18,7 @@ candidate designs
 ## When to use it
 
 - You have three or more plausible treatments of one decision (a selection style, a button, an icon weight, a density) and no clear winner.
+- The decision is about motion (a busy indicator, a transition, a repaint) and stills cannot answer it. Contenders can be video.
 - The answer might change with context: theme, accent, contrast setting, platform, density. Put those in the arena so every vote lands in a different one.
 - Several people should vote, or you want to vote across several sittings.
 
@@ -34,9 +35,10 @@ experiments/thunderdome/
   examples/
     starter/              smallest config: four HTML-snippet buttons
     cmux-selection/       cmux sidebar selection, eight treatments (see RESULTS.md)
+    motion/               four busy indicators as video, one clip per theme
 ```
 
-Each example folder has `config.js`, optional `config.css`, and a generated `index.html`. No dependencies and no package install.
+Each example folder has `config.js`, optional `config.css`, and a generated `index.html`. No dependencies and no package install. Media files sit next to the config and get inlined by the build.
 
 ## Run
 
@@ -49,7 +51,7 @@ open examples/cmux-selection/index.html
 
 Opened from disk, votes stay in that browser (localStorage). Publish it as an artifact to share one table.
 
-Controls: `←` left wins, `→` right wins, `↓` tie, `S` skip, `U` undo your last vote. The arena controls pick a specific context; changing a select turns off "New arena each duel".
+Controls: `←` left wins, `→` right wins, `↓` tie, `S` skip, `U` undo your last vote, `R` replay both clips. The arena controls pick a specific context; changing a select turns off "New arena each duel".
 
 ## Author a config
 
@@ -65,8 +67,12 @@ Thunderdome.start({
   contenders: [
     { id: "solid", name: "Solid", note: "Filled accent", html: "<button class='b solid'>Save</button>" },
     { id: "tonal", name: "Tonal", note: "Accent at 16%", render: (arena, { h }) => h("div", { text: "..." }) },
+    { id: "shot", name: "As shipped", media: "shots/current.png" },
+    { id: "clip", name: "Spinner", media: arena => `clips/spinner-${arena.theme.id}.webm` },
     // any extra fields (paint functions, tokens) ride along for render()
   ],
+
+  media: { aspect: "16 / 9" },        // optional defaults for every contender's media
 
   arena: {
     dimensions: [
@@ -90,16 +96,36 @@ Thunderdome.start({
 What the engine hands you:
 
 - **`arena`** has one entry per dimension: the chosen option object for a select (with every field you gave it), a boolean for a toggle, plus `arena.ids` with the raw ids.
-- **Card body** comes from the first of: `contender.render(arena, ctx)`, config `render(contender, arena, ctx)`, `contender.html` (string, or function of arena). A returned string is parsed as HTML. `ctx.h(tag, attrs, ...children)` is a small element helper (`class`, `text`, `html`, `style`, `on<event>`).
+- **Card body** comes from the first of: `contender.render(arena, ctx)`, config `render(contender, arena, ctx)`, `contender.media`, `contender.html` (string, or function of arena). A returned string is parsed as HTML. `ctx.h(tag, attrs, ...children)` is a small element helper (`class`, `text`, `html`, `style`, `on<event>`). A config-wide `render` sits above `media` so it can place the frame itself; call `ctx.media()` to get the element.
 - **Dimensions**: selects are re-rolled every duel while "New arena each duel" is on; toggles are not, unless you set `shuffle: true`. Set `default` to choose the starting option. Ids `id`, `a`, `b`, `w`, `t` are reserved.
 - **Styles** for contender markup go in `config.css`. The engine's own classes all start with `td-`, and the theme tokens (`--ink`, `--muted`, `--faint`, `--rule`, `--panel`, `--sans`, `--mono`) are available.
 - Other knobs: `k` (Elo K-factor, default 24), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena.
+
+## Images, GIFs and video
+
+`contender.media` takes a path, a `{ src, ... }` object, or a function of the arena (so one contender can hold its light and dark recordings). The element is chosen from the extension: `.mp4`, `.webm`, `.mov`, `.m4v` and `.ogv` become a `<video>`, everything else an `<img>`. A URL with no extension needs `kind: "video"` spelled out.
+
+```js
+{ id: "spinner", name: "Spinner", media: "clips/spinner.webm" }
+{ id: "spinner", name: "Spinner", media: arena => clips.spinner[arena.theme.id] }
+{ id: "icon", name: "Filled", media: { src: "icons/filled.svg", frame: true, aspect: "1 / 1" } }
+```
+
+Per-item fields, all of which can also be set once under the config's `media` block: `aspect` (CSS `aspect-ratio`), `fit` (`object-fit`, default `contain`), `alt`, `poster`, `loop` (video, default true), `frame` (a neutral backdrop and hairline, default off), `kind`.
+
+**Set `aspect`.** Without it the card resizes when the next duel loads media of a different shape, which moves the button you were about to click. A dome you can vote through quickly is one where nothing under the cursor moves.
+
+**Prefer mp4 or webm over GIF.** A GIF cannot be seeked, so the engine cannot restart it. Two GIFs side by side drift apart within seconds and you end up comparing one treatment at the top of its loop against another halfway through, with nothing on screen telling you that is happening. Video clips are restarted together at the start of every duel, and `R` replays both. GIFs still render, they are just a worse instrument.
+
+Video is muted, looped, `playsinline`, and autoplaying. Under `prefers-reduced-motion: reduce` nothing plays on its own and the clips get controls instead. Gallery clips below the fold are paused so they are not competing with the duel for decode time. Media that fails to load says so on the card, because a blank card still looks votable and a vote cast on one is bad data.
+
+Media referenced by relative path is inlined into `index.html` as a data URI at build time, which is what keeps the built page one self-contained file. `https://` URLs are left as they are. Base64 costs about a third on top of the file size, so keep clips to a few seconds: `examples/motion` is eight clips and 99 KB in total. The build warns past 2 MB for one file and 5 MB for a page.
 
 Keep contenders to one variable when you can. Eight treatments that differ in fill, edge, weight, and hue at once will produce a winner you cannot explain.
 
 ## Publish as a claude.ai artifact
 
-The built `index.html` is one file with only Google Fonts outside it, so it publishes as is. Declare the `db` capability so votes go to one shared table:
+The built `index.html` is one file with only Google Fonts outside it (media included, inlined as data URIs), so it publishes as is. Declare the `db` capability so votes go to one shared table:
 
 ```text
 Artifact publish

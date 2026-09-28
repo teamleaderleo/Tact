@@ -48,3 +48,42 @@ test("normalize rejects reserved dimension ids and duplicate contenders", () => 
   const a = T.resolveArena(C, { theme: "zz", ic: 1 }, true);
   assert.equal(a.theme, null); assert.equal(a.ic, true);
 });
+
+test("mediaSpec reads the kind off the extension", () => {
+  assert.equal(T.mediaSpec("shots/a.png").kind, "img");
+  assert.equal(T.mediaSpec("shots/a.GIF").kind, "img");
+  assert.equal(T.mediaSpec("clips/a.webm").kind, "video");
+  assert.equal(T.mediaSpec("clips/a.mp4?v=2").kind, "video");
+  assert.equal(T.mediaSpec("data:video/webm;base64,AA").kind, "video");
+  // No extension to read (a signed artifact link), so it falls back to an image.
+  assert.equal(T.mediaSpec("https://ci.example/artifact/9981").kind, "img");
+  assert.equal(T.mediaSpec({ src: "https://ci.example/artifact/9981", kind: "video" }).kind, "video");
+});
+
+test("mediaSpec fills defaults and lets a contender override them", () => {
+  const d = { aspect: "16/9", fit: "cover", frame: true };
+  const a = T.mediaSpec("a.png", d);
+  assert.equal(a.aspect, "16/9"); assert.equal(a.fit, "cover"); assert.equal(a.frame, true);
+  assert.equal(a.loop, true); assert.equal(a.alt, "");
+  const b = T.mediaSpec({ src: "b.mp4", aspect: "4/3", loop: false, frame: false, alt: "row" }, d);
+  assert.equal(b.aspect, "4/3"); assert.equal(b.fit, "cover");
+  assert.equal(b.loop, false); assert.equal(b.frame, false); assert.equal(b.alt, "row");
+});
+
+test("mediaSpec returns null when there is nothing to show", () => {
+  for (const x of [undefined, null, "", {}, { poster: "p.png" }]) assert.equal(T.mediaSpec(x), null);
+});
+
+test("build inlines relative media and leaves everything else alone", async () => {
+  const { inlineMedia } = await import("./build.mjs");
+  const dir = "examples/motion";
+  const seen = new Map();
+  const out = inlineMedia(
+    `a: "clips/spinner-light.webm", b: "https://x.dev/c.png", c: "clips/nope.webm", d: url(clips/pulse-dark.webm)`,
+    dir, "t", seen);
+  assert.match(out, /a: "data:video\/webm;base64,[A-Za-z0-9+/]/);
+  assert.match(out, /d: url\("data:video\/webm;base64,/);
+  assert.ok(out.includes(`b: "https://x.dev/c.png"`), "remote URLs stay as written");
+  assert.ok(out.includes(`c: "clips/nope.webm"`), "a path that is not on disk stays visibly broken");
+  assert.equal(seen.size, 2);
+});
