@@ -12,7 +12,8 @@
 (function (root) {
   "use strict";
 
-  const RESERVED = new Set(["id", "a", "b", "w", "t"]);
+  const RESERVED = new Set(["id", "a", "b", "w", "t", "q"]);
+  const VIEWS = new Set(["vote", "results"]);
 
   // ---------- pure core (no DOM; exercised by test.mjs) ----------
 
@@ -142,6 +143,67 @@
     try { return C.split.of(arena); } catch (e) { return null; }
   }
 
+  // One dome, several decisions. A question brings its own contenders and its own words
+  // and inherits everything else, so the arena, the media defaults and the render
+  // function are written once no matter how many questions hang off them. The arena and
+  // the K factor stay at the dome level on purpose: questions asked in different
+  // contexts are different pages, not tabs.
+  //
+  // A dome with no `questions` is a dome with one anonymous question, which is what
+  // every config written so far is. Its votes are stored exactly as before.
+  function normalizeDome(cfg) {
+    if (!cfg || !cfg.id) throw new Error("Thunderdome: config needs an id");
+    const list = Array.isArray(cfg.questions) ? cfg.questions : null;
+    if (list && !list.length) throw new Error("Thunderdome: questions is an empty list");
+    const { questions, ...dome } = cfg;
+    // The dome is validated against the first question's contenders so the arena, the
+    // storage keys and the split are read and checked in one place.
+    const D = normalize(list ? { ...dome, contenders: list[0].contenders || dome.contenders } : cfg);
+    const seen = new Set();
+    D.questions = (list || [{}]).map(q => {
+      const id = list ? String(q.id || "").toLowerCase() : null;
+      if (list) {
+        if (!id) throw new Error("Thunderdome: every question needs an id");
+        if (VIEWS.has(id)) throw new Error(`Thunderdome: "${id}" is a view name, so it cannot be a question id`);
+        if (seen.has(id)) throw new Error(`Thunderdome: question ids must be unique (${id})`);
+        seen.add(id);
+      }
+      const Q = normalize({ ...dome, ...q, id: id ? `${cfg.id}-${id}` : cfg.id });
+      return {
+        id,
+        // Read off the question itself, not the merge: inheriting the dome's title would
+        // label every tab with the same words.
+        label: q.short || q.title || id,
+        title: q.title || "", lede: Q.lede || "",
+        galleryTitle: Q.galleryTitle, contenderLabel: Q.contenderLabel, contenders: Q.contenders,
+      };
+    });
+    D.multi = !!list;
+    return D;
+  }
+
+  // The hash carries the question and the view, in either order and both optional:
+  //   #results           the results of a one-question dome
+  //   #density           the density question, voting
+  //   #density/results   its table, which is the link you paste into the issue
+  // A segment that is neither is ignored rather than treated as a question that is not
+  // there, so an old link to a renamed question still opens the dome.
+  function parseHash(hash, qids) {
+    let q = null, view = "vote";
+    for (const raw of String(hash || "").replace(/^#/, "").split("/")) {
+      let p = raw;
+      try { p = decodeURIComponent(raw); } catch (e) { /* keep the raw segment */ }
+      p = p.toLowerCase();
+      if (VIEWS.has(p)) view = p;
+      else if (!q && (qids || []).indexOf(p) >= 0) q = p;
+    }
+    return { q, view };
+  }
+
+  function hashFor(q, view) {
+    return "#" + (q ? encodeURIComponent(q) + "/" : "") + (view === "results" ? "results" : "vote");
+  }
+
   // ---------- DOM ----------
 
   function h(tag, attrs, ...kids) {
@@ -211,10 +273,25 @@
   }
 
   function start(cfg) {
-    const C = normalize(cfg);
-    const ids = C.contenders.map(c => c.id);
-    const byId = Object.fromEntries(C.contenders.map(c => [c.id, c]));
+    const C = normalizeDome(cfg);
+    const qids = C.questions.map(q => q.id);
     const mount = (C.mount && document.querySelector(C.mount)) || document.body;
+
+    // The question is a fourth thing that can change, next to the arena, the duel and the
+    // view. Switching one swaps the contenders and the slice of the table they are scored
+    // against; everything else on the page is the dome's and stays where it is.
+    let Q = C.questions[0];
+    let ids = [], byId = {};
+    function setQuestionData() {
+      ids = Q.contenders.map(c => c.id);
+      byId = Object.fromEntries(Q.contenders.map(c => [c.id, c]));
+    }
+    setQuestionData();
+    // Votes are stored per dome and tagged with `q`, so one shared table serves every
+    // question and one snapshot keeps them all live. A dome with one anonymous question
+    // writes no tag at all, which is what every config written before this did.
+    // Always a fresh array: callers sort it in place.
+    const qVotes = () => C.multi ? votes.filter(v => v.q === Q.id) : votes.slice();
 
     let arenaIds = {};
     for (const d of C.dims) arenaIds[d.id] = d.type === "select" ? (d.default ?? d.options[0].id) : !!d.default;
@@ -224,7 +301,12 @@
     let note = "", noteTimer = 0, stickyNote = "", lockNote = "";
     let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, view = "vote";
 
-    if (C.title) document.title = C.title;
+    // The tab title follows the question, so a link someone pasted into an issue says
+    // which decision it opens without them having to read the page.
+    function setDocTitle() {
+      const base = C.title || C.id;
+      document.title = C.multi ? `${base} · ${Q.label}` : base;
+    }
 
     // ---- layout ----
     const $ = {};
@@ -273,7 +355,8 @@
     $.status = h("div", { class: "td-status", role: "status" });
 
     const splitVals = C.split ? C.split.values : [];
-    const headRow = h("tr", {}, h("th"), h("th", { text: C.contenderLabel }), h("th", { class: "num", text: "Elo" }),
+    $.headName = h("th");
+    const headRow = h("tr", {}, h("th"), $.headName, h("th", { class: "num", text: "Elo" }),
       ...splitVals.map(s => h("th", { class: "num", text: s.label })),
       h("th", { class: "num", text: "W–L–T" }));
     $.standings = h("tbody");
@@ -285,6 +368,14 @@
     // They are plain hash links so the results are as shareable as the dome itself.
     $.tabVote = h("a", { class: "td-tab", href: "#vote", text: "Vote" });
     $.tabResults = h("a", { class: "td-tab", href: "#results" });
+
+    // One tab per question, and each one is a link, so "the density one" is a URL you can
+    // paste rather than a click path you have to describe.
+    $.qTabs = C.questions.map(q => h("a", { class: "td-qtab", href: hashFor(q.id, "vote"), text: q.label }));
+    $.qNav = C.multi
+      ? h("nav", { class: "td-qnav", "aria-label": "Question" }, ...$.qTabs)
+      : null;
+    $.qLede = h("p", { class: "td-lede" });
 
     // The arena bar is context, not a control you touch every duel: collapsed to its
     // tag line, one click from open. <details> so the keyboard and AT get it for free.
@@ -302,27 +393,65 @@
         h("section", { class: "td-section" }, h("h2", { text: "Standings" }),
           h("div", { class: "td-table-wrap" }, h("table", {}, h("thead", {}, headRow), $.standings))),
         h("section", { class: "td-section" }, h("h2", { text: "Recent bouts" }), $.feed)),
-      h("section", { class: "td-section" }, h("h2", { text: C.galleryTitle }), $.gallery));
+      h("section", { class: "td-section" }, $.galleryHead = h("h2"), $.gallery));
 
     const wrap = h("div", { class: "td-wrap" },
       h("header", { class: "td-head" },
         h("h1", { text: C.title || C.id }),
         h("nav", { class: "td-tabs", "aria-label": "View" }, $.tabVote, $.tabResults)),
-      C.lede ? h("p", { class: "td-lede", html: C.lede }) : null,
+      $.qNav, $.qLede,
       $.viewVote, $.viewResults);
     mount.append(wrap);
 
-    function setView(v) {
+    // Everything on the page that names the question rather than the dome. The lede is
+    // the question's own if it set one, and the dome's if it did not, so a dome whose
+    // questions are variations on one idea writes the explanation once.
+    function renderQuestion() {
+      const lede = Q.lede || "";
+      $.qLede.innerHTML = lede;
+      $.qLede.hidden = !lede;
+      $.headName.textContent = Q.contenderLabel;
+      $.galleryHead.textContent = Q.galleryTitle;
+      setDocTitle();
+    }
+
+    // A question tab carries the view you are on, so moving from one table to the next
+    // does not drop you back into voting. It has to be resynced on a view change too,
+    // not just on a question change, or the tabs point at the view you just left.
+    function syncQTabs() {
+      for (let i = 0; i < $.qTabs.length; i++) {
+        const on = C.questions[i].id === Q.id;
+        $.qTabs[i].setAttribute("aria-current", on ? "page" : "false");
+        $.qTabs[i].href = hashFor(C.questions[i].id, view);
+      }
+    }
+
+    // The hash is the whole router: which question, and which of its two views. Both the
+    // question tabs and the view tabs are plain links into it, so back and forward work
+    // across questions for free and any state worth talking about has a URL.
+    function goto(qid, v, booting) {
+      const moved = C.multi && qid != null && qid !== Q.id;
+      if (moved) {
+        Q = C.questions[qids.indexOf(qid)];
+        setQuestionData();
+        duel = null; lastKey = ""; myLast = null; $.undo.hidden = true;
+        galleryDirty = true;
+      }
       view = v === "results" ? "results" : "vote";
       $.viewVote.hidden = view !== "vote";
       $.viewResults.hidden = view !== "results";
       $.tabVote.setAttribute("aria-current", view === "vote" ? "page" : "false");
       $.tabResults.setAttribute("aria-current", view === "results" ? "page" : "false");
+      $.tabVote.href = hashFor(Q.id, "vote");
+      $.tabResults.href = hashFor(Q.id, "results");
+      syncQTabs();
+      // A question you just arrived at has no duel yet, and nextDuel renders one.
+      if (moved || booting) { renderQuestion(); nextDuel(); renderStandings(); }
       if (!flushGallery()) tuneGalleryVideos();   // a rebuild tunes on its way out
       tuneDuelVideos();
     }
-    const viewFromHash = () => location.hash.slice(1).toLowerCase() === "results" ? "results" : "vote";
-    window.addEventListener("hashchange", () => setView(viewFromHash()));
+    const fromHash = () => parseHash(location.hash, qids);
+    window.addEventListener("hashchange", () => { const r = fromHash(); goto(r.q, r.view); });
 
     // ---- rendering ----
     function arena() { return resolveArena(C, arenaIds, false); }
@@ -473,11 +602,11 @@
     // arena changes every vote, so keying the gallery on the arena alone still tore down
     // and re-preloaded every clip in it once per duel, on the same frame as the new duel.
     function flushGallery() {
-      if (!galleryDirty) return false;
+      if (!galleryDirty || view !== "results") return false;
       galleryDirty = false;
       const a = arena();
       galleryKey = JSON.stringify(a.ids);
-      $.gallery.replaceChildren(...C.contenders.map(c => card(c, a)));
+      $.gallery.replaceChildren(...Q.contenders.map(c => card(c, a)));
       tuneGalleryVideos();
       return true;
     }
@@ -529,13 +658,13 @@
           arenaIds[d.id] = d.type === "select" ? d.options[Math.floor(Math.random() * d.options.length)].id : Math.random() < .5;
         }
       }
-      const p = pickPair(ids, votes, lastKey);
+      const p = pickPair(ids, qVotes(), lastKey);
       lastKey = p.key; duel = { a: p.a, b: p.b };
       render();
     }
 
     function renderStandings() {
-      const sorted = [...votes].sort((x, y) => x.t - y.t);
+      const sorted = qVotes().sort((x, y) => x.t - y.t);
       const all = elo(ids, sorted, C.k);
       const perSplit = splitVals.map(s => {
         const list = sorted.filter(v => splitOf(C, resolveArena(C, v, true)) === s.id);
@@ -573,8 +702,9 @@
     // Who is winning, without making you switch views to find out. A vote you cannot
     // see land feels like it went nowhere, and then you stop voting.
     function leaderLine() {
-      if (votes.length < 3) return "";
-      const r = elo(ids, [...votes].sort((x, y) => x.t - y.t), C.k);
+      const mine = qVotes();
+      if (mine.length < 3) return "";
+      const r = elo(ids, mine.sort((x, y) => x.t - y.t), C.k);
       const rank = ids.slice().sort((x, y) => r[y] - r[x]);
       const gap = r[rank[0]] - r[rank[1]];
       // Under a K-factor's worth of separation two contenders have not been told apart yet.
@@ -587,7 +717,7 @@
     function storageLine() {
       if (stickyNote) return stickyNote;
       if (shared) {
-        const n = votes.filter(v => !String(v.id).startsWith("local-")).length;
+        const n = qVotes().filter(v => !String(v.id).startsWith("local-")).length;
         return `${n} shared vote${n === 1 ? "" : "s"} so far.`;
       }
       return "Votes stay in this browser until the shared table connects.";
@@ -595,7 +725,8 @@
     // The lock note beats everything: a row of dead buttons needs an explanation more
     // than a vote already visible in the Results count needs a confirmation.
     function renderStatus() {
-      $.tabResults.textContent = votes.length ? `Results (${votes.length})` : "Results";
+      const n = qVotes().length;
+      $.tabResults.textContent = n ? `Results (${n})` : "Results";
       $.status.textContent = lockNote || note || `${storageLine()} ${leaderLine()}`.trim();
     }
     // A sticky message is always the correction to whatever transient is on screen: it
@@ -618,7 +749,10 @@
     }
     async function vote(w) {
       if (!duel || lockNote) return;
+      // `q` only on a dome that has questions, so a single-question dome's votes keep the
+      // exact shape they had before questions existed and an old shared table still reads.
       const v = { a: duel.a, b: duel.b, w, ...arena().ids, t: Date.now() };
+      if (C.multi) v.q = Q.id;
       const cards = $.duel.children;
       if (w === "a" && cards[0]) cards[0].classList.add("picked");
       if (w === "b" && cards[1]) cards[1].classList.add("picked");
@@ -669,8 +803,7 @@
 
     // ---- boot ----
     try { const saved = JSON.parse(localStorage.getItem(C.localKey) || "[]"); if (Array.isArray(saved)) votes = saved; } catch (e) { /* no storage */ }
-    setView(viewFromHash());
-    nextDuel(); renderStandings();
+    { const r = fromHash(); goto(r.q, r.view, true); }
 
     (async () => {
       let db = null;
@@ -684,10 +817,15 @@
       }, () => { shared = false; say("Lost the shared table, so votes stay in your browser for now.", true); });
     })();
 
-    return { get votes() { return votes.slice(); }, next: nextDuel, vote, undo };
+    return {
+      get votes() { return votes.slice(); },
+      get question() { return Q.id; },
+      next: nextDuel, vote, undo,
+      go: (q, v) => { location.hash = hashFor(q, v || view); },
+    };
   }
 
-  const api = { start, elo, records, pickPair, pairCounts, ago, normalize, resolveArena, mediaSpec };
+  const api = { start, elo, records, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -36,6 +36,7 @@ experiments/thunderdome/
     starter/              smallest config: four HTML-snippet buttons
     cmux-selection/       cmux sidebar selection, eight treatments (see RESULTS.md)
     motion/               four busy indicators as video, one clip per theme
+    dialog/               one destructive dialog, three questions about it
 ```
 
 Each example folder has `config.js`, optional `config.css`, and a generated `index.html`. No dependencies and no package install. Media files sit next to the config and get inlined by the build.
@@ -66,7 +67,7 @@ The page opens on the duel. Click either card to vote for it, or use the keys:
 
 The whole card is the button, so your cursor never leaves the thing you are judging. Dragging to select a contender's name is not a vote, and a clip's own controls play it rather than voting for it. Clicking a vote button hands focus back, so every key in the table keeps meaning what the table says it means.
 
-Two views, `#vote` and `#results`, switched by the tabs in the header. No hash opens the duel, with only the title and the lede above it, and the Results tab carries the vote count. `#results` in a link opens the table directly. The keys above are the vote view's; on the results view they are the browser's, so space scrolls the standings. The arena controls are folded into a summary line that shows the current context; open it to pin a specific one. Changing a select turns off "New arena each duel".
+Two views, `#vote` and `#results`, switched by the tabs in the header. No hash opens the duel, with only the title and the lede above it, and the Results tab carries the vote count. `#results` in a link opens the table directly. A dome with several [questions](#several-questions-in-one-dome) puts the question id in front: `#wording/results`. The keys above are the vote view's; on the results view they are the browser's, so space scrolls the standings. The arena controls are folded into a summary line that shows the current context; open it to pin a specific one. Changing a select turns off "New arena each duel".
 
 Under the cards a line names the current leader once there are three votes in, so you can see your vote land without switching views.
 
@@ -120,6 +121,34 @@ What the engine hands you:
 - **Styles** for contender markup go in `config.css`. The engine's own classes all start with `td-`, and the theme tokens (`--ink`, `--muted`, `--faint`, `--rule`, `--panel`, `--sans`, `--mono`) are available.
 - Other knobs: `k` (Elo K-factor, default 24), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click.
 
+## Several questions in one dome
+
+One screen usually raises more than one question. A destructive dialog is a button, a footer layout, and a sentence, and they are worth judging separately even though they share the mock, the arena, and the styles. Give the config a `questions` array instead of a top-level `contenders` and each one gets its own table, its own link, and its own votes.
+
+```js
+Thunderdome.start({
+  id: "dialog-thunderdome",
+  title: "Destructive Dialog Thunderdome",
+  questions: [
+    { id: "button", short: "Button", title: "Which delete button?",
+      lede: "The dialog is the same in all four...",
+      contenderLabel: "Button", contenders: [ /* ... */ ] },
+    { id: "wording", short: "Wording", title: "How should it say it?",
+      contenders: [ /* ... */ ] },
+  ],
+  arena: { /* shared */ },
+  render: (c, a, { h }) => /* shared */,
+});
+```
+
+- A question takes `contenders` plus anything the dome already sets: `lede`, `contenderLabel`, `galleryTitle`, `media`, `render`, `swatch`. What it does not name, it inherits.
+- `id` is the link. It is lowercased, has to be unique, and cannot be `vote` or `results` because those are the views. `short` is the tab label, falling back to `title` and then to the id.
+- The rest of the dome is deliberately not per-question: the arena, the split, `k`, `collection` and `localKey` stay dome-level. Questions asked in different contexts are different domes, not tabs on one.
+- The hash is `#<question>/<view>`, in either order and case-insensitive: `#wording`, `#wording/results`, `#results/wording`. Both segments are optional, so an old `#results` link still works and a question that has since been renamed opens the dome rather than a blank page. The tabs are plain links, so back and forward walk your questions.
+- Votes are tagged with `q` and stored in the one table. A config with no `questions` writes exactly the vote shape it always did, with no tag, so every dome built before this keeps reading its own history.
+
+`examples/dialog/` is three questions about one dialog: `node build.mjs examples/dialog`.
+
 ## Images, GIFs and video
 
 `contender.media` takes a path, a `{ src, ... }` object, or a function of the arena (so one contender can hold its light and dark recordings). The element is chosen from the extension: `.mp4`, `.webm`, `.mov`, `.m4v` and `.ogv` become a `<video>`, everything else an `<img>`. A URL with no extension needs `kind: "video"` spelled out.
@@ -152,7 +181,7 @@ Artifact publish
   capabilities: { "db": {} }
 ```
 
-With `db` granted, every vote is a document in the `votes` collection (`{a, b, w, t, ...arena ids}`, where `w` is `"a"`, `"b"`, or `"tie"`), and every open copy of the page updates live. Signed-in Contributors and up can vote; Viewers see the table and their votes stay local. Without the capability, or opened from disk, votes stay in the browser.
+With `db` granted, every vote is a document in the `votes` collection (`{a, b, w, t, ...arena ids}`, where `w` is `"a"`, `"b"`, or `"tie"`, plus `q` when the dome has questions), and every open copy of the page updates live. Signed-in Contributors and up can vote; Viewers see the table and their votes stay local. Without the capability, or opened from disk, votes stay in the browser.
 
 Republishing to the same artifact URL keeps the collection, so you can add a contender mid-run. Old votes still count; the newcomer starts at 1500 and the pairing weights push it into fights until it catches up. Removing a contender drops its bouts from the table without deleting them.
 

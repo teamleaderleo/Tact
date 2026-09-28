@@ -35,6 +35,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-tab:hover{color:var(--ink);background:var(--hover)}
 .td-tab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .td-tab[aria-current=page]{color:var(--ink);background:var(--panel);border-color:var(--rule-strong)}
+/* One dome, several decisions. Reads as a row of questions rather than a second set of
+   pill tabs, so it does not compete with Vote/Results for the same glance. */
+.td-qnav{display:flex;flex-wrap:wrap;gap:0 18px;border-bottom:1px solid var(--rule)}
+.td-qtab{font-size:13.5px;color:var(--muted);text-decoration:none;padding:7px 1px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.td-qtab:hover{color:var(--ink)}
+.td-qtab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.td-qtab[aria-current=page]{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
 .td-wrap h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .td-wrap h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
 .td-section{display:grid;gap:10px}
