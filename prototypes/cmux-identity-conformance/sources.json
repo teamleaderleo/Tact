@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "repositories": {
+    "cmux": {
+      "repository": "manaflow-ai/cmux",
+      "revision": "b334a7deeb0ff65bc9ee4d1c6a2bf7d454795110",
+      "files": {
+        "Sources/SessionRestoreIdentityExclusions.swift": "952baf7111c832c6c26eb92debbdfa21c280475578cab7218cdbde95c05e4300",
+        "Sources/SurfaceResumeBindingSnapshot+ManagedSessionIdentity.swift": "98b3c512f53a18e398ed61d8e14de9c504bff0aa00efd7b2e43ee7b7a51a6d64",
+        "Sources/Surfaces/SurfaceCatalogModel.swift": "4a98e6ebf278955676ca1fba5ac807f803077e99c0f22cc57c079f92fb183914"
+      }
+    },
+    "cmux-browser": {
+      "repository": "manaflow-ai/cmux-browser",
+      "revision": "6696b66ec83925c616f869a2d4f89454046b4eb9",
+      "files": {
+        "overlay/chrome/browser/cmux_term/cmux_terminal_lifecycle.h": "45dc24c3ef27bcec1f9216b578ef035f2f1ba7df2f6a20778b04ebda38bf78d4",
+        "overlay/chrome/browser/cmux_term/cmux_terminal_recovery.cc": "7a1f51b20fc2bb1481e6b2a7bbd7e934e29745611df8869111e61c81e96b20fc",
+        "overlay/chrome/browser/cmux_term/cmux_terminal_recovery.h": "3154bbdd0d7bbc36f4a5c87c661128948bd6bb152dffd66e920e9762f40050ed",
+        "overlay/chrome/browser/cmux_term/cmux_terminal_recovery_test.cc": "5a62320f8ab3570f3096708c82f65cec9c3b299cea9daeaa57bba46d147ddef7",
+        "overlay/chrome/browser/cmux_term/cmux_tui_protocol.cc": "2c2fe698e49beab2fa00b96c82b291507081f1cf678714c402f8a4dfbf67e663",
+        "overlay/chrome/browser/cmux_term/cmux_tui_protocol.h": "2cba617becb99f294d714c6116d4a707e56e9eb6ae9c60a6adf3fd6e2db2bc4d",
+        "overlay/chrome/browser/cmux_term/cmux_tui_protocol_test.cc": "b035cb51ae0a0f81764a2b39d20404f0fd6ec18ef651920eed8cb2c608f28956",
+        "overlay/chrome/browser/cmux_term/window_model.cc": "dc244375b342d98b200032897ab94869489e7bc5bb19b7e88c6b3aa0e466d97b",
+        "overlay/chrome/browser/cmux_term/window_model.h": "03037d0ecd6f2fbd47083ba9e036ca4f7a52b60ab2d633390a66aa2ed1d13e64",
+        "overlay/chrome/browser/cmux_term/window_model_test.cc": "f63282102ec7de8f893b09416059195f63ec17e3c13d381a2ba9357a76bad0c8",
+        "overlay/chrome/services/cmux_terminal_renderer/public/cpp/cmux_terminal_host_protocol.cc": "9e256eb2d0b28d1d03c93cc7c95dd2d8b3104a57105e289e019d34d5aacda5af",
+        "overlay/chrome/services/cmux_terminal_renderer/public/cpp/cmux_terminal_host_protocol.h": "076845bb4f0a01df9f98fa4512b890e095f832d304e43fe0dd3ab9496adc869c"
+      }
+    },
+    "elatura": {
+      "repository": "teamleaderleo/elatura",
+      "revision": "b323290a0532b4080e468ab30d3a29bb7bf8d2fa",
+      "files": {
+        "packages/core/src/application-lane-client.ts": "439d202ec2ef5f976dbd67960b78dd2bf9d7d3805f18e414e6dd68cbff59e3a3",
+        "packages/core/src/application-lane-runtime.ts": "5dfa961ef38c127b37ecd2e9de1bb3f2ab710a550a4e9388b544310e35b2ed81",
+        "packages/core/src/application-lane.ts": "641207557e7f5314d51ae849b15a3f2c77f6a5fa2b3ed9e90d90860379968fe4",
+        "packages/core/src/resource-accounting.ts": "168e950ff02ddc85bc91fb214816707c5ff1607b53bad7ccf8fe0c418f1ef00c"
+      }
+    }
+  }
+}

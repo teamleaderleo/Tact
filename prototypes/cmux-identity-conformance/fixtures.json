@@ -1,0 +1,225 @@
+{
+  "version": 1,
+  "provenance": "Manufactured, content-free inputs in production parser/payload shapes; no live capture. Lifecycle snapshot transitions are synthetic, not daemon or app execution.",
+  "resource_wire_cases": [
+    {
+      "wire": "local/terminal/00000000-0000-4000-8000-000000000001",
+      "canonical": "local/terminal/00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "wire": "machine-a/screen/display:1",
+      "canonical": "machine-a/display/display:1"
+    },
+    {
+      "wire": "local/browser/https://example.invalid/a",
+      "canonical": "local/browser/https://example.invalid/a"
+    },
+    {
+      "wire": "machine-a/terminal/term_00000000000040008000000000000001",
+      "canonical": "machine-a/terminal/term_00000000000040008000000000000001"
+    },
+    {
+      "wire": "local/terminal/",
+      "canonical": null
+    },
+    {
+      "wire": "local/unknown/id",
+      "canonical": null
+    }
+  ],
+  "cursor_wire_cases": [
+    {
+      "wire": {
+        "generation": " daemon-a ",
+        "revision": "18446744073709551615"
+      },
+      "revision": "18446744073709551615"
+    },
+    {
+      "wire": {
+        "generation": " daemon-a ",
+        "revision": 42
+      },
+      "revision": "42"
+    },
+    {
+      "wire": {
+        "generation": " daemon-a ",
+        "revision": " 42 "
+      },
+      "revision": "42"
+    },
+    {
+      "wire": {
+        "generation": " daemon-a ",
+        "revision": 0
+      },
+      "revision": "0"
+    },
+    {
+      "wire": {
+        "generation": " daemon-a ",
+        "revision": true
+      },
+      "revision": null
+    },
+    {
+      "wire": {
+        "generation": " daemon-a ",
+        "revision": -1
+      },
+      "revision": null
+    },
+    {
+      "wire": {
+        "generation": " daemon-a ",
+        "revision": 1.5
+      },
+      "revision": null
+    },
+    {
+      "wire": {
+        "generation": " daemon-a ",
+        "revision": "18446744073709551616"
+      },
+      "revision": null
+    }
+  ],
+  "local_restore": {
+    "persisted_stable_surface_id": "00000000-0000-4000-8000-000000000003",
+    "catalogs": [
+      [
+        {
+          "id": "local/terminal/00000000-0000-4000-8000-000000000001",
+          "title": "duplicate label",
+          "open": true,
+          "open_surface_ids": [
+            "00000000-0000-4000-8000-000000000001"
+          ]
+        }
+      ],
+      [
+        {
+          "id": "local/terminal/00000000-0000-4000-8000-000000000002",
+          "title": "duplicate label",
+          "open": true,
+          "open_surface_ids": [
+            "00000000-0000-4000-8000-000000000002"
+          ]
+        },
+        {
+          "id": "local/terminal/00000000-0000-4000-8000-000000000004",
+          "title": "duplicate label",
+          "open": true,
+          "open_surface_ids": [
+            "00000000-0000-4000-8000-000000000004"
+          ]
+        }
+      ]
+    ]
+  },
+  "close_reopen": {
+    "local": {
+      "before": {
+        "id": "local/terminal/00000000-0000-4000-8000-000000000001",
+        "title": "duplicate label",
+        "open": true,
+        "open_surface_ids": [
+          "00000000-0000-4000-8000-000000000001"
+        ]
+      },
+      "closed": [],
+      "reopened": {
+        "id": "local/terminal/00000000-0000-4000-8000-000000000002",
+        "title": "duplicate label",
+        "open": true,
+        "open_surface_ids": [
+          "00000000-0000-4000-8000-000000000002"
+        ]
+      }
+    },
+    "remote": {
+      "before": {
+        "id": "machine-a/terminal/term_00000000000040008000000000000001",
+        "title": "duplicate label",
+        "open": true,
+        "open_surface_ids": [
+          "00000000-0000-4000-8000-000000000001"
+        ]
+      },
+      "closed": {
+        "id": "machine-a/terminal/term_00000000000040008000000000000001",
+        "title": "duplicate label",
+        "open": false,
+        "open_surface_ids": []
+      },
+      "reopened": {
+        "id": "machine-a/terminal/term_00000000000040008000000000000001",
+        "title": "duplicate label",
+        "open": true,
+        "open_surface_ids": [
+          "00000000-0000-4000-8000-000000000002"
+        ]
+      }
+    }
+  },
+  "browser_lane_binding": {
+    "lane_ref": "elatura:lane:fixture-a",
+    "generations": {
+      "application": 7,
+      "daemon": "daemon-a",
+      "work_authority": null
+    },
+    "work_item_ref": null,
+    "surface": {
+      "backend_resource_id": "tab_00000000000040008000000000000001",
+      "backend_id": 1000,
+      "local_id": 10
+    },
+    "provenance": "Synthetic correlation record for #87 consumption, not a new owner/public wire schema. Work authority is unknown, not inferred from observation."
+  },
+  "elatura": {
+    "descriptor": {
+      "version": 1,
+      "laneRef": "elatura:lane:fixture-a",
+      "generation": 7,
+      "adapter": {
+        "id": "fixture",
+        "version": "1"
+      },
+      "capabilities": [
+        "events",
+        "observe",
+        "activate"
+      ],
+      "state": "active",
+      "observedAt": "2026-09-20T10:00:00.000Z"
+    },
+    "request": {
+      "version": 1,
+      "requestId": "fixture:observe:1",
+      "laneRef": "elatura:lane:fixture-a",
+      "laneGeneration": 7,
+      "operation": "observe",
+      "payload": {
+        "maxItems": 8,
+        "maxTextCodeUnits": 4096,
+        "maxSerializedBytes": 8192
+      }
+    },
+    "response": {
+      "version": 1,
+      "requestId": "fixture:observe:1",
+      "laneRef": "elatura:lane:fixture-a",
+      "laneGeneration": 7,
+      "operation": "observe",
+      "outcome": "unsupported",
+      "state": "active",
+      "observedAt": "2026-09-20T10:01:00.000Z",
+      "payload": null,
+      "sourceRefs": [],
+      "grantsWorkAuthority": false,
+      "authorizesWorkDispatch": false
+    }
+  }
+}
