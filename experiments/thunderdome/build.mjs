@@ -18,6 +18,14 @@ const here = dirname(fileURLToPath(import.meta.url));
 const engineJs = readFileSync(join(here, "engine/thunderdome.js"), "utf8");
 const engineCss = readFileSync(join(here, "engine/thunderdome.css"), "utf8");
 
+// A path relative to cwd, unless that turns out to be several ../ deep, in which case
+// the absolute path is both shorter and clearer. cli.mjs builds into wherever it was
+// pointed, so this is not the rare case it used to be.
+export const short = p => {
+  const r = relative(process.cwd(), p);
+  return !r || r.startsWith("../..") ? p : r;
+};
+
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
 const inlineJs = s => s.replace(/<\/script/gi, "<\\/script");
 const inlineCss = s => s.replace(/<\/style/gi, "<\\/style");
@@ -48,7 +56,7 @@ export function inlineMedia(source, dir, label, seen = new Map(), root = dir) {
     // A config is a list of paths someone typed; it should not be able to reach out of
     // the tree and post a file from elsewhere on the machine into a published artifact.
     if (abs !== root && !abs.startsWith(root + sep)) {
-      console.warn(`${label}: ${path} resolves outside ${relative(process.cwd(), root) || "."}; left as written`);
+      console.warn(`${label}: ${path} resolves outside ${short(root)}; left as written`);
       return whole;
     }
     if (!existsSync(abs) || !statSync(abs).isFile()) return whole;
@@ -65,7 +73,9 @@ export function inlineMedia(source, dir, label, seen = new Map(), root = dir) {
 }
 
 // Run the config against a stub engine to read its title and lede without a DOM.
-function readConfig(js, file) {
+// Exported because cli.mjs needs the same thing for `results`, and two evaluators would
+// be two sets of rules about what a config is allowed to do at load time.
+export function readConfig(js, file) {
   let captured = null;
   const sandbox = { Thunderdome: { start: c => { captured = c; } }, console };
   try { vm.runInNewContext(js, sandbox, { filename: file, timeout: 1000 }); }
@@ -83,8 +93,8 @@ export function build(dir) {
   // Paths may reach out of the example folder into a shared asset dir, but not out of
   // the thunderdome tree. An example built from somewhere else is its own root.
   const root = dir === here || dir.startsWith(here + sep) ? here : dir;
-  const configJs = inlineMedia(rawConfigJs, dir, relative(process.cwd(), configPath), media, root);
-  const configCss = inlineMedia(rawConfigCss, dir, relative(process.cwd(), cssPath), media, root);
+  const configJs = inlineMedia(rawConfigJs, dir, short(configPath), media, root);
+  const configCss = inlineMedia(rawConfigCss, dir, short(cssPath), media, root);
   // Metadata comes off the pre-inline source: no reason to hand the vm a megabyte of base64.
   const meta = readConfig(rawConfigJs, configPath);
   const title = meta.title || dir.split("/").pop();
@@ -122,7 +132,7 @@ ${inlineJs(configJs)}
   writeFileSync(out, html);
   const size = Buffer.byteLength(html);
   const inlined = media.size ? `, ${media.size} media file${media.size === 1 ? "" : "s"} inlined` : "";
-  console.log(`wrote ${relative(process.cwd(), out)} (${(size / 1024).toFixed(1)} KB${inlined})`);
+  console.log(`wrote ${short(out)} (${(size / 1024).toFixed(1)} KB${inlined})`);
   if (size > 5 * MB) console.warn(`  ${(size / MB).toFixed(1)} MB is a slow first paint and an awkward artifact upload; try shorter or smaller clips`);
 }
 

@@ -31,6 +31,7 @@ experiments/thunderdome/
   engine/thunderdome.js   engine: pairing, voting, ratings, feed, gallery, storage
   engine/thunderdome.css  page chrome, light and dark
   build.mjs               inlines engine + one config into a single index.html
+  cli.mjs                 make a dome from screenshots or a GitHub thread; read results
   test.mjs                node --test for the DOM-free core
   examples/
     starter/              smallest config: four HTML-snippet buttons
@@ -52,6 +53,75 @@ open examples/cmux-selection/index.html
 ```
 
 Opened from disk, votes stay in that browser (localStorage). Publish it as an artifact to share one table.
+
+## Make one from the command line
+
+A dome is a config and a build, so it can be one command. `cli.mjs` is for the case where
+you have the candidates already and do not want to write a config by hand: screenshots on
+disk, or an issue where someone has pasted four mocks and asked which one.
+
+```bash
+node cli.mjs new red-button --title "Which delete button?" \
+  --media shots/solid-red.png --media shots/outlined-red.png --media shots/text-red.png
+# wrote examples/red-button/config.js (3 contenders, 3 media files copied in)
+# wrote examples/red-button/index.html (522.1 KB, 3 media files inlined)
+```
+
+Names come off the filenames, so `shots/dense-rows@2x.png` becomes "Dense rows". Media is
+copied into the dome folder first, because the build only inlines what sits inside it and
+a page built from `/tmp` would come out with empty cards. A `--media` path that is not a
+file stops the command rather than building a dome with a hole in it.
+
+`--from-pr` reads the title and every image out of an issue or a PR, which is the other
+half of the round trip: the thread asking the question becomes the thing that answers it.
+
+```bash
+node cli.mjs new dialog --from-pr teamleaderleo/Tact#105
+node cli.mjs new dialog --from-issue https://github.com/manaflow-ai/cmux/issues/13742
+```
+
+Markdown images, `<img src>` and bare image URLs all count, in that order, and alt text
+becomes the contender name where there is any. The reference is recorded as `askedBy` so
+the page says where the question came from. Needs `gh` on the path and logged in.
+
+For anything the flags do not cover, `--spec` takes the whole config as JSON, including
+`questions` for a multi-question dome:
+
+```bash
+node cli.mjs new density --spec - <<'JSON'
+{"title": "How dense?", "contenders": [{"id": "roomy", "name": "Roomy", "media": "a.png"},
+                                       {"id": "tight", "name": "Tight", "media": "b.png"}]}
+JSON
+```
+
+`--out <dir>` puts the dome somewhere other than `examples/<name>`, `--no-build` writes
+the config and stops, `--force` overwrites one that is already there, and `build <name>`
+rebuilds without touching the config.
+
+### Results without opening the page
+
+Export the votes (the `votes` collection from a shared table, or the localStorage array)
+and hand them to `results`. It reads the dome's own config, so the ids, names and
+questions are the ones the page used.
+
+```bash
+node cli.mjs results red-button --votes votes.json
+```
+
+```text
+Which delete button?
+
+  #                     Elo    W–L–T
+  1  Solid red     1653 ±57  66–22–0
+  2  Outlined red  1543 ±42  60–46–0
+  3  Text red      1432 ±48  34–59–0
+  4  Solid grey    1373 ±66  20–53–0
+  Solid red is ahead of Outlined red in 99% of resamples.
+```
+
+`--md` gives the same thing as a markdown table to paste back into the thread that asked,
+and `--json` gives the numbers. A multi-question dome prints one table per question, and
+votes with no `q` tag count toward the first question, the same as in the browser.
 
 ## Voting
 

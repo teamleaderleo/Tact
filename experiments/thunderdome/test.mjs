@@ -429,3 +429,150 @@ test("build inlines a cache-busted path and refuses to reach out of the tree", a
   assert.ok(out.includes(`b: "../../../../etc/hosts.png"`), "a path outside the tree stays as written");
   assert.equal(seen.size, 1);
 });
+
+// ---- cli.mjs ----
+// The pure half: turning arguments and issue bodies into a spec, a spec into config
+// source, and votes into a table. The fs and gh halves are exercised by hand.
+
+test("parseArgs takes flags in every shape a person types them", async () => {
+  const { parseArgs } = await import("./cli.mjs");
+  const a = parseArgs(["new", "density", "--title", "How dense?", "--media=a.png", "--media", "b.png", "--force"]);
+  assert.deepEqual(a._, ["new", "density"]);
+  assert.equal(a.title, "How dense?");
+  assert.deepEqual(a.media, ["a.png", "b.png"]);
+  assert.equal(a.force, true);
+  // A flag whose value is missing takes the next thing only if it is not itself a flag.
+  assert.equal(parseArgs(["--md", "--votes", "v.json"]).md, true);
+});
+
+test("contender names come off the filenames someone already chose", async () => {
+  const { contenderFromPath, uniqueIds } = await import("./cli.mjs");
+  assert.deepEqual(contenderFromPath("shots/dense-rows@2x.png", 0), { id: "dense-rows", name: "Dense rows", media: "shots/dense-rows@2x.png" });
+  // Two shot.png in different folders is the ordinary way to collide, and a duplicate
+  // id is an error the engine throws on rather than something the CLI should emit.
+  const ids = uniqueIds([{ id: "shot" }, { id: "shot" }, { id: "shot" }]).map(c => c.id);
+  assert.deepEqual(ids, ["shot", "shot-2", "shot-3"]);
+});
+
+test("an issue body becomes a field of contenders", async () => {
+  const { mediaFromMarkdown, specFromIssue } = await import("./cli.mjs");
+  const body = [
+    "Which of these?",
+    "![Solid red](https://example.com/a.png)",
+    '<img src="https://example.com/b.gif">',
+    "https://user-images.githubusercontent.com/1/deadbeef",   // no extension, still an image
+    "[not an image](https://example.com/page)",
+    "![dupe](https://example.com/a.png)",
+  ].join("\n\n");
+  const found = mediaFromMarkdown(body);
+  // Markdown images first, then <img>, then bare URLs: an issue that bothers to write
+  // alt text gets its names honoured before the ones that are only a link.
+  assert.deepEqual(found.map(f => f.src), [
+    "https://example.com/a.png",
+    "https://example.com/b.gif",
+    "https://user-images.githubusercontent.com/1/deadbeef",
+  ]);
+  const spec = specFromIssue({ owner: "o", repo: "r", number: 7 }, { title: "Which?", body, html_url: "https://github.com/o/r/pull/7" });
+  assert.equal(spec.askedBy, "o/r#7");
+  assert.equal(spec.contenders[0].id, "solid-red");
+  assert.equal(spec.contenders.length, 3);
+});
+
+test("a reference can be a URL or an owner/repo#n", async () => {
+  const { parseRef } = await import("./cli.mjs");
+  assert.deepEqual(parseRef("manaflow-ai/cmux#1234"), { owner: "manaflow-ai", repo: "cmux", number: 1234 });
+  assert.deepEqual(parseRef("https://github.com/o/r/pull/9"), { owner: "o", repo: "r", number: 9 });
+  assert.deepEqual(parseRef("https://github.com/o/r/issues/9"), { owner: "o", repo: "r", number: 9 });
+  assert.throws(() => parseRef("cmux#1234"), /owner\/repo#123/);
+});
+
+test("the generated config is source someone can edit, and the engine accepts it", async () => {
+  const { renderConfig } = await import("./cli.mjs");
+  const src = renderConfig({
+    id: "d", title: "Which?", askedBy: "o/r#7",
+    contenders: [{ id: "a", name: "A", media: "media/a.png" }, { id: "b", name: "B", media: "media/b.png" }],
+  });
+  assert.match(src, /^\/\/ Which\?\n\/\/ Asked by o\/r#7\./);
+  assert.match(src, /Thunderdome\.start\(\{/);
+  // Round-trip it through the same evaluator build.mjs uses, then through the engine's
+  // own validation, so "it generated something" is not mistaken for "it generated a dome".
+  const { readConfig } = await import("./build.mjs");
+  const cfg = readConfig(src, "generated");
+  assert.equal(cfg.id, "d");
+  const D = T.normalizeDome(cfg);
+  assert.equal(D.questions[0].contenders.length, 2);
+});
+
+test("a multi-question spec generates a multi-question dome", async () => {
+  const { renderConfig } = await import("./cli.mjs");
+  const { readConfig } = await import("./build.mjs");
+  const two = [{ id: "a", name: "A" }, { id: "b", name: "B" }];
+  const src = renderConfig({
+    id: "d", title: "Two",
+    questions: [
+      { id: "one", short: "One", title: "First?", contenders: two },
+      { id: "two", title: "Second?", contenders: two },
+    ],
+  });
+  const D = T.normalizeDome(readConfig(src, "generated"));
+  assert.equal(D.multi, true);
+  // Spread before comparing: readConfig evaluates in a vm, so the arrays it hands back
+  // are Arrays from that realm and deepStrictEqual compares prototypes.
+  assert.deepEqual([...D.questions.map(q => q.id)], ["one", "two"]);
+});
+
+test("results split votes by question and say what the table claims", async () => {
+  const { tablesFor, renderMarkdown, renderText } = await import("./cli.mjs");
+  const two = [{ id: "a", name: "A" }, { id: "b", name: "B" }];
+  const cfg = {
+    id: "d", title: "Two",
+    questions: [{ id: "one", contenders: two }, { id: "two", contenders: two }],
+  };
+  const votes = [];
+  for (let i = 0; i < 40; i++) votes.push({ q: "one", a: "a", b: "b", w: "a", t: i });
+  for (let i = 0; i < 3; i++) votes.push({ q: "two", a: "a", b: "b", w: "b", t: i });
+  const tables = tablesFor(cfg, votes);
+  assert.deepEqual(tables.map(t => t.bouts), [40, 3]);
+  assert.equal(tables[0].rows[0].name, "A");
+  assert.match(tables[0].verdict, /A is ahead of B in \d+% of resamples\./);
+  // Three bouts is not a result, and the table has to say so rather than rank them.
+  assert.equal(tables[1].rows[0].spread, null);
+  assert.match(tables[1].verdict, /Not enough bouts/);
+  const md = renderMarkdown(tables, cfg);
+  assert.match(md, /\| 1 \| A \| \d+ ±\d+ \| 40–0–0 \|/);
+  assert.match(renderText(tables, cfg), /1 {2}A +\d+ ±\d+ +40–0–0/);
+});
+
+test("an untagged vote counts toward the first question, as it does in the browser", async () => {
+  const { tablesFor } = await import("./cli.mjs");
+  const two = [{ id: "a", name: "A" }, { id: "b", name: "B" }];
+  const cfg = { id: "d", questions: [{ id: "one", contenders: two }, { id: "two", contenders: two }] };
+  const tables = tablesFor(cfg, [{ a: "a", b: "b", w: "a", t: 1 }]);
+  assert.deepEqual(tables.map(t => t.bouts), [1, 0]);
+});
+
+test("media is copied in, and a path that is not a file stops the whole command", async () => {
+  const { gatherMedia } = await import("./cli.mjs");
+  const copied = [];
+  const fs = { isFile: p => !p.includes("nope"), copyIn: (s, d) => copied.push([s, d]) };
+  const spec = {
+    contenders: [
+      { id: "a", media: "/tmp/shot.png" },
+      { id: "b", media: "/elsewhere/shot.png" },              // same basename, different folder
+      { id: "c", media: "https://example.com/c.gif" },        // already reachable from anywhere
+      { id: "d", media: "/dome/media/already.png" },          // already under the dome
+    ],
+  };
+  assert.equal(gatherMedia(spec, "/dome", fs), 2);
+  assert.deepEqual(spec.contenders.map(c => c.media),
+    ["media/shot.png", "media/shot-2.png", "https://example.com/c.gif", "/dome/media/already.png"]);
+  assert.deepEqual(copied, [["/tmp/shot.png", "/dome/media/shot.png"], ["/elsewhere/shot.png", "/dome/media/shot-2.png"]]);
+
+  // One typo and nothing is copied: a folder half full of media whose config never got
+  // written is harder to clean up than a command that did nothing.
+  const bad = { contenders: [{ id: "a", media: "/tmp/shot.png" }, { id: "b", media: "/tmp/nope.png" }] };
+  const none = [];
+  assert.throws(() => gatherMedia(bad, "/dome", { ...fs, copyIn: (s, d) => none.push([s, d]) }), /no such media file: \/tmp\/nope\.png/);
+  assert.deepEqual(none, []);
+  assert.equal(bad.contenders[0].media, "/tmp/shot.png");
+});
