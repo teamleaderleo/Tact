@@ -91,6 +91,66 @@ test("ties pull two contenders together", () => {
   assert.ok(wins.a - wins.b > drawn.a - drawn.b);
 });
 
+// A record between exactly two contenders is the sharpest test of the fit, because there
+// is one gap and every vote bears on it. It is also the shape the solver used to diverge
+// on: gradients taken from the ratings at the top of a sweep and applied all at once
+// moved the gap twice as far as it should, and a 130-70 record ran off to -12776 Elo.
+const lopsided = (wa, wb) => [
+  ...Array.from({ length: wa }, (_, i) => ({ a: "x", b: "y", w: "a", t: i })),
+  ...Array.from({ length: wb }, (_, i) => ({ a: "x", b: "y", w: "b", t: wa + i })),
+];
+
+test("two contenders stay on the scale however many votes they get", () => {
+  const SCALE = 400 / Math.log(10);
+  for (const [wa, wb] of [[13, 7], [33, 17], [130, 70], [1300, 700]]) {
+    const r = T.fit(["x", "y"], lopsided(wa, wb));
+    const gap = r.x - r.y, unshrunk = Math.log(wa / wb) * SCALE;
+    assert.ok(r.x > r.y, `${wa}-${wb}: ${r.x} ${r.y}`);
+    // The prior shrinks the gap toward zero and never past it, and the more votes there
+    // are the less it shrinks: at 2000 bouts the fit is the plain MLE to within a point.
+    assert.ok(gap > 0 && gap <= unshrunk + 1e-6, `${wa}-${wb}: gap ${gap} vs ${unshrunk}`);
+    assert.ok(gap > unshrunk * 0.85, `${wa}-${wb}: gap ${gap} vs ${unshrunk}`);
+    assert.equal(Math.round((r.x + r.y) / 2), 1500);
+  }
+});
+
+test("one pair hogging the votes does not throw the rest of the field", () => {
+  // 100 bouts between a and b, 6 between c and d. The votes say a > b and c > d by
+  // about the same margin, so the two gaps should come out about the same size.
+  const votes = [
+    ...lopsided(60, 40),
+    ...Array.from({ length: 4 }, (_, i) => ({ a: "c", b: "d", w: "a", t: 100 + i })),
+    ...Array.from({ length: 2 }, (_, i) => ({ a: "c", b: "d", w: "b", t: 104 + i })),
+  ].map(v => (v.a === "x" ? { ...v, a: "a", b: "b" } : v));
+  const r = T.fit(["a", "b", "c", "d"], votes);
+  for (const id of ["a", "b", "c", "d"]) assert.ok(Math.abs(r[id] - 1500) < 400, `${id} at ${r[id]}`);
+  assert.ok(r.a > r.b && r.c > r.d, JSON.stringify(r));
+});
+
+test("the fit is a stationary point, not wherever the sweeps ran out", () => {
+  // The gradient of the penalised log-likelihood, computed here from scratch: if the
+  // solver has really converged, every contender's is zero. This is the check that
+  // catches a solver that oscillates without ever visibly blowing up.
+  const SCALE = 400 / Math.log(10), pv = (200 / SCALE) ** 2;
+  const check = (field, votes) => {
+    const r = T.fit(field, votes);
+    for (const id of field) {
+      let g = -(r[id] - 1500) / SCALE / pv;
+      for (const v of votes) {
+        const mine = v.a === id ? 1 : v.b === id ? -1 : 0;
+        if (!mine) continue;
+        const [me, them] = mine === 1 ? [v.a, v.b] : [v.b, v.a];
+        const s = v.w === "tie" ? .5 : (v.w === "a") === (mine === 1) ? 1 : 0;
+        g += s - 1 / (1 + Math.exp(-(r[me] - r[them]) / SCALE));
+      }
+      assert.ok(Math.abs(g) < 1e-6, `${id}: gradient ${g} at ${r[id]}`);
+    }
+  };
+  check(["x", "y"], lopsided(130, 70));
+  check(FIELD, synth(400, 5));
+  check(["x", "y"], lopsided(20, 0));
+});
+
 test("the interval gets wider as the data gets thinner", () => {
   const half = c => (c.hi.a - c.lo.a) / 2;
   const wide = half(T.confidence(FIELD, synth(20, 3), { resamples: 200 }));
@@ -109,6 +169,37 @@ test("the same votes always give the same interval", () => {
   assert.deepEqual(one.lo, two.lo);
   assert.deepEqual(one.hi, two.hi);
   assert.deepEqual(one.ahead, two.ahead);
+});
+
+test("a contender who has never fought is the least certain row, not the most", () => {
+  // Resampling the votes alone cannot move a contender with no votes: every resample
+  // leaves it at the prior's centre and the table prints 1500 +/-0, which reads as the
+  // one thing on the page we are sure of. Drawing the prior's centre too is what makes
+  // the row say what it means, and it also stops the callout claiming a 100% result
+  // against a contender with a 0-0-0 record.
+  const field = ["a", "b", "c", "idle"];
+  const votes = [];
+  for (let i = 0; i < 12; i++) votes.push({ a: "a", b: "b", w: i % 3 ? "a" : "b", t: i });
+  for (let i = 0; i < 12; i++) votes.push({ a: "a", b: "c", w: i % 4 ? "a" : "b", t: 12 + i });
+  const c = T.confidence(field, votes, { resamples: 200 });
+  assert.equal(Math.round(c.rating.idle), 1500);
+  const half = id => (c.hi[id] - c.lo[id]) / 2;
+  assert.ok(half("idle") > 200, `idle spread ${half("idle")}`);
+  assert.ok(half("idle") > half("a"), `${half("idle")} vs ${half("a")}`);
+  assert.ok(c.ahead.a.idle < .95, `ahead ${c.ahead.a.idle}`);
+});
+
+test("an unbeaten contender does not get a hairline interval", () => {
+  // Same mechanism seen from the other side: every resample of an all-wins record is
+  // still all wins, so the rating sits where the prior stops it and the votes have
+  // nothing left to say about it.
+  const field = ["a", "b", "c"];
+  const votes = [];
+  for (let i = 0; i < 10; i++) votes.push({ a: "a", b: "b", w: "a", t: i });
+  for (let i = 0; i < 10; i++) votes.push({ a: "a", b: "c", w: "a", t: 10 + i });
+  const c = T.confidence(field, votes, { resamples: 200 });
+  assert.ok(c.rating.a > c.rating.b && c.rating.a > c.rating.c);
+  assert.ok((c.hi.a - c.lo.a) / 2 > 50, `unbeaten spread ${(c.hi.a - c.lo.a) / 2}`);
 });
 
 test("too few bouts reports no interval rather than a confident zero", () => {

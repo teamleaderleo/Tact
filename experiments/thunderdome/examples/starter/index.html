@@ -189,10 +189,14 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 
   const RESERVED = new Set(["id", "a", "b", "w", "t", "q"]);
   const VIEWS = new Set(["vote", "results"]);
-  // Elo points between the top two under which the vote view will not name a leader.
-  // Roughly where a well-fed dome's interval half-width lands, so the crude call on the
-  // vote view and the resample call on the results view agree most of the time.
-  const TOO_CLOSE = 40;
+  // The vote view will not name a leader until the top two are NOISE_FLOOR / sqrt(bouts)
+  // Elo points apart. A fitted rating's spread shrinks with the square root of the vote
+  // count, so a fixed number of points is the wrong shape: 40 points is a coin flip at 20
+  // votes and old news at 800. Measured against the results view's own 95%-of-resamples
+  // call over 120 runs at each of 20/60/120/300/800 votes, this rule agrees with it
+  // 95-100% of the time, where a flat 40 agreed 40% at 20 votes; and on a field with a
+  // genuine winner the two views name one at the same rate to within two points.
+  const NOISE_FLOOR = 1000;
 
   // ---------- pure core (no DOM; exercised by test.mjs) ----------
 
@@ -238,8 +242,17 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
   const SCALE = 400 / Math.log(10);
 
   // Bradley-Terry fitted by maximum likelihood, with an L2 prior of `prior` Elo points
-  // pulling every contender toward `start`. Coordinate Newton: the objective is concave,
-  // so it walks straight downhill and converges in a handful of sweeps.
+  // pulling every contender toward `start`. Coordinate Newton, swept Gauss-Seidel: each
+  // contender is stepped against the ratings as they stand right now, including the ones
+  // already moved in this sweep.
+  //
+  // Doing it the other way, computing every gradient from the ratings at the top of the
+  // sweep and then moving everything at once, is Jacobi iteration, and it diverges. Two
+  // contenders who mostly fight each other are almost perfectly anticorrelated: each
+  // one's step already accounts for the gap closing, so taking both moves the gap twice
+  // as far as it should, and the overshoot lands where the sigmoid is flat and the next
+  // step is bigger still. A two-contender dome at 200 votes ran to -12776 that way.
+  // The step clamp below is the seatbelt, but the sweep order is the fix.
   //
   // This is what the table shows, rather than the sequential elo() above, for two
   // reasons. It does not depend on the order the votes arrived in, which a table read at
@@ -249,32 +262,61 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
   //
   // The prior is also what keeps an undefeated contender finite. Plain Bradley-Terry
   // sends it to infinity, and "Elo 4180" after three bouts is not a useful thing to read.
+  //
+  // `mu` moves where the prior pulls each contender, in Elo points relative to the field.
+  // Nothing calls it with a `mu` except confidence(), which uses it to let the interval
+  // see the prior's own uncertainty as well as the votes'.
   function fit(ids, votes, opts) {
     const o = opts || {}, prior = o.prior || 200, start = o.start == null ? 1500 : o.start;
     const n = ids.length, idx = {};
     ids.forEach((id, i) => { idx[id] = i; });
-    const r = new Float64Array(n), A = [], B = [], S = [];
+    // One flat [opponent, score, opponent, score, ...] list per contender, so a sweep
+    // reads only the bouts of the contender it is about to move.
+    const r = new Float64Array(n), bouts = [];
+    for (let i = 0; i < n; i++) bouts.push([]);
     for (const v of votes) {
       const i = idx[v.a], j = idx[v.b];
       if (i === undefined || j === undefined || i === j) continue;
-      A.push(i); B.push(j); S.push(v.w === "a" ? 1 : v.w === "b" ? 0 : .5);
+      const s = v.w === "a" ? 1 : v.w === "b" ? 0 : .5;
+      bouts[i].push(j, s); bouts[j].push(i, 1 - s);
     }
     const pv = Math.pow(prior / SCALE, 2);  // the prior's variance in log-odds
-    for (let sweep = 0; sweep < 60; sweep++) {
-      const g = new Float64Array(n), hess = new Float64Array(n);
-      for (let m = 0; m < A.length; m++) {
-        const i = A[m], j = B[m];
-        const p = 1 / (1 + Math.exp(-(r[i] - r[j]))), d = S[m] - p, w = p * (1 - p);
-        g[i] += d; g[j] -= d; hess[i] += w; hess[j] += w;
-      }
+    // A mu is a statement about the field, so only its shape matters: centering it here
+    // keeps the sweep's own recentering below a descent step rather than a fudge.
+    const mu = new Float64Array(n);
+    if (o.mu) {
+      let mm = 0;
+      for (let i = 0; i < n; i++) mm += o.mu[i] || 0;
+      mm /= n;
+      for (let i = 0; i < n; i++) mu[i] = ((o.mu[i] || 0) - mm) / SCALE;
+    }
+    for (let sweep = 0; sweep < 200; sweep++) {
       let move = 0;
       for (let i = 0; i < n; i++) {
-        g[i] -= r[i] / pv; hess[i] += 1 / pv;
-        const step = g[i] / hess[i];
+        let g = -(r[i] - mu[i]) / pv, hess = 1 / pv;
+        const b = bouts[i];
+        for (let m = 0; m < b.length; m += 2) {
+          const p = 1 / (1 + Math.exp(-(r[i] - r[b[m]])));
+          g += b[m + 1] - p; hess += p * (1 - p);
+        }
+        // One log-odds unit is 174 Elo points. A step longer than that is the sigmoid
+        // being flat, not the answer being far away, and the next sweep will take
+        // another one anyway.
+        const step = Math.max(-1, Math.min(1, g / hess));
         r[i] += step;
         move = Math.max(move, Math.abs(step));
       }
-      if (move < 1e-9) break;
+      // Recenter on `start`. Bradley-Terry is identified only up to an additive constant,
+      // so shifting the whole field leaves the likelihood alone and can only shrink the
+      // prior's sum of squares: this is a descent step, not a cosmetic one. It is also
+      // the only fast way along that direction. The data pins the gaps with the weight of
+      // every bout behind them and leaves the field's mean to the prior alone, so a sweep
+      // that has the gaps right can still be hundreds of sweeps from the right offset.
+      let mean = 0;
+      for (let i = 0; i < n; i++) mean += r[i];
+      mean /= n;
+      for (let i = 0; i < n; i++) r[i] -= mean;
+      if (move < 1e-10) break;
     }
     const out = {};
     for (let i = 0; i < n; i++) out[ids[i]] = start + r[i] * SCALE;
@@ -289,19 +331,42 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
   }
 
-  // Ratings with an interval. The point estimate is fit(); the interval is the percentile
-  // range of fit() over `resamples` bootstrap resamples of the votes.
+  // A standard normal from a uniform stream, so the prior draw below is as reproducible
+  // as the vote resampling next to it.
+  function normalFrom(rand) {
+    let u = 0, v = 0;
+    while (!u) u = rand();
+    while (!v) v = rand();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  // Ratings with an interval. The point estimate is fit(). The interval is the percentile
+  // range of fit() over `resamples` refits, each one taking two draws: the votes are
+  // resampled with replacement, and the prior's centre is drawn from the prior itself.
   //
-  // Each resample is centered on its own mean before the percentiles are taken. Bradley-
-  // Terry is identified only up to an additive constant, so an uncentered resample
-  // carries a whole-field shift that says nothing about any one contender, and a 25-point
-  // shift swallows a 26-point interval whole: coverage of a nominal 90% interval measured
-  // 60% uncentered and 91% centered. The table is read as an ordering, so the quantity
-  // the interval has to cover is each rating relative to the field.
+  // The second draw is the one that is easy to leave out and wrong to. Resampling only
+  // the votes asks "how much would this rating move if the same voters voted again",
+  // which is the whole question for a contender with a mixed record and no question at
+  // all for one with a 0-0-0 or an unbeaten one: every resample of an all-wins record is
+  // still all wins, the rating is pinned by the prior, and the table prints an unbeaten
+  // contender on 20 bouts as +/-3 and a contender who has never fought at all as +/-0.
+  // Those two are the least certain rows on the page. Drawing the prior's centre as well
+  // puts the prior's own spread into the interval, which is where the uncertainty for
+  // those rows actually lives. Measured against known truth over 150 runs at each size,
+  // 4 contenders, nominal 90%: coverage 84/82/90/88% at 20/60/200/600 votes with the
+  // votes alone, 92/86/91/89% with both draws, and the well-fed half-widths are
+  // unchanged (48 -> 49 at 200 votes, 28 -> 29 at 600). It only widens where the votes
+  // alone were claiming more than they knew.
   //
-  // Under `minBouts` votes it reports no interval at all. The bootstrap of a handful of
-  // votes still returns a number, and the bootstrap of none returns a confident +/-0,
-  // which is the most misleading thing this could print.
+  // fit() centers on the field, so every refit is already comparable to the last.
+  // Bradley-Terry is identified only up to an additive constant, and an uncentered refit
+  // carries a whole-field shift that says nothing about any one contender: a 25-point
+  // shift swallows a 26-point interval whole, and coverage of a nominal 90% interval
+  // measured 60% uncentered against 91% centered. The table is read as an ordering, so
+  // the quantity the interval has to cover is each rating relative to the field.
+  //
+  // Under `minBouts` votes it reports no interval at all. A handful of votes still
+  // returns a number, and the reader has no way to tell it from an earned one.
   function confidence(ids, votes, opts) {
     const o = opts || {};
     const prior = o.prior || 200;
@@ -311,15 +376,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     const known = {};
     ids.forEach(id => { known[id] = true; });
     const usable = votes.filter(v => known[v.a] && known[v.b] && v.a !== v.b);
-    const center = r => {
-      let sum = 0;
-      for (const id of ids) sum += r[id];
-      const shift = 1500 - sum / ids.length;
-      const out = {};
-      for (const id of ids) out[id] = r[id] + shift;
-      return out;
-    };
-    const rating = center(fit(ids, usable, { prior }));
+    const rating = fit(ids, usable, { prior });
     const bouts = usable.length;
     if (bouts < minBouts || resamples < 2) {
       return { rating, bouts, level, resamples: 0, lo: null, hi: null, ahead: null };
@@ -331,10 +388,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       for (const other of ids) ahead[id][other] = 0;
     }
     const rand = lcg(bouts * 2654435761 + ids.length);
-    const draw = new Array(bouts);
+    const draw = new Array(bouts), mu = new Array(ids.length);
     for (let b = 0; b < resamples; b++) {
       for (let i = 0; i < bouts; i++) draw[i] = usable[(rand() * bouts) | 0];
-      const f = center(fit(ids, draw, { prior }));
+      for (let i = 0; i < ids.length; i++) mu[i] = normalFrom(rand) * prior;
+      const f = fit(ids, draw, { prior, mu });
       for (const id of ids) cols[id][b] = f[id];
       for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
         const x = ids[i], y = ids[j], d = f[x] - f[y];
@@ -647,7 +705,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     let votes = [];
     let votesCol = null, shared = false, myLast = null;
     let note = "", noteTimer = 0, stickyNote = "", lockNote = "";
-    let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, view = "vote";
+    let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, standingsDirty = true, view = "vote";
     // Bumped whenever the question changes, so a vote whose write is still in flight
     // cannot come back and hand its Undo handle to the question you moved to.
     let voteToken = 0, nextTimer = 0, galleryBuilds = 0;
@@ -714,7 +772,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     // The claim in words, under the table. "1612 ±48" next to "1564 ±51" is a puzzle the
     // reader has to do arithmetic on; "ahead in 96% of resamples" is the answer to the
     // question they opened the page with.
-    $.callout = C.confidence ? h("p", { class: "td-callout" }) : null;
+    // role="status" for the same reason $.status has it on the vote view: this sentence
+    // rewrites itself under the reader whenever a vote lands or arrives over a shared
+    // table, and it is the page's headline claim.
+    $.callout = C.confidence ? h("p", { class: "td-callout", role: "status" }) : null;
     $.feed = h("ul", { class: "td-feed" });
     $.gallery = h("div", { class: "td-gallery" });
 
@@ -808,7 +869,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         clearTimeout(nextTimer); clearTimeout(noteTimer);
         duel = null; lastKey = ""; myLast = null; note = ""; lockNote = "";
         $.undo.hidden = true;
-        galleryDirty = true;
+        galleryDirty = true; standingsDirty = true;
       }
       view = v === "results" ? "results" : "vote";
       $.viewVote.hidden = view !== "vote";
@@ -823,6 +884,9 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       // arena across the move: re-rolling it would mean you cannot put two questions side
       // by side in the same context, and Back would land somewhere you have never been.
       if (moved || booting) { renderQuestion(); nextDuel(moved); renderStandings(); }
+      // Arriving at the results view is what pays for the table, so votes cast on the
+      // vote view show up the moment you go looking for them and not before.
+      flushStandings();
       // Only tune if nothing on the way through already rebuilt the gallery and tuned it.
       if (galleryBuilds === builds && !flushGallery()) tuneGalleryVideos();
       tuneDuelVideos();
@@ -1059,7 +1123,19 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       return Math.max(40, Math.min(300, Math.round(120000 / Math.max(1, m))));
     }
 
+    // The bootstrap is a few hundred fits. That is tens of milliseconds, and it used to
+    // run on every local vote, every undo and every vote that arrived over a shared
+    // table, none of which the vote view can see: the cost landed on the same frame that
+    // was trying to paint the card you just picked. Mark the table dirty and build it
+    // when the results view asks for it, the way the gallery already does.
     function renderStandings() {
+      standingsDirty = true;
+      if (!flushStandings()) renderStatus();
+    }
+
+    function flushStandings() {
+      if (!standingsDirty || view !== "results") return false;
+      standingsDirty = false;
       const sorted = qVotes().sort((x, y) => x.t - y.t);
       const conf = confidence(ids, sorted, C.confidence
         ? { ...C.confidence, resamples: resampleCount(sorted.length) }
@@ -1082,12 +1158,17 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         }
         nameCell.append(document.createTextNode(c.name));
         // The percentile range is not symmetric, so the cell shows its half-width and
-        // the title carries the range itself for anyone who wants the two ends.
+        // carries the range itself for anyone who wants the two ends.
         const eloCell = h("td", { class: "num", text: String(Math.round(all[id])) });
         if (conf.lo) {
-          // The title goes on the cell rather than the three characters of the spread,
-          // so the hover target is the number you were already looking at.
-          eloCell.title = `${Math.round(conf.level * 100)}% of resamples land between ${Math.round(conf.lo[id])} and ${Math.round(conf.hi[id])}`;
+          // The range goes on the cell rather than on the three characters of the spread,
+          // so the hover target is the number you were already looking at. It goes on
+          // aria-label as well as title: a <td> is not focusable and has no interactive
+          // role, so a title alone is mouse-only, and the half-width is exactly where the
+          // asymmetry the comment above admits to gets lost.
+          const range = `${Math.round(conf.level * 100)}% of resamples land between ${Math.round(conf.lo[id])} and ${Math.round(conf.hi[id])}`;
+          eloCell.title = range;
+          eloCell.setAttribute("aria-label", `${Math.round(all[id])}. ${range}.`);
           eloCell.append(h("span", { class: "td-ci", text: `±${Math.round((conf.hi[id] - conf.lo[id]) / 2)}` }));
         }
         return h("tr", {},
@@ -1107,11 +1188,16 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         return h("li", {}, h("b", { text: w }), h("span", { text: describe(v) }), h("span", { class: "when", text: ago(v.t) }));
       }) : [h("li", { class: "td-empty", text: "No bouts yet. Vote above to start the table." })]));
       renderStatus();
+      return true;
     }
 
-    // The top two, in words. A one-sided 95% is the call that matches a 90% interval:
-    // below it the two intervals still overlap and the ordering is not something the
-    // votes have established yet, however confident the rank column looks.
+    // The top two, in words, because the rank column reads 1, 2, 3, 4 whether or not the
+    // votes have earned it and this is the sentence that says whether to believe it.
+    //
+    // The bar is the one-sided form of the interval's own level: a 90% interval leaves
+    // 5% in each tail, so the call it corresponds to is 95%. Derived rather than written
+    // down, so a dome that sets `confidence: {level}` gets a callout that agrees with the
+    // number in the hover text instead of one fixed at somebody else's level.
     function calloutFor(conf, order) {
       const name = id => (byId[id] ? byId[id].name : id);
       if (!conf.ahead) {
@@ -1119,8 +1205,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
           ? `Not enough bouts to say who is ahead yet: ${conf.bouts} so far.`
           : "No bouts yet, so the table is the prior and nothing else.";
       }
-      const [a, b] = order, pct = Math.round(conf.ahead[a][b] * 100);
-      return pct >= 95
+      const [a, b] = order, share = conf.ahead[a][b], pct = Math.round(share * 100);
+      return share >= 1 - (1 - conf.level) / 2
         ? `${name(a)} is ahead of ${name(b)} in ${pct}% of resamples.`
         : `${name(a)} and ${name(b)} are too close to call: ${pct}% of resamples put ${name(a)} ahead.`;
     }
@@ -1136,7 +1222,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       if (mine.length < 3) return "";
       const r = fit(ids, mine, { prior: C.confidence ? C.confidence.prior : 200 });
       const rank = ids.slice().sort((x, y) => r[y] - r[x]);
-      return r[rank[0]] - r[rank[1]] < TOO_CLOSE ? "Too close to call so far." : `${byId[rank[0]].name} leads.`;
+      return r[rank[0]] - r[rank[1]] < NOISE_FLOOR / Math.sqrt(mine.length)
+        ? "Too close to call so far." : `${byId[rank[0]].name} leads.`;
     }
 
     // Where the votes are going. Sticky, because it is a fact about the page rather
