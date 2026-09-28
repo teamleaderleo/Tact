@@ -10,7 +10,7 @@ Ranking eight things at once is hard. People anchor on the first few they see, l
 candidate designs
 -> random pair in a random arena
 -> left / right / tie
--> Elo, overall and per split
+-> Elo with an interval, overall and per split
 -> read the table, look at the winner's losses
 -> name the lever
 ```
@@ -28,7 +28,7 @@ For a single blind A/B with a written diagnosis, use [`../microcraft/`](../micro
 
 ```text
 experiments/thunderdome/
-  engine/thunderdome.js   engine: pairing, voting, Elo, feed, gallery, storage
+  engine/thunderdome.js   engine: pairing, voting, ratings, feed, gallery, storage
   engine/thunderdome.css  page chrome, light and dark
   build.mjs               inlines engine + one config into a single index.html
   test.mjs                node --test for the DOM-free core
@@ -120,7 +120,7 @@ What the engine hands you:
 - **Card body** comes from the first of: `contender.render(arena, ctx)`, config `render(contender, arena, ctx)`, `contender.media`, `contender.html` (string, or function of arena). A returned string is parsed as HTML. `ctx.h(tag, attrs, ...children)` is a small element helper (`class`, `text`, `html`, `style`, `on<event>`). A config-wide `render` sits above `media` so it can place the frame itself; call `ctx.media()` to get the element.
 - **Dimensions**: selects are re-rolled every duel while "New arena each duel" is on; toggles are not, unless you set `shuffle: true`. Set `default` to choose the starting option. Ids `id`, `a`, `b`, `w`, `t` and `q` are reserved.
 - **Styles** for contender markup go in `config.css`. The engine's own classes all start with `td-`, and the theme tokens (`--ink`, `--muted`, `--faint`, `--rule`, `--panel`, `--sans`, `--mono`) are available.
-- Other knobs: `k` (Elo K-factor, default 24), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click.
+- Other knobs: `confidence` (`false` for a bare rating, or `{prior: 200, minBouts: 8, level: .9}`), `k` (still accepted, no longer read by anything; `Thunderdome.elo()` takes its K-factor as an argument), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click.
 
 ## Several questions in one dome
 
@@ -145,7 +145,7 @@ Thunderdome.start({
 - **Each question brings its own `contenders`.** That is the one thing it cannot inherit: borrowing the dome's list would put one set of contenders under two question tags, so a question without its own is an error rather than a second table of the same four things.
 - **It may also set** `lede`, `contenderLabel`, `galleryTitle`, `media`, `render`, `swatch` and `interactiveCards`, and inherits the dome's for any it does not name. Those are all per-question because how a card is drawn is part of the question: one dome can ask about HTML mocks and about clips.
 - **`id` is the link.** Lowercased, unique, and not `vote` or `results` because those are the views. `title` is the question itself, shown above the cards. `short` is the tab label, falling back to `title` and then to the id.
-- **Dome-level, on purpose:** the arena, the split, `k`, `recent`, `collection`, `localKey`, `shuffle`. A question that sets one of those is an error, not a silent no-op. A question asked against a different arena is a different dome, not a tab on this one, and the arena is held steady as you move between questions so you can put two of them side by side in the same context.
+- **Dome-level, on purpose:** the arena, the split, `k`, `confidence`, `recent`, `collection`, `localKey`, `shuffle`. A question that sets one of those is an error, not a silent no-op. A question asked against a different arena is a different dome, not a tab on this one, and the arena is held steady as you move between questions so you can put two of them side by side in the same context.
 - **The hash** is `#<question>/<view>`, either order, case-insensitive: `#wording`, `#wording/results`, `#results/wording`. Both segments are optional. A missing question means the first one, and the page writes it back into the address bar on load, so the URL you copy always says which question it opens. A question that has since been renamed opens the dome rather than a blank page. The tabs are plain `<a href>`s, so back and forward walk your questions.
 
 ### Storage and older domes
@@ -153,7 +153,7 @@ Thunderdome.start({
 Votes go in one table per dome, tagged with `q`.
 
 - A config with **no** `questions` writes exactly the vote shape it always did, with no tag, so every dome built before this keeps reading its own history.
-- A dome that **gains** `questions` later keeps its untagged votes: they count toward the first question. Elo ignores contender ids it does not know, so any old vote whose contenders are not in question one drops out on its own instead of landing in the wrong table.
+- A dome that **gains** `questions` later keeps its untagged votes: they count toward the first question. The fit ignores contender ids it does not know, so any old vote whose contenders are not in question one drops out on its own instead of landing in the wrong table.
 - `q` is now a reserved arena dimension id, alongside `id`, `a`, `b`, `w` and `t`. A config with a dimension called `q` has to rename it.
 
 `examples/dialog/` is three questions about one dialog: `node build.mjs examples/dialog`.
@@ -196,11 +196,28 @@ Republishing to the same artifact URL keeps the collection, so you can add a con
 
 ## Read the results
 
-- **Elo** is sequential over all votes in time order, K = 24, everyone starting at 1500. With a few dozen votes, read gaps under about 30 points as a tie until more bouts come in.
-- **Split columns** rerun Elo over only that split's votes. The leader of each split is highlighted. A treatment that wins light and loses dark is a finding, not noise.
+- **Elo** is a Bradley-Terry fit over all the votes at once, on the usual Elo scale (400 points is 10:1), with an L2 prior of 200 points pulling toward 1500. It does not depend on the order the votes arrived in, and the prior is what keeps a contender that has never lost at a finite number instead of an impressive one.
+- **± is the spread**, the middle 90% of 300 refits, reported as a half-width. Hover the number for the two ends. Each refit takes two draws: the votes are resampled with replacement, and the prior's centre is drawn from the prior. Under 8 bouts there is no ± at all, because a handful of votes still returns a number and the reader has no way to tell it from an earned one.
+- **The line under the table** is the claim the ranking is making: "Solid red is ahead of Outlined red in 99% of resamples", or "too close to call: 91% of resamples put Right, danger last ahead". The bar is the one-sided form of the interval's own level, so 95% at the default `level: .9`. The rank column always reads 1, 2, 3, 4; this is the sentence that tells you whether to believe it.
+- **The vote view names a leader** once the top two are further apart than `1000 / sqrt(bouts)` Elo, which is roughly where the spread sits. It is the cheap version of the same call, so you are not made to switch views to find out whether anything is happening; it agrees with the line under the table 95% of the time or better.
+- **Split columns** refit over only that split's votes. The leader of each split is highlighted. A treatment that wins light and loses dark is a finding, not noise. No ± there: four spreads in a row is a table nobody reads, and the split columns are the place to look for a pattern rather than a verdict.
 - **W–L–T** shows how the rating was earned. A high rating on few bouts means "look again", not "ship it".
 - **The table is evidence, not the decision.** A contender can rate well and still be ruled out by a constraint the mock does not show. In the cmux run, the runner-up marked selection with a dot in the row's leading glyph slot, which cmux reserves for status (agent state, unread, warnings, PR state), so it was out regardless of its score.
 - **Pairing** weights each pair by 1 / (1 + times met)², and never repeats the last pair, so under-voted pairs come up first.
-- To take the raw votes out of a shared table, read the `votes` collection (Claude can do this with the artifact data tools) and recompute with `Thunderdome.elo(ids, votes)` from `engine/thunderdome.js`.
+- To take the raw votes out of a shared table, read the `votes` collection (Claude can do this with the artifact data tools) and recompute with `Thunderdome.confidence(ids, votes)` from `engine/thunderdome.js`. It returns `{rating, lo, hi, ahead, bouts}`, where `ahead.x.y` is the share of resamples putting `x` over `y`. `Thunderdome.fit(ids, votes)` is the point estimate on its own, and `Thunderdome.elo(ids, votes)` is still there for the sequential version.
+
+### Why the table is fitted rather than accumulated
+
+Sequential Elo walks the votes in order and nudges two ratings at a time. It is the right thing for a ladder that is still being played, and the wrong thing for a table you read at the end of a run: the same votes in a different order give different numbers.
+
+It is also not something you can put an interval on honestly. Bootstrapping sequential Elo produces an interval that gets **narrower as the data gets scarcer**: ±44 at 20 votes against ±65 at 600, covering the true rating 0 times out of 4 at the small size. With K = 24 the ratings have barely left 1500 after 20 bouts, so the bootstrap measures how tightly the estimate clusters around its own bias, not how far it is from the answer. Resampling the fit instead moves the right way: ±147 at 20 votes, ±84 at 60, ±46 at 200, ±27 at 600.
+
+Each refit is centered on the field before the percentiles are taken. Bradley-Terry is identified only up to an additive constant, so an uncentered refit carries a shift of the whole field that says nothing about any one contender, and a 25-point shift eats a 26-point interval alive: coverage of a nominal 90% interval measured 60% uncentered and 91% centered. The table is read as an ordering, so the thing the interval has to cover is each rating relative to the field.
+
+The prior's centre is drawn too, not just the votes. Resampling the votes alone asks "how much would this move if the same voters voted again", which is the whole question for a contender with a mixed record and no question at all for one that has never lost: every resample of an all-wins record is still all wins, the rating is held where the prior stops it, and the table prints an unbeaten contender on 20 bouts as ±3 and a contender with a 0–0–0 record as ±0. Those two are the least certain rows on the page. Drawing the prior's centre from the prior puts that uncertainty where it belongs. Measured against known truth over 150 runs at each size, four contenders, nominal 90%: coverage 84/82/90/88% at 20/60/200/600 votes with the votes alone, and 92/86/91/89% with both draws. The well-fed half-widths do not move (±48 to ±49 at 200 votes), so it only widens the rows that were claiming more than they knew.
+
+The resample count comes down as the vote list grows, since every resample is another fit. 8 contenders costs about 35ms at 240 votes and about 31ms at 2000. It runs when the results view asks for the table, not on every vote: the same work on the vote view would land on the frame that is trying to paint the card you just picked.
+
+`confidence: false` turns the whole thing off and leaves a bare rating. `confidence: {prior, minBouts, level}` changes the settings. The `k` config key is still accepted, and dome-level, but nothing reads it any more: `Thunderdome.elo()` takes its K-factor as an argument.
 
 Record what you learned the way a case study would: the final table, the losses of the winner, the lever you think made the difference, and where the decision went. [`examples/cmux-selection/RESULTS.md`](examples/cmux-selection/RESULTS.md) is the first one.

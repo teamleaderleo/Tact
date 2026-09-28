@@ -129,6 +129,15 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-table-wrap td.num,.td-table-wrap th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 .td-table-wrap td.rank{font-family:var(--mono);color:var(--faint);width:1%}
 .td-swatch{display:inline-block;width:34px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:8px}
+/* The interval rides along with the rating rather than taking a column of its own: it is
+   a qualifier on that number, and a column would let the eye scan the spreads on their
+   own as if they were a second ranking. Quieter and smaller so the rating still reads
+   first, but not so quiet it looks like a footnote you can skip.
+   A fixed slot, so a table holding a +/-9 next to a +/-107 keeps its ratings in a column
+   instead of sliding each one left by however wide its own spread happens to be. */
+.td-ci{display:inline-block;min-width:3.2em;margin-left:7px;text-align:right;color:var(--faint);font-size:11.5px}
+/* The sentence the table is evidence for, so it is not muted into a caption. */
+.td-callout{margin:0;font-size:13px;color:var(--ink)}
 .td-lead{color:var(--win);font-weight:600}
 .td-feed{display:grid;gap:6px;font-size:13px;color:var(--muted);margin:0;padding:0;list-style:none}
 .td-feed li{display:flex;gap:8px;flex-wrap:wrap}
@@ -169,8 +178,9 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
  *
  * A config calls Thunderdome.start({...}) with contenders, arena dimensions,
  * an optional split, and a render function. The engine supplies pairing,
- * voting UI, keyboard shortcuts, Elo (overall and per split), W-L-T, recent
- * bouts, the gallery, undo, and shared (claude.ai db) or local storage.
+ * voting UI, keyboard shortcuts, fitted ratings on the Elo scale with a
+ * bootstrap interval (overall and per split), W-L-T, recent bouts, the
+ * gallery, undo, and shared (claude.ai db) or local storage.
  * A contender can be an image, a GIF or a video instead of markup; the two
  * clips in a duel are restarted together so the comparison stays honest.
  * See ../README.md for the config reference.
@@ -180,6 +190,14 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 
   const RESERVED = new Set(["id", "a", "b", "w", "t", "q"]);
   const VIEWS = new Set(["vote", "results"]);
+  // The vote view will not name a leader until the top two are NOISE_FLOOR / sqrt(bouts)
+  // Elo points apart. A fitted rating's spread shrinks with the square root of the vote
+  // count, so a fixed number of points is the wrong shape: 40 points is a coin flip at 20
+  // votes and old news at 800. Measured against the results view's own 95%-of-resamples
+  // call over 120 runs at each of 20/60/120/300/800 votes, this rule agrees with it
+  // 95-100% of the time, where a flat 40 agreed 40% at 20 votes; and on a field with a
+  // genuine winner the two views name one at the same rate to within two points.
+  const NOISE_FLOOR = 1000;
 
   // ---------- pure core (no DOM; exercised by test.mjs) ----------
 
@@ -218,6 +236,180 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       r[v.a] += k * (sa - ea); r[v.b] += k * ((1 - sa) - (1 - ea));
     }
     return r;
+  }
+
+  // Elo points per unit of natural log-odds. A 400-point gap is 10:1, which is the
+  // definition of the scale, so the whole fit can work in log-odds and convert once.
+  const SCALE = 400 / Math.log(10);
+
+  // Bradley-Terry fitted by maximum likelihood, with an L2 prior of `prior` Elo points
+  // pulling every contender toward `start`. Coordinate Newton, swept Gauss-Seidel: each
+  // contender is stepped against the ratings as they stand right now, including the ones
+  // already moved in this sweep.
+  //
+  // Doing it the other way, computing every gradient from the ratings at the top of the
+  // sweep and then moving everything at once, is Jacobi iteration, and it diverges. Two
+  // contenders who mostly fight each other are almost perfectly anticorrelated: each
+  // one's step already accounts for the gap closing, so taking both moves the gap twice
+  // as far as it should, and the overshoot lands where the sigmoid is flat and the next
+  // step is bigger still. A two-contender dome at 200 votes ran to -12776 that way.
+  // The step clamp below is the seatbelt, but the sweep order is the fix.
+  //
+  // This is what the table shows, rather than the sequential elo() above, for two
+  // reasons. It does not depend on the order the votes arrived in, which a table read at
+  // the end of a run should not. And it is a model you can resample, which is what makes
+  // the interval next to it mean something; an interval bootstrapped from one model and
+  // printed beside a point estimate from another is a decoration, not a measurement.
+  //
+  // The prior is also what keeps an undefeated contender finite. Plain Bradley-Terry
+  // sends it to infinity, and "Elo 4180" after three bouts is not a useful thing to read.
+  //
+  // `mu` moves where the prior pulls each contender, in Elo points relative to the field.
+  // Nothing calls it with a `mu` except confidence(), which uses it to let the interval
+  // see the prior's own uncertainty as well as the votes'.
+  function fit(ids, votes, opts) {
+    const o = opts || {}, prior = o.prior || 200, start = o.start == null ? 1500 : o.start;
+    const n = ids.length, idx = {};
+    ids.forEach((id, i) => { idx[id] = i; });
+    // One flat [opponent, score, opponent, score, ...] list per contender, so a sweep
+    // reads only the bouts of the contender it is about to move.
+    const r = new Float64Array(n), bouts = [];
+    for (let i = 0; i < n; i++) bouts.push([]);
+    for (const v of votes) {
+      const i = idx[v.a], j = idx[v.b];
+      if (i === undefined || j === undefined || i === j) continue;
+      const s = v.w === "a" ? 1 : v.w === "b" ? 0 : .5;
+      bouts[i].push(j, s); bouts[j].push(i, 1 - s);
+    }
+    const pv = Math.pow(prior / SCALE, 2);  // the prior's variance in log-odds
+    // A mu is a statement about the field, so only its shape matters: centering it here
+    // keeps the sweep's own recentering below a descent step rather than a fudge.
+    const mu = new Float64Array(n);
+    if (o.mu) {
+      let mm = 0;
+      for (let i = 0; i < n; i++) mm += o.mu[i] || 0;
+      mm /= n;
+      for (let i = 0; i < n; i++) mu[i] = ((o.mu[i] || 0) - mm) / SCALE;
+    }
+    for (let sweep = 0; sweep < 200; sweep++) {
+      let move = 0;
+      for (let i = 0; i < n; i++) {
+        let g = -(r[i] - mu[i]) / pv, hess = 1 / pv;
+        const b = bouts[i];
+        for (let m = 0; m < b.length; m += 2) {
+          const p = 1 / (1 + Math.exp(-(r[i] - r[b[m]])));
+          g += b[m + 1] - p; hess += p * (1 - p);
+        }
+        // One log-odds unit is 174 Elo points. A step longer than that is the sigmoid
+        // being flat, not the answer being far away, and the next sweep will take
+        // another one anyway.
+        const step = Math.max(-1, Math.min(1, g / hess));
+        r[i] += step;
+        move = Math.max(move, Math.abs(step));
+      }
+      // Recenter on `start`. Bradley-Terry is identified only up to an additive constant,
+      // so shifting the whole field leaves the likelihood alone and can only shrink the
+      // prior's sum of squares: this is a descent step, not a cosmetic one. It is also
+      // the only fast way along that direction. The data pins the gaps with the weight of
+      // every bout behind them and leaves the field's mean to the prior alone, so a sweep
+      // that has the gaps right can still be hundreds of sweeps from the right offset.
+      let mean = 0;
+      for (let i = 0; i < n; i++) mean += r[i];
+      mean /= n;
+      for (let i = 0; i < n; i++) r[i] -= mean;
+      if (move < 1e-10) break;
+    }
+    const out = {};
+    for (let i = 0; i < n; i++) out[ids[i]] = start + r[i] * SCALE;
+    return out;
+  }
+
+  // Seeded so the same votes always produce the same interval. An interval that shifts a
+  // few points every time the table redraws reads as measurement noise on top of the
+  // measurement, and invites the reader to redraw until they like the answer.
+  function lcg(seed) {
+    let s = (seed >>> 0) || 1;
+    return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  }
+
+  // A standard normal from a uniform stream, so the prior draw below is as reproducible
+  // as the vote resampling next to it.
+  function normalFrom(rand) {
+    let u = 0, v = 0;
+    while (!u) u = rand();
+    while (!v) v = rand();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  // Ratings with an interval. The point estimate is fit(). The interval is the percentile
+  // range of fit() over `resamples` refits, each one taking two draws: the votes are
+  // resampled with replacement, and the prior's centre is drawn from the prior itself.
+  //
+  // The second draw is the one that is easy to leave out and wrong to. Resampling only
+  // the votes asks "how much would this rating move if the same voters voted again",
+  // which is the whole question for a contender with a mixed record and no question at
+  // all for one with a 0-0-0 or an unbeaten one: every resample of an all-wins record is
+  // still all wins, the rating is pinned by the prior, and the table prints an unbeaten
+  // contender on 20 bouts as +/-3 and a contender who has never fought at all as +/-0.
+  // Those two are the least certain rows on the page. Drawing the prior's centre as well
+  // puts the prior's own spread into the interval, which is where the uncertainty for
+  // those rows actually lives. Measured against known truth over 150 runs at each size,
+  // 4 contenders, nominal 90%: coverage 84/82/90/88% at 20/60/200/600 votes with the
+  // votes alone, 92/86/91/89% with both draws, and the well-fed half-widths are
+  // unchanged (48 -> 49 at 200 votes, 28 -> 29 at 600). It only widens where the votes
+  // alone were claiming more than they knew.
+  //
+  // fit() centers on the field, so every refit is already comparable to the last.
+  // Bradley-Terry is identified only up to an additive constant, and an uncentered refit
+  // carries a whole-field shift that says nothing about any one contender: a 25-point
+  // shift swallows a 26-point interval whole, and coverage of a nominal 90% interval
+  // measured 60% uncentered against 91% centered. The table is read as an ordering, so
+  // the quantity the interval has to cover is each rating relative to the field.
+  //
+  // Under `minBouts` votes it reports no interval at all. A handful of votes still
+  // returns a number, and the reader has no way to tell it from an earned one.
+  function confidence(ids, votes, opts) {
+    const o = opts || {};
+    const prior = o.prior || 200;
+    const minBouts = o.minBouts == null ? 8 : o.minBouts;
+    const level = o.level == null ? .9 : o.level;
+    const resamples = o.resamples == null ? 300 : o.resamples;
+    const known = {};
+    ids.forEach(id => { known[id] = true; });
+    const usable = votes.filter(v => known[v.a] && known[v.b] && v.a !== v.b);
+    const rating = fit(ids, usable, { prior });
+    const bouts = usable.length;
+    if (bouts < minBouts || resamples < 2) {
+      return { rating, bouts, level, resamples: 0, lo: null, hi: null, ahead: null };
+    }
+    const cols = {}, ahead = {};
+    for (const id of ids) {
+      cols[id] = new Float64Array(resamples);
+      ahead[id] = {};
+      for (const other of ids) ahead[id][other] = 0;
+    }
+    const rand = lcg(bouts * 2654435761 + ids.length);
+    const draw = new Array(bouts), mu = new Array(ids.length);
+    for (let b = 0; b < resamples; b++) {
+      for (let i = 0; i < bouts; i++) draw[i] = usable[(rand() * bouts) | 0];
+      for (let i = 0; i < ids.length; i++) mu[i] = normalFrom(rand) * prior;
+      const f = fit(ids, draw, { prior, mu });
+      for (const id of ids) cols[id][b] = f[id];
+      for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+        const x = ids[i], y = ids[j], d = f[x] - f[y];
+        ahead[x][y] += d > 0 ? 1 : d < 0 ? 0 : .5;
+        ahead[y][x] += d < 0 ? 1 : d > 0 ? 0 : .5;
+      }
+    }
+    const tail = (1 - level) / 2;
+    const at = (col, p) => col[Math.min(resamples - 1, Math.max(0, Math.round(p * (resamples - 1))))];
+    const lo = {}, hi = {};
+    for (const id of ids) {
+      const col = cols[id].slice().sort();
+      lo[id] = at(col, tail); hi[id] = at(col, 1 - tail);
+    }
+    for (const id of ids) for (const other of ids) ahead[id][other] /= resamples;
+    return { rating, bouts, level, resamples, lo, hi, ahead };
   }
 
   function records(ids, votes) {
@@ -280,13 +472,20 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       const type = d.type || (d.options ? "select" : "toggle");
       return { label: d.id, ...d, type, shuffle: d.shuffle ?? (type === "select") };
     });
-    return {
+    const C = {
       k: 24, recent: 8, collection: "votes", contenderLabel: "Contender",
       galleryTitle: "Everyone in this arena", media: {}, interactiveCards: false,
       ...cfg,
       contenders, dims,
       localKey: cfg.localKey || `thunderdome:${cfg.id}:local`,
     };
+    // `confidence: false` drops the interval and the line under the table and leaves a
+    // bare rating. Anything else is the settings, with the defaults filled in.
+    C.confidence = cfg.confidence === false ? null : {
+      prior: 200, minBouts: 8, level: .9,
+      ...(cfg.confidence && typeof cfg.confidence === "object" ? cfg.confidence : {}),
+    };
+    return C;
   }
 
   // Arena ids ({theme:"x", ic:true}) to the object render() sees ({theme:{id,name,...}, ic:true, ids}).
@@ -313,7 +512,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
   // anything in DOME_ONLY is rejected rather than quietly ignored, so the boundary is
   // something the config author is told about instead of something they discover.
   const Q_KEYS = ["lede", "galleryTitle", "contenderLabel", "media", "render", "swatch", "interactiveCards"];
-  const DOME_ONLY = ["arena", "dimensions", "split", "k", "recent", "collection", "localKey", "mount", "shuffle", "questions"];
+  const DOME_ONLY = ["arena", "dimensions", "split", "k", "recent", "collection", "localKey", "mount", "shuffle", "questions", "confidence"];
 
   // One dome, several decisions. A question brings its own contenders and its own words
   // and inherits everything else, so the arena, the media defaults and the render
@@ -507,7 +706,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     let votes = [];
     let votesCol = null, shared = false, myLast = null;
     let note = "", noteTimer = 0, stickyNote = "", lockNote = "";
-    let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, view = "vote";
+    let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, standingsDirty = true, view = "vote";
     // Bumped whenever the question changes, so a vote whose write is still in flight
     // cannot come back and hand its Undo handle to the question you moved to.
     let voteToken = 0, nextTimer = 0, galleryBuilds = 0;
@@ -571,6 +770,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       ...splitVals.map(s => h("th", { class: "num", text: s.label })),
       h("th", { class: "num", text: "W–L–T" }));
     $.standings = h("tbody");
+    // The claim in words, under the table. "1612 ±48" next to "1564 ±51" is a puzzle the
+    // reader has to do arithmetic on; "ahead in 96% of resamples" is the answer to the
+    // question they opened the page with.
+    // role="status" for the same reason $.status has it on the vote view: this sentence
+    // rewrites itself under the reader whenever a vote lands or arrives over a shared
+    // table, and it is the page's headline claim.
+    $.callout = C.confidence ? h("p", { class: "td-callout", role: "status" }) : null;
     $.feed = h("ul", { class: "td-feed" });
     $.gallery = h("div", { class: "td-gallery" });
 
@@ -606,7 +812,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     $.viewResults = h("section", { class: "td-view", hidden: true },
       h("div", { class: "td-two" },
         h("section", { class: "td-section" }, h("h2", { text: "Standings" }),
-          h("div", { class: "td-table-wrap" }, h("table", {}, h("thead", {}, headRow), $.standings))),
+          h("div", { class: "td-table-wrap" }, h("table", {}, h("thead", {}, headRow), $.standings)), $.callout),
         h("section", { class: "td-section" }, h("h2", { text: "Recent bouts" }), $.feed)),
       h("section", { class: "td-section" }, $.galleryHead = h("h2"), $.gallery));
 
@@ -664,7 +870,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         clearTimeout(nextTimer); clearTimeout(noteTimer);
         duel = null; lastKey = ""; myLast = null; note = ""; lockNote = "";
         $.undo.hidden = true;
-        galleryDirty = true;
+        galleryDirty = true; standingsDirty = true;
       }
       view = v === "results" ? "results" : "vote";
       $.viewVote.hidden = view !== "vote";
@@ -679,6 +885,9 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       // arena across the move: re-rolling it would mean you cannot put two questions side
       // by side in the same context, and Back would land somewhere you have never been.
       if (moved || booting) { renderQuestion(); nextDuel(moved); renderStandings(); }
+      // Arriving at the results view is what pays for the table, so votes cast on the
+      // vote view show up the moment you go looking for them and not before.
+      flushStandings();
       // Only tune if nothing on the way through already rebuilt the gallery and tuned it.
       if (galleryBuilds === builds && !flushGallery()) tuneGalleryVideos();
       tuneDuelVideos();
@@ -906,17 +1115,42 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       render();
     }
 
+    // Every fit costs a pass over the votes, so the resample count comes down as the vote
+    // list grows. It is the same trade in both directions: a short list needs the
+    // resamples because its interval is wide and ragged, a long list has a narrow
+    // interval that another 240 fits would not sharpen. 8 contenders and 2000 votes is
+    // about 50ms here, against 250ms at a flat 300.
+    function resampleCount(m) {
+      return Math.max(40, Math.min(300, Math.round(120000 / Math.max(1, m))));
+    }
+
+    // The bootstrap is a few hundred fits. That is tens of milliseconds, and it used to
+    // run on every local vote, every undo and every vote that arrived over a shared
+    // table, none of which the vote view can see: the cost landed on the same frame that
+    // was trying to paint the card you just picked. Mark the table dirty and build it
+    // when the results view asks for it, the way the gallery already does.
     function renderStandings() {
+      standingsDirty = true;
+      if (!flushStandings()) renderStatus();
+    }
+
+    function flushStandings() {
+      if (!standingsDirty || view !== "results") return false;
+      standingsDirty = false;
       const sorted = qVotes().sort((x, y) => x.t - y.t);
-      const all = elo(ids, sorted, C.k);
+      const conf = confidence(ids, sorted, C.confidence
+        ? { ...C.confidence, resamples: resampleCount(sorted.length) }
+        : { resamples: 0, minBouts: Infinity });
+      const all = conf.rating;
       const perSplit = splitVals.map(s => {
         const list = sorted.filter(v => splitOf(C, resolveArena(C, v, true)) === s.id);
-        const r = elo(ids, list, C.k);
+        const r = fit(ids, list, { prior: C.confidence ? C.confidence.prior : 200 });
         const best = list.length ? ids.slice().sort((x, y) => r[y] - r[x])[0] : null;
         return { r, best };
       });
       const rec = records(ids, sorted);
-      const rows = ids.slice().sort((x, y) => all[y] - all[x]).map((id, i) => {
+      const order = ids.slice().sort((x, y) => all[y] - all[x]);
+      const rows = order.map((id, i) => {
         const c = byId[id];
         const nameCell = h("td");
         if (Q.swatch) {
@@ -924,14 +1158,29 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
           if (sw != null) nameCell.append(sw instanceof Node ? sw : h("span", { class: "td-swatch", style: `background:${sw}` }));
         }
         nameCell.append(document.createTextNode(c.name));
+        // The percentile range is not symmetric, so the cell shows its half-width and
+        // carries the range itself for anyone who wants the two ends.
+        const eloCell = h("td", { class: "num", text: String(Math.round(all[id])) });
+        if (conf.lo) {
+          // The range goes on the cell rather than on the three characters of the spread,
+          // so the hover target is the number you were already looking at. It goes on
+          // aria-label as well as title: a <td> is not focusable and has no interactive
+          // role, so a title alone is mouse-only, and the half-width is exactly where the
+          // asymmetry the comment above admits to gets lost.
+          const range = `${Math.round(conf.level * 100)}% of resamples land between ${Math.round(conf.lo[id])} and ${Math.round(conf.hi[id])}`;
+          eloCell.title = range;
+          eloCell.setAttribute("aria-label", `${Math.round(all[id])}. ${range}.`);
+          eloCell.append(h("span", { class: "td-ci", text: `±${Math.round((conf.hi[id] - conf.lo[id]) / 2)}` }));
+        }
         return h("tr", {},
           h("td", { class: "rank", text: String(i + 1) }),
           nameCell,
-          h("td", { class: "num", text: String(Math.round(all[id])) }),
+          eloCell,
           ...perSplit.map(s => h("td", { class: "num" + (s.best === id ? " td-lead" : ""), text: String(Math.round(s.r[id])) })),
           h("td", { class: "num", text: `${rec[id].w}–${rec[id].l}–${rec[id].t}` }));
       });
       $.standings.replaceChildren(...rows);
+      if ($.callout) $.callout.textContent = calloutFor(conf, order);
 
       const recent = sorted.slice().reverse().slice(0, C.recent);
       $.feed.replaceChildren(...(recent.length ? recent.map(v => {
@@ -940,18 +1189,42 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         return h("li", {}, h("b", { text: w }), h("span", { text: describe(v) }), h("span", { class: "when", text: ago(v.t) }));
       }) : [h("li", { class: "td-empty", text: "No bouts yet. Vote above to start the table." })]));
       renderStatus();
+      return true;
+    }
+
+    // The top two, in words, because the rank column reads 1, 2, 3, 4 whether or not the
+    // votes have earned it and this is the sentence that says whether to believe it.
+    //
+    // The bar is the one-sided form of the interval's own level: a 90% interval leaves
+    // 5% in each tail, so the call it corresponds to is 95%. Derived rather than written
+    // down, so a dome that sets `confidence: {level}` gets a callout that agrees with the
+    // number in the hover text instead of one fixed at somebody else's level.
+    function calloutFor(conf, order) {
+      const name = id => (byId[id] ? byId[id].name : id);
+      if (!conf.ahead) {
+        return conf.bouts
+          ? `Not enough bouts to say who is ahead yet: ${conf.bouts} so far.`
+          : "No bouts yet, so the table is the prior and nothing else.";
+      }
+      const [a, b] = order, share = conf.ahead[a][b], pct = Math.round(share * 100);
+      return share >= 1 - (1 - conf.level) / 2
+        ? `${name(a)} is ahead of ${name(b)} in ${pct}% of resamples.`
+        : `${name(a)} and ${name(b)} are too close to call: ${pct}% of resamples put ${name(a)} ahead.`;
     }
 
     // Who is winning, without making you switch views to find out. A vote you cannot
     // see land feels like it went nowhere, and then you stop voting.
+    //
+    // The fit, not the bootstrap: this redraws on every vote, and a few hundred fits per
+    // click to sharpen a sentence that says one name is not a trade worth making. The
+    // gap is the crude version of the call the results view makes properly.
     function leaderLine() {
       const mine = qVotes();
       if (mine.length < 3) return "";
-      const r = elo(ids, mine.sort((x, y) => x.t - y.t), C.k);
+      const r = fit(ids, mine, { prior: C.confidence ? C.confidence.prior : 200 });
       const rank = ids.slice().sort((x, y) => r[y] - r[x]);
-      const gap = r[rank[0]] - r[rank[1]];
-      // Under a K-factor's worth of separation two contenders have not been told apart yet.
-      return gap < C.k ? "Too close to call so far." : `${byId[rank[0]].name} leads.`;
+      return r[rank[0]] - r[rank[1]] < NOISE_FLOOR / Math.sqrt(mine.length)
+        ? "Too close to call so far." : `${byId[rank[0]].name} leads.`;
     }
 
     // Where the votes are going. Sticky, because it is a fact about the page rather
@@ -1101,7 +1374,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     };
   }
 
-  const api = { start, elo, records, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
+  const api = { start, elo, fit, confidence, records, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

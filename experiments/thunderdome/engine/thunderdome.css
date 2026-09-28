@@ -117,6 +117,15 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-table-wrap td.num,.td-table-wrap th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 .td-table-wrap td.rank{font-family:var(--mono);color:var(--faint);width:1%}
 .td-swatch{display:inline-block;width:34px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:8px}
+/* The interval rides along with the rating rather than taking a column of its own: it is
+   a qualifier on that number, and a column would let the eye scan the spreads on their
+   own as if they were a second ranking. Quieter and smaller so the rating still reads
+   first, but not so quiet it looks like a footnote you can skip.
+   A fixed slot, so a table holding a +/-9 next to a +/-107 keeps its ratings in a column
+   instead of sliding each one left by however wide its own spread happens to be. */
+.td-ci{display:inline-block;min-width:3.2em;margin-left:7px;text-align:right;color:var(--faint);font-size:11.5px}
+/* The sentence the table is evidence for, so it is not muted into a caption. */
+.td-callout{margin:0;font-size:13px;color:var(--ink)}
 .td-lead{color:var(--win);font-weight:600}
 .td-feed{display:grid;gap:6px;font-size:13px;color:var(--muted);margin:0;padding:0;list-style:none}
 .td-feed li{display:flex;gap:8px;flex-wrap:wrap}

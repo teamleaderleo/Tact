@@ -39,6 +39,211 @@ test("pickPair favors unseen pairs and never repeats the last pair", () => {
   assert.ok((seen["a1|c3"] || 0) > (seen["a1|b2"] || 0) * 20);
 });
 
+// A field of four whose true ratings are known, so a fit can be checked against an
+// answer instead of against itself. Deterministic: the same seed gives the same votes.
+const FIELD = ["a", "b", "c", "d"];
+const TRUTH = { a: 1650, b: 1560, c: 1480, d: 1410 };
+function synth(m, seed) {
+  let s = seed >>> 0;
+  const rand = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  const v = [];
+  for (let i = 0; i < m; i++) {
+    let x = FIELD[(rand() * 4) | 0], y = FIELD[(rand() * 4) | 0];
+    while (y === x) y = FIELD[(rand() * 4) | 0];
+    const p = 1 / (1 + Math.pow(10, (TRUTH[y] - TRUTH[x]) / 400));
+    v.push({ a: x, b: y, w: rand() < p ? "a" : "b", t: i });
+  }
+  return v;
+}
+
+test("fit recovers the ordering and stays on the Elo scale", () => {
+  // 1500 votes, because b and c are 80 points apart and 400 is not enough to tell them
+  // apart reliably. That is the honest amount of data for this assertion, and the
+  // interval test below is the one that says so on smaller samples.
+  const r = T.fit(FIELD, synth(1500, 7));
+  assert.deepEqual(FIELD.slice().sort((x, y) => r[y] - r[x]), ["a", "b", "c", "d"]);
+  // The prior pulls toward 1500 rather than pinning the mean there, so this is a
+  // sanity band on the scale, not an identity.
+  for (const id of FIELD) assert.ok(Math.abs(r[id] - TRUTH[id]) < 80, `${id}: ${r[id]}`);
+});
+
+test("fit does not care what order the votes arrived in", () => {
+  const votes = synth(120, 11);
+  const forward = T.fit(FIELD, votes);
+  const backward = T.fit(FIELD, votes.slice().reverse());
+  for (const id of FIELD) assert.ok(Math.abs(forward[id] - backward[id]) < 1e-6);
+  // Which is the whole reason the table left sequential Elo behind.
+  const e1 = T.elo(FIELD, votes), e2 = T.elo(FIELD, votes.slice().reverse());
+  assert.ok(Math.abs(e1.a - e2.a) > 1);
+});
+
+test("the prior keeps an undefeated contender finite", () => {
+  const sweep = [];
+  for (let i = 0; i < 30; i++) for (const other of ["b", "c", "d"]) sweep.push({ a: "a", b: other, w: "a" });
+  const r = T.fit(FIELD, sweep);
+  assert.ok(r.a > 1700 && r.a < 2600, String(r.a));
+  assert.ok(Number.isFinite(r.a));
+});
+
+test("ties pull two contenders together", () => {
+  const wins = T.fit(FIELD, [{ a: "a", b: "b", w: "a" }, { a: "a", b: "b", w: "a" }]);
+  const drawn = T.fit(FIELD, [{ a: "a", b: "b", w: "a" }, { a: "a", b: "b", w: "tie" }]);
+  assert.ok(wins.a - wins.b > drawn.a - drawn.b);
+});
+
+// A record between exactly two contenders is the sharpest test of the fit, because there
+// is one gap and every vote bears on it. It is also the shape the solver used to diverge
+// on: gradients taken from the ratings at the top of a sweep and applied all at once
+// moved the gap twice as far as it should, and a 130-70 record ran off to -12776 Elo.
+const lopsided = (wa, wb) => [
+  ...Array.from({ length: wa }, (_, i) => ({ a: "x", b: "y", w: "a", t: i })),
+  ...Array.from({ length: wb }, (_, i) => ({ a: "x", b: "y", w: "b", t: wa + i })),
+];
+
+test("two contenders stay on the scale however many votes they get", () => {
+  const SCALE = 400 / Math.log(10);
+  for (const [wa, wb] of [[13, 7], [33, 17], [130, 70], [1300, 700]]) {
+    const r = T.fit(["x", "y"], lopsided(wa, wb));
+    const gap = r.x - r.y, unshrunk = Math.log(wa / wb) * SCALE;
+    assert.ok(r.x > r.y, `${wa}-${wb}: ${r.x} ${r.y}`);
+    // The prior shrinks the gap toward zero and never past it, and the more votes there
+    // are the less it shrinks: at 2000 bouts the fit is the plain MLE to within a point.
+    assert.ok(gap > 0 && gap <= unshrunk + 1e-6, `${wa}-${wb}: gap ${gap} vs ${unshrunk}`);
+    assert.ok(gap > unshrunk * 0.85, `${wa}-${wb}: gap ${gap} vs ${unshrunk}`);
+    assert.equal(Math.round((r.x + r.y) / 2), 1500);
+  }
+});
+
+test("one pair hogging the votes does not throw the rest of the field", () => {
+  // 100 bouts between a and b, 6 between c and d. The votes say a > b and c > d by
+  // about the same margin, so the two gaps should come out about the same size.
+  const votes = [
+    ...lopsided(60, 40),
+    ...Array.from({ length: 4 }, (_, i) => ({ a: "c", b: "d", w: "a", t: 100 + i })),
+    ...Array.from({ length: 2 }, (_, i) => ({ a: "c", b: "d", w: "b", t: 104 + i })),
+  ].map(v => (v.a === "x" ? { ...v, a: "a", b: "b" } : v));
+  const r = T.fit(["a", "b", "c", "d"], votes);
+  for (const id of ["a", "b", "c", "d"]) assert.ok(Math.abs(r[id] - 1500) < 400, `${id} at ${r[id]}`);
+  assert.ok(r.a > r.b && r.c > r.d, JSON.stringify(r));
+});
+
+test("the fit is a stationary point, not wherever the sweeps ran out", () => {
+  // The gradient of the penalised log-likelihood, computed here from scratch: if the
+  // solver has really converged, every contender's is zero. This is the check that
+  // catches a solver that oscillates without ever visibly blowing up.
+  const SCALE = 400 / Math.log(10), pv = (200 / SCALE) ** 2;
+  const check = (field, votes) => {
+    const r = T.fit(field, votes);
+    for (const id of field) {
+      let g = -(r[id] - 1500) / SCALE / pv;
+      for (const v of votes) {
+        const mine = v.a === id ? 1 : v.b === id ? -1 : 0;
+        if (!mine) continue;
+        const [me, them] = mine === 1 ? [v.a, v.b] : [v.b, v.a];
+        const s = v.w === "tie" ? .5 : (v.w === "a") === (mine === 1) ? 1 : 0;
+        g += s - 1 / (1 + Math.exp(-(r[me] - r[them]) / SCALE));
+      }
+      assert.ok(Math.abs(g) < 1e-6, `${id}: gradient ${g} at ${r[id]}`);
+    }
+  };
+  check(["x", "y"], lopsided(130, 70));
+  check(FIELD, synth(400, 5));
+  check(["x", "y"], lopsided(20, 0));
+});
+
+test("the interval gets wider as the data gets thinner", () => {
+  const half = c => (c.hi.a - c.lo.a) / 2;
+  const wide = half(T.confidence(FIELD, synth(20, 3), { resamples: 200 }));
+  const mid = half(T.confidence(FIELD, synth(120, 3), { resamples: 200 }));
+  const tight = half(T.confidence(FIELD, synth(600, 3), { resamples: 200 }));
+  assert.ok(wide > mid && mid > tight, `${wide} ${mid} ${tight}`);
+  // Bootstrapping sequential Elo instead produces the opposite, which is what sent the
+  // table to a fitted rating in the first place. Guard the property, not the numbers.
+  assert.ok(tight < 45 && wide > 60, `${wide} ${tight}`);
+});
+
+test("the same votes always give the same interval", () => {
+  const votes = synth(80, 21);
+  const one = T.confidence(FIELD, votes, { resamples: 120 });
+  const two = T.confidence(FIELD, votes, { resamples: 120 });
+  assert.deepEqual(one.lo, two.lo);
+  assert.deepEqual(one.hi, two.hi);
+  assert.deepEqual(one.ahead, two.ahead);
+});
+
+test("a contender who has never fought is the least certain row, not the most", () => {
+  // Resampling the votes alone cannot move a contender with no votes: every resample
+  // leaves it at the prior's centre and the table prints 1500 +/-0, which reads as the
+  // one thing on the page we are sure of. Drawing the prior's centre too is what makes
+  // the row say what it means, and it also stops the callout claiming a 100% result
+  // against a contender with a 0-0-0 record.
+  const field = ["a", "b", "c", "idle"];
+  const votes = [];
+  for (let i = 0; i < 12; i++) votes.push({ a: "a", b: "b", w: i % 3 ? "a" : "b", t: i });
+  for (let i = 0; i < 12; i++) votes.push({ a: "a", b: "c", w: i % 4 ? "a" : "b", t: 12 + i });
+  const c = T.confidence(field, votes, { resamples: 200 });
+  assert.equal(Math.round(c.rating.idle), 1500);
+  const half = id => (c.hi[id] - c.lo[id]) / 2;
+  assert.ok(half("idle") > 200, `idle spread ${half("idle")}`);
+  assert.ok(half("idle") > half("a"), `${half("idle")} vs ${half("a")}`);
+  assert.ok(c.ahead.a.idle < .95, `ahead ${c.ahead.a.idle}`);
+});
+
+test("an unbeaten contender does not get a hairline interval", () => {
+  // Same mechanism seen from the other side: every resample of an all-wins record is
+  // still all wins, so the rating sits where the prior stops it and the votes have
+  // nothing left to say about it.
+  const field = ["a", "b", "c"];
+  const votes = [];
+  for (let i = 0; i < 10; i++) votes.push({ a: "a", b: "b", w: "a", t: i });
+  for (let i = 0; i < 10; i++) votes.push({ a: "a", b: "c", w: "a", t: 10 + i });
+  const c = T.confidence(field, votes, { resamples: 200 });
+  assert.ok(c.rating.a > c.rating.b && c.rating.a > c.rating.c);
+  assert.ok((c.hi.a - c.lo.a) / 2 > 50, `unbeaten spread ${(c.hi.a - c.lo.a) / 2}`);
+});
+
+test("too few bouts reports no interval rather than a confident zero", () => {
+  const none = T.confidence(FIELD, []);
+  assert.equal(none.bouts, 0);
+  assert.equal(none.lo, null);
+  assert.equal(none.ahead, null);
+  const few = T.confidence(FIELD, synth(5, 1));
+  assert.equal(few.bouts, 5);
+  assert.equal(few.lo, null);
+  // The ratings are still there, they just do not claim a spread.
+  assert.ok(Number.isFinite(few.rating.a));
+});
+
+test("the resample share separates a clear winner and hedges a close one", () => {
+  const clear = T.confidence(FIELD, synth(400, 5), { resamples: 200 });
+  assert.ok(clear.ahead.a.d > .98, String(clear.ahead.a.d));
+  assert.ok(Math.abs(clear.ahead.a.d + clear.ahead.d.a - 1) < 1e-9);
+  // Two contenders the votes have never told apart should not be called either way.
+  const even = [];
+  for (let i = 0; i < 40; i++) even.push({ a: "a", b: "b", w: i % 2 ? "a" : "b", t: i });
+  const tied = T.confidence(FIELD, even, { resamples: 200 });
+  assert.ok(tied.ahead.a.b > .3 && tied.ahead.a.b < .7, String(tied.ahead.a.b));
+});
+
+test("the confidence settings are filled in, and false turns it off", () => {
+  const two = [{ id: "x", name: "X" }, { id: "y", name: "Y" }];
+  const on = T.normalize({ id: "d", contenders: two });
+  assert.deepEqual(on.confidence, { prior: 200, minBouts: 8, level: .9 });
+  const tuned = T.normalize({ id: "d", contenders: two, confidence: { minBouts: 30 } });
+  assert.deepEqual(tuned.confidence, { prior: 200, minBouts: 30, level: .9 });
+  assert.equal(T.normalize({ id: "d", contenders: two, confidence: false }).confidence, null);
+  // It is a dome setting, not a question one: two questions in one dome are read off
+  // the same table and cannot disagree about how wide an interval is.
+  assert.throws(() => T.normalizeDome({
+    id: "d", questions: [{ id: "one", contenders: two, confidence: false }, { id: "two", contenders: two }],
+  }), /dome-level/);
+});
+
+test("confidence ignores votes it cannot place", () => {
+  const votes = synth(60, 9).concat([{ a: "a", b: "ghost", w: "a" }, { a: "a", b: "a", w: "tie" }]);
+  assert.equal(T.confidence(FIELD, votes, { resamples: 60 }).bouts, 60);
+});
+
 test("normalize rejects reserved dimension ids and duplicate contenders", () => {
   const base = { id: "x", contenders: [{ id: "p" }, { id: "q" }] };
   assert.throws(() => T.normalize({ ...base, dimensions: [{ id: "w", options: [{ id: "o" }] }] }), /reserved/);
