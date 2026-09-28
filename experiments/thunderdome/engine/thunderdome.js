@@ -115,7 +115,7 @@
     });
     return {
       k: 24, recent: 8, collection: "votes", contenderLabel: "Contender",
-      galleryTitle: "Everyone in this arena", media: {},
+      galleryTitle: "Everyone in this arena", media: {}, interactiveCards: false,
       ...cfg,
       contenders, dims,
       localKey: cfg.localKey || `thunderdome:${cfg.id}:local`,
@@ -221,14 +221,14 @@
     let duel = null, lastKey = "";
     let votes = [];
     let votesCol = null, shared = false, myLast = null;
-    let note = "", noteTimer = 0, lockNote = "";
-    let syncToken = 0, galleryIO = null, galleryKey = null;
+    let note = "", noteTimer = 0, stickyNote = "", lockNote = "";
+    let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, view = "vote";
 
     if (C.title) document.title = C.title;
 
     // ---- layout ----
     const $ = {};
-    const controls = h("div", { class: "td-controls", role: "group", "aria-label": "Arena" });
+    const controls = h("div", { class: "td-controls" });
     for (const d of C.dims) {
       const idAttr = `td-dim-${d.id}`;
       if (d.type === "select") {
@@ -254,9 +254,19 @@
     $.duel = h("section", { class: "td-duel", "aria-live": "polite" });
     // Media that fails to load does so long after render(), so it reports back.
     $.duel.addEventListener("td-media-fail", () => refreshVoteLock());
-    $.voteA = h("button", { class: "primary", onclick: () => vote("a") }, "Left wins", h("kbd", { text: "←" }));
-    $.voteTie = h("button", { onclick: () => vote("tie") }, "Tie", h("kbd", { text: "↓" }));
-    $.voteB = h("button", { class: "primary", onclick: () => vote("b") }, "Right wins", h("kbd", { text: "→" }));
+    // The digits and space do the same job as the arrows, for a hand that never
+    // leaves the number row. Only one key per button is printed; the rest are in
+    // the title so the row of buttons stays a row of buttons.
+    // Blur on the way out. A vote button that keeps focus turns the next space into
+    // "press me again", so space would mean tie until you used the mouse and a left win
+    // afterwards, silently and in the wrong direction. Nothing in the row wants focus
+    // once it has been clicked: the keys below take over from here.
+    // `detail` is 0 when the click came from Enter or space on a focused button, so a
+    // keyboard user keeps their place in the tab order and only the mouse gives up focus.
+    const click = w => e => { if (e.detail && e.currentTarget.blur) e.currentTarget.blur(); vote(w); };
+    $.voteA = h("button", { class: "primary", title: "Left wins (← or 1)", onclick: click("a") }, "Left wins", h("kbd", { text: "←" }));
+    $.voteTie = h("button", { title: "Tie (↓, 3 or space)", onclick: click("tie") }, "Tie", h("kbd", { text: "↓" }));
+    $.voteB = h("button", { class: "primary", title: "Right wins (→ or 2)", onclick: click("b") }, "Right wins", h("kbd", { text: "→" }));
     $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "Skip", h("kbd", { text: "S" }));
     $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "Undo my last vote", h("kbd", { text: "U" }));
     $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos(true) }, "Replay both", h("kbd", { text: "R" }));
@@ -270,18 +280,49 @@
     $.feed = h("ul", { class: "td-feed" });
     $.gallery = h("div", { class: "td-gallery" });
 
-    const wrap = h("div", { class: "td-wrap" },
-      h("header", {}, h("h1", { text: C.title || C.id }), C.lede ? h("p", { class: "td-lede", html: C.lede }) : null),
-      C.dims.length ? controls : null,
+    // Two views, not one long page. Landing on the link should put you in front of a
+    // duel, not above the fold of a document you have to scroll past to reach the work.
+    // They are plain hash links so the results are as shareable as the dome itself.
+    $.tabVote = h("a", { class: "td-tab", href: "#vote", text: "Vote" });
+    $.tabResults = h("a", { class: "td-tab", href: "#results" });
+
+    // The arena bar is context, not a control you touch every duel: collapsed to its
+    // tag line, one click from open. <details> so the keyboard and AT get it for free.
+    $.arenaBox = h("details", { class: "td-arena" },
+      h("summary", {}, h("span", { class: "td-arena-label", text: "Arena" }), $.tag), controls);
+
+    $.viewVote = h("section", { class: "td-view" },
+      C.dims.length ? $.arenaBox : null,
       $.duel,
       h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.replay, $.undo),
-      $.status,
+      $.status);
+
+    $.viewResults = h("section", { class: "td-view", hidden: true },
       h("div", { class: "td-two" },
         h("section", { class: "td-section" }, h("h2", { text: "Standings" }),
           h("div", { class: "td-table-wrap" }, h("table", {}, h("thead", {}, headRow), $.standings))),
         h("section", { class: "td-section" }, h("h2", { text: "Recent bouts" }), $.feed)),
       h("section", { class: "td-section" }, h("h2", { text: C.galleryTitle }), $.gallery));
+
+    const wrap = h("div", { class: "td-wrap" },
+      h("header", { class: "td-head" },
+        h("h1", { text: C.title || C.id }),
+        h("nav", { class: "td-tabs", "aria-label": "View" }, $.tabVote, $.tabResults)),
+      C.lede ? h("p", { class: "td-lede", html: C.lede }) : null,
+      $.viewVote, $.viewResults);
     mount.append(wrap);
+
+    function setView(v) {
+      view = v === "results" ? "results" : "vote";
+      $.viewVote.hidden = view !== "vote";
+      $.viewResults.hidden = view !== "results";
+      $.tabVote.setAttribute("aria-current", view === "vote" ? "page" : "false");
+      $.tabResults.setAttribute("aria-current", view === "results" ? "page" : "false");
+      if (!flushGallery()) tuneGalleryVideos();   // a rebuild tunes on its way out
+      tuneDuelVideos();
+    }
+    const viewFromHash = () => location.hash.slice(1).toLowerCase() === "results" ? "results" : "vote";
+    window.addEventListener("hashchange", () => setView(viewFromHash()));
 
     // ---- rendering ----
     function arena() { return resolveArena(C, arenaIds, false); }
@@ -325,15 +366,22 @@
       return toNode(c.html);
     }
 
+    // side is "a", "b", or null in the gallery.
+    //
     // A card that could not be drawn must say so and must not be votable. The usual
     // way to get here is a media resolver that is not total over the arena
     // (`media: a => clips[c.id][a.theme.id]` after a theme is added without clips):
     // without this the duel advances underneath a frozen screen and the votes land on
     // pairs nobody ever saw.
-    function card(c, a, sideKey) {
+    function card(c, a, side) {
       const head = h("div", { class: "td-card-head" },
         h("div", {}, h("div", { class: "td-card-name", text: c.name }), c.note ? h("div", { class: "td-card-note", text: c.note }) : null),
-        sideKey ? h("span", { class: "td-side-key", text: sideKey }) : null);
+        // The arrow is a separate span because it stops being true below 760px, where the
+        // duel stacks and "left" is the card on top. CSS drops it at that width.
+        side ? h("span", { class: "td-side-key" },
+          side === "a" ? h("span", { class: "td-side-arrow", text: "\u2190 " }) : null,
+          side === "a" ? "Left" : "Right",
+          side === "b" ? h("span", { class: "td-side-arrow", text: " \u2192" }) : null) : null);
       let body, broken = false;
       try { body = renderBody(c, a); } catch (e) {
         broken = true;
@@ -343,6 +391,30 @@
       const el = h("article", { class: "td-card", "data-contender": c.id },
         head, h("div", { class: "td-card-body" }, body));
       if (broken) el.dataset.tdBroken = "1";
+      // The whole card is the button. Reaching for a button under the thing you are
+      // judging is the difference between twenty votes and five.
+      // Mouse only on purpose: the arrow keys and the vote buttons below are the
+      // keyboard and screen reader path, and a card announcing itself as a button
+      // would read its own contents out as the label.
+      if (side && !broken && !C.interactiveCards) {
+        el.classList.add("td-live");
+        el.addEventListener("click", e => {
+          // The card body is pointer-events:none, but the head is not: the name and the
+          // note are there to be read, and reading sometimes means dragging across them.
+          // A drag that ends with text selected was not a vote.
+          const sel = root.getSelection && root.getSelection();
+          if (sel && !sel.isCollapsed) return;
+          // Media controls are exempt from the blanket, so a click on one is a play, not a vote.
+          if (e.target.closest && e.target.closest("video,audio")) return;
+          vote(side);
+        });
+      }
+      // Gallery clips are played by the observer instead of autoplaying: a clip below
+      // the fold, or sitting in the hidden results view, should not be decoding against
+      // the duel. Reduced motion leaves autoplay off, so it never gets the marker.
+      if (!side) for (const v of el.querySelectorAll("video")) {
+        if (v.autoplay) { v.autoplay = false; v.dataset.tdAuto = "1"; }
+      }
       return el;
     }
 
@@ -388,18 +460,43 @@
       });
     }
 
-    // The duel is the comparison that has to stay smooth. Gallery clips below the fold
-    // decoding in the background are competing with it for nothing.
-    function watchGalleryVideos() {
-      if (galleryIO) galleryIO.disconnect();
-      if (typeof IntersectionObserver !== "function") return;
+    // The duel is the comparison that has to stay smooth. Gallery clips below the fold,
+    // or in the results view while you are voting, are competing with it for nothing.
+    // The duel's own clips are as hidden as the gallery's once you switch to the
+    // standings, and a paused <video> that nobody can see is not costing anything.
+    function tuneDuelVideos() {
+      if (view === "vote") { syncDuelVideos(); return; }
+      for (const v of $.duel.querySelectorAll("video")) v.pause();
+    }
+
+    // Built only when the results view needs it. With "New arena each duel" on, the
+    // arena changes every vote, so keying the gallery on the arena alone still tore down
+    // and re-preloaded every clip in it once per duel, on the same frame as the new duel.
+    function flushGallery() {
+      if (!galleryDirty) return false;
+      galleryDirty = false;
+      const a = arena();
+      galleryKey = JSON.stringify(a.ids);
+      $.gallery.replaceChildren(...C.contenders.map(c => card(c, a)));
+      tuneGalleryVideos();
+      return true;
+    }
+
+    function tuneGalleryVideos() {
+      if (galleryIO) { galleryIO.disconnect(); galleryIO = null; }
+      const vids = [...$.gallery.querySelectorAll("video")];
+      if (view !== "results") { for (const v of vids) v.pause(); return; }
+      if (typeof IntersectionObserver !== "function") {
+        for (const v of vids) if (v.dataset.tdAuto) { const q = v.play(); if (q && q.catch) q.catch(() => {}); }
+        return;
+      }
       galleryIO = new IntersectionObserver(es => {
         for (const e of es) {
           if (!e.isIntersecting) e.target.pause();
-          else if (e.target.autoplay) { const q = e.target.play(); if (q && q.catch) q.catch(() => {}); }
+          else if (e.target.dataset.tdAuto) { const q = e.target.play(); if (q && q.catch) q.catch(() => {}); }
         }
       }, { rootMargin: "120px" });
-      for (const v of $.gallery.querySelectorAll("video")) galleryIO.observe(v);
+      for (const v of vids) galleryIO.observe(v);
     }
 
     // A card can fail at render (a resolver that is not total over the arena) or later
@@ -415,17 +512,14 @@
     function render() {
       const a = arena();
       if (C.dims.length) syncControls(a);
-      $.duel.replaceChildren(...(duel ? [card(byId[duel.a], a, "Left"), card(byId[duel.b], a, "Right")] : []));
-      // The gallery only depends on the arena, so it is rebuilt when the arena changes
-      // and not once per vote. Tearing down N <video> elements every duel put the whole
-      // grid back at the top of its loop and spent decode time the duel needed.
+      $.duel.replaceChildren(...(duel ? [card(byId[duel.a], a, "a"), card(byId[duel.b], a, "b")] : []));
+      // The gallery only depends on the arena, so a vote that does not move the arena
+      // leaves it alone entirely, and one that does defers the rebuild to the view that
+      // can actually see it.
       const gk = JSON.stringify(a.ids);
-      if (gk !== galleryKey) {
-        galleryKey = gk;
-        $.gallery.replaceChildren(...C.contenders.map(c => card(c, a)));
-        watchGalleryVideos();
-      }
-      syncDuelVideos();
+      if (gk !== galleryKey) { galleryKey = gk; galleryDirty = true; }
+      if (view === "results") flushGallery();
+      tuneDuelVideos();
       refreshVoteLock();
     }
 
@@ -476,17 +570,42 @@
       renderStatus();
     }
 
-    function renderStatus() {
-      if (lockNote) { $.status.textContent = lockNote; return; }
-      if (note) { $.status.textContent = note; return; }
+    // Who is winning, without making you switch views to find out. A vote you cannot
+    // see land feels like it went nowhere, and then you stop voting.
+    function leaderLine() {
+      if (votes.length < 3) return "";
+      const r = elo(ids, [...votes].sort((x, y) => x.t - y.t), C.k);
+      const rank = ids.slice().sort((x, y) => r[y] - r[x]);
+      const gap = r[rank[0]] - r[rank[1]];
+      // Under a K-factor's worth of separation two contenders have not been told apart yet.
+      return gap < C.k ? "Too close to call so far." : `${byId[rank[0]].name} leads.`;
+    }
+
+    // Where the votes are going. Sticky, because it is a fact about the page rather
+    // than an event, and it is kept out of `note` so a page with no shared table does
+    // not spend the rest of the session saying so instead of naming the leader.
+    function storageLine() {
+      if (stickyNote) return stickyNote;
       if (shared) {
         const n = votes.filter(v => !String(v.id).startsWith("local-")).length;
-        $.status.textContent = `${n} shared vote${n === 1 ? "" : "s"} so far.`;
-      } else $.status.textContent = "Votes stay in this browser until the shared table connects.";
+        return `${n} shared vote${n === 1 ? "" : "s"} so far.`;
+      }
+      return "Votes stay in this browser until the shared table connects.";
     }
+    // The lock note beats everything: a row of dead buttons needs an explanation more
+    // than a vote already visible in the Results count needs a confirmation.
+    function renderStatus() {
+      $.tabResults.textContent = votes.length ? `Results (${votes.length})` : "Results";
+      $.status.textContent = lockNote || note || `${storageLine()} ${leaderLine()}`.trim();
+    }
+    // A sticky message is always the correction to whatever transient is on screen: it
+    // is said when a vote was rejected, right after that vote said it was saved. Clearing
+    // the transient is the point, otherwise the page spends two seconds claiming a vote
+    // landed that did not.
     function say(msg, sticky) {
+      if (sticky) { stickyNote = msg; note = ""; clearTimeout(noteTimer); renderStatus(); return; }
       note = msg; clearTimeout(noteTimer); renderStatus();
-      if (!sticky) noteTimer = setTimeout(() => { note = ""; renderStatus(); }, 2500);
+      noteTimer = setTimeout(() => { note = ""; renderStatus(); }, 2500);
     }
 
     // ---- voting ----
@@ -523,12 +642,24 @@
     }
 
     document.addEventListener("keydown", e => {
+      // The duel is hidden on the results view, and a vote on a pair you cannot see is
+      // bad data. It also means space is the page's own scroll key there, which is what
+      // anyone reading a table of standings expects it to be.
+      if (view !== "vote") return;
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
-      if (e.target.closest && e.target.closest("select,input,textarea,[contenteditable]")) return;
+      const near = sel => e.target.closest && e.target.closest(sel);
+      if (near("select,input,textarea,[contenteditable]")) return;   // typing always beats voting
+      // A focused media player owns its own keys: space plays, arrows seek. Under
+      // prefers-reduced-motion the controls are the only way to watch a clip at all.
+      if (near("video,audio")) return;
       const k = e.key;
-      if (k === "ArrowLeft") vote("a");
-      else if (k === "ArrowRight") vote("b");
-      else if (k === "ArrowDown") vote("tie");
+      // Space and Enter belong to whatever is focused. The arrows and digits do not:
+      // clicking "Left wins" once leaves that button focused, and the keyboard has to
+      // keep working afterwards or the fast path dies the first time you use the mouse.
+      if ((k === " " || k === "Enter") && near("button,a,summary")) return;
+      if (k === "ArrowLeft" || k === "1") vote("a");
+      else if (k === "ArrowRight" || k === "2") vote("b");
+      else if (k === "ArrowDown" || k === "3" || k === " ") vote("tie");
       else if (k === "s" || k === "S") nextDuel();
       else if (k === "u" || k === "U") undo();
       else if (k === "r" || k === "R") syncDuelVideos(true);
@@ -538,6 +669,7 @@
 
     // ---- boot ----
     try { const saved = JSON.parse(localStorage.getItem(C.localKey) || "[]"); if (Array.isArray(saved)) votes = saved; } catch (e) { /* no storage */ }
+    setView(viewFromHash());
     nextDuel(); renderStandings();
 
     (async () => {

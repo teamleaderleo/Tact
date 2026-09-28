@@ -51,7 +51,26 @@ open examples/cmux-selection/index.html
 
 Opened from disk, votes stay in that browser (localStorage). Publish it as an artifact to share one table.
 
-Controls: `←` left wins, `→` right wins, `↓` tie, `S` skip, `U` undo your last vote, `R` replay both clips. The arena controls pick a specific context; changing a select turns off "New arena each duel".
+## Voting
+
+The page opens on the duel. Click either card to vote for it, or use the keys:
+
+| key | does |
+| --- | --- |
+| `←` or `1` | left wins |
+| `→` or `2` | right wins |
+| `↓`, `3` or space | tie |
+| `S` | skip this pair |
+| `U` | undo your last vote |
+| `R` | replay both clips |
+
+The whole card is the button, so your cursor never leaves the thing you are judging. Dragging to select a contender's name is not a vote, and a clip's own controls play it rather than voting for it. Clicking a vote button hands focus back, so every key in the table keeps meaning what the table says it means.
+
+Two views, `#vote` and `#results`, switched by the tabs in the header. No hash opens the duel, with only the title and the lede above it, and the Results tab carries the vote count. `#results` in a link opens the table directly. The keys above are the vote view's; on the results view they are the browser's, so space scrolls the standings. The arena controls are folded into a summary line that shows the current context; open it to pin a specific one. Changing a select turns off "New arena each duel".
+
+Under the cards a line names the current leader once there are three votes in, so you can see your vote land without switching views.
+
+Cards are click-to-vote unless the contenders are themselves interactive (a mock with its own buttons or a hover state you want people to try). Set `interactiveCards: true` for that and the vote buttons carry the whole job.
 
 ## Author a config
 
@@ -99,7 +118,7 @@ What the engine hands you:
 - **Card body** comes from the first of: `contender.render(arena, ctx)`, config `render(contender, arena, ctx)`, `contender.media`, `contender.html` (string, or function of arena). A returned string is parsed as HTML. `ctx.h(tag, attrs, ...children)` is a small element helper (`class`, `text`, `html`, `style`, `on<event>`). A config-wide `render` sits above `media` so it can place the frame itself; call `ctx.media()` to get the element.
 - **Dimensions**: selects are re-rolled every duel while "New arena each duel" is on; toggles are not, unless you set `shuffle: true`. Set `default` to choose the starting option. Ids `id`, `a`, `b`, `w`, `t` are reserved.
 - **Styles** for contender markup go in `config.css`. The engine's own classes all start with `td-`, and the theme tokens (`--ink`, `--muted`, `--faint`, `--rule`, `--panel`, `--sans`, `--mono`) are available.
-- Other knobs: `k` (Elo K-factor, default 24), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena.
+- Other knobs: `k` (Elo K-factor, default 24), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click.
 
 ## Images, GIFs and video
 
@@ -117,7 +136,7 @@ Per-item fields, all of which can also be set once under the config's `media` bl
 
 **Prefer mp4 or webm over GIF.** A GIF cannot be seeked, so the engine cannot restart it. Two GIFs side by side drift apart within seconds and you end up comparing one treatment at the top of its loop against another halfway through, with nothing on screen telling you that is happening. Video clips are restarted together at the start of every duel, and `R` replays both. GIFs still render, they are just a worse instrument.
 
-Video is muted, looped, `playsinline`, and autoplaying. Under `prefers-reduced-motion: reduce` nothing plays on its own and the clips get controls instead. Gallery clips below the fold are paused so they are not competing with the duel for decode time. Media that fails to load says so on the card, because a blank card still looks votable and a vote cast on one is bad data.
+Video is muted, looped, `playsinline`, and autoplaying. Under `prefers-reduced-motion: reduce` nothing plays on its own and the clips get controls instead. Gallery clips are paused while you are on the vote view, and below the fold on the results view, so they are not competing with the duel for decode time. Media that fails to load says so on the card, because a blank card still looks votable and a vote cast on one is bad data.
 
 Media referenced by relative path is inlined into `index.html` as a data URI at build time, which is what keeps the built page one self-contained file. `https://` URLs are left as they are. Base64 costs about a third on top of the file size, so keep clips to a few seconds: `examples/motion` is eight clips and 99 KB in total. The build warns past 2 MB for one file and 5 MB for a page.
 

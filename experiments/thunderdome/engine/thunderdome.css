@@ -22,15 +22,33 @@
   --focus:#7AA7FF;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:28px 64px}
-.td-wrap{max-width:1080px;margin:0 auto;display:grid;gap:28px}
-.td-wrap header{display:grid;gap:6px}
+/* A class selector outranks the UA's [hidden] rule, so anything the engine hides by
+   property (the views, Undo, Replay) needs this or it stays on screen. Scoped to the two
+   places the engine does it, so a config's own [hidden] handling is left alone. */
+.td-view[hidden],.td-vote button[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:20px 64px}
+.td-wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.td-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.td-view{display:grid;gap:18px}
+.td-tabs{display:flex;gap:4px;flex:none}
+.td-tab{font-size:13px;color:var(--muted);text-decoration:none;padding:5px 13px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+.td-tab:hover{color:var(--ink);background:var(--hover)}
+.td-tab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.td-tab[aria-current=page]{color:var(--ink);background:var(--panel);border-color:var(--rule-strong)}
 .td-wrap h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .td-wrap h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
 .td-section{display:grid;gap:10px}
-.td-lede{color:var(--muted);max-width:68ch;margin:0}
+.td-lede{color:var(--muted);max-width:68ch;margin:0;font-size:14px}
 .td-lede code{font-family:var(--mono);font-size:13px}
-.td-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--panel)}
+.td-arena{border:1px solid var(--rule);border-radius:10px;background:var(--panel)}
+.td-arena>summary{display:flex;gap:9px;align-items:center;padding:8px 14px;cursor:pointer;font-size:13px;list-style:none}
+.td-arena>summary::-webkit-details-marker{display:none}
+.td-arena>summary::before{content:"";flex:none;width:0;height:0;border:4px solid transparent;border-left-color:var(--faint);transition:transform .15s}
+.td-arena[open]>summary::before{transform:rotate(90deg)}
+.td-arena>summary:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:10px}
+.td-arena-label{color:var(--muted)}
+.td-arena[open]>summary{border-bottom:1px solid var(--rule)}
+.td-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px 14px}
 .td-controls label{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
 .td-controls select{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--rule-strong);border-radius:6px;padding:4px 8px}
 .td-controls input[type=checkbox]{accent-color:var(--ink)}
@@ -38,6 +56,16 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-duel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
 .td-card{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px;display:grid;gap:12px;align-content:start;min-width:0}
 .td-card.picked{border-color:var(--win);box-shadow:0 0 0 2px var(--win-bg)}
+.td-card.td-live{cursor:pointer}
+.td-card.td-live:hover{border-color:var(--rule-strong);background:var(--hover)}
+.td-card.td-live:hover .td-side-key{color:var(--ink);border-color:var(--rule-strong)}
+/* Clicks land on the card, not on whatever the mock happens to contain. Configs whose
+   contenders are meant to be poked at set interactiveCards and keep their own events. */
+.td-card.td-live .td-card-body{pointer-events:none}
+/* Except the player's own controls. Under prefers-reduced-motion nothing autoplays and
+   these are the only way to watch a clip at all, so swallowing the play button would
+   leave the duel unwatchable and turn the attempt into a vote. */
+.td-card.td-live .td-card-body video[controls],.td-card.td-live .td-card-body audio[controls]{pointer-events:auto}
 .td-card-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .td-card-name{font-weight:600;font-size:15px}
 .td-card-note{font-size:12.5px;color:var(--muted)}
@@ -81,5 +109,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 @media (max-width:760px){
   .td-duel,.td-two{grid-template-columns:1fr}
   .td-arena-tag{margin-left:0}
+  /* One column, so "left" is the card on top and the arrow points at nothing. */
+  .td-side-arrow{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
