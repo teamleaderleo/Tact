@@ -117,7 +117,7 @@ What the engine hands you:
 
 - **`arena`** has one entry per dimension: the chosen option object for a select (with every field you gave it), a boolean for a toggle, plus `arena.ids` with the raw ids.
 - **Card body** comes from the first of: `contender.render(arena, ctx)`, config `render(contender, arena, ctx)`, `contender.media`, `contender.html` (string, or function of arena). A returned string is parsed as HTML. `ctx.h(tag, attrs, ...children)` is a small element helper (`class`, `text`, `html`, `style`, `on<event>`). A config-wide `render` sits above `media` so it can place the frame itself; call `ctx.media()` to get the element.
-- **Dimensions**: selects are re-rolled every duel while "New arena each duel" is on; toggles are not, unless you set `shuffle: true`. Set `default` to choose the starting option. Ids `id`, `a`, `b`, `w`, `t` are reserved.
+- **Dimensions**: selects are re-rolled every duel while "New arena each duel" is on; toggles are not, unless you set `shuffle: true`. Set `default` to choose the starting option. Ids `id`, `a`, `b`, `w`, `t` and `q` are reserved.
 - **Styles** for contender markup go in `config.css`. The engine's own classes all start with `td-`, and the theme tokens (`--ink`, `--muted`, `--faint`, `--rule`, `--panel`, `--sans`, `--mono`) are available.
 - Other knobs: `k` (Elo K-factor, default 24), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click.
 
@@ -141,11 +141,19 @@ Thunderdome.start({
 });
 ```
 
-- A question takes `contenders` plus anything the dome already sets: `lede`, `contenderLabel`, `galleryTitle`, `media`, `render`, `swatch`. What it does not name, it inherits.
-- `id` is the link. It is lowercased, has to be unique, and cannot be `vote` or `results` because those are the views. `short` is the tab label, falling back to `title` and then to the id.
-- The rest of the dome is deliberately not per-question: the arena, the split, `k`, `collection` and `localKey` stay dome-level. Questions asked in different contexts are different domes, not tabs on one.
-- The hash is `#<question>/<view>`, in either order and case-insensitive: `#wording`, `#wording/results`, `#results/wording`. Both segments are optional, so an old `#results` link still works and a question that has since been renamed opens the dome rather than a blank page. The tabs are plain links, so back and forward walk your questions.
-- Votes are tagged with `q` and stored in the one table. A config with no `questions` writes exactly the vote shape it always did, with no tag, so every dome built before this keeps reading its own history.
+- **Each question brings its own `contenders`.** That is the one thing it cannot inherit: borrowing the dome's list would put one set of contenders under two question tags, so a question without its own is an error rather than a second table of the same four things.
+- **It may also set** `lede`, `contenderLabel`, `galleryTitle`, `media`, `render`, `swatch` and `interactiveCards`, and inherits the dome's for any it does not name. Those are all per-question because how a card is drawn is part of the question: one dome can ask about HTML mocks and about clips.
+- **`id` is the link.** Lowercased, unique, and not `vote` or `results` because those are the views. `title` is the question itself, shown above the cards. `short` is the tab label, falling back to `title` and then to the id.
+- **Dome-level, on purpose:** the arena, the split, `k`, `recent`, `collection`, `localKey`, `shuffle`. A question that sets one of those is an error, not a silent no-op. A question asked against a different arena is a different dome, not a tab on this one, and the arena is held steady as you move between questions so you can put two of them side by side in the same context.
+- **The hash** is `#<question>/<view>`, either order, case-insensitive: `#wording`, `#wording/results`, `#results/wording`. Both segments are optional. A missing question means the first one, and the page writes it back into the address bar on load, so the URL you copy always says which question it opens. A question that has since been renamed opens the dome rather than a blank page. The tabs are plain `<a href>`s, so back and forward walk your questions.
+
+### Storage and older domes
+
+Votes go in one table per dome, tagged with `q`.
+
+- A config with **no** `questions` writes exactly the vote shape it always did, with no tag, so every dome built before this keeps reading its own history.
+- A dome that **gains** `questions` later keeps its untagged votes: they count toward the first question. Elo ignores contender ids it does not know, so any old vote whose contenders are not in question one drops out on its own instead of landing in the wrong table.
+- `q` is now a reserved arena dimension id, alongside `id`, `a`, `b`, `w` and `t`. A config with a dimension called `q` has to rename it.
 
 `examples/dialog/` is three questions about one dialog: `node build.mjs examples/dialog`.
 
