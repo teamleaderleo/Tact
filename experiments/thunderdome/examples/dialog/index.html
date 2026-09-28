@@ -36,7 +36,7 @@
 /* A class selector outranks the UA's [hidden] rule, so anything the engine hides by
    property (the views, Undo, Replay) needs this or it stays on screen. Scoped to the two
    places the engine does it, so a config's own [hidden] handling is left alone. */
-.td-view[hidden],.td-vote button[hidden]{display:none!important}
+.td-view[hidden],.td-vote button[hidden],.td-why[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:20px 64px}
 .td-wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
 .td-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
@@ -835,7 +835,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     // The vote the comment box is currently writing about, with the handle needed to
     // amend it. Not `myLast`: that one moves to every new vote, and a sentence you are
     // halfway through typing is about the pair you were looking at when you started it.
-    let whyFor = null;
+    let whyFor = null, whyLatest = null;
     // Bumped whenever the question changes, so a vote whose write is still in flight
     // cannot come back and hand its Undo handle to the question you moved to.
     let voteToken = 0, nextTimer = 0, galleryBuilds = 0;
@@ -905,10 +905,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         if (e.key === "Enter") { e.preventDefault(); saveWhy(); }
         // Escape abandons the note, which is the only way out that does not involve
         // deleting what you typed by hand. The box stays on the same vote.
-        else if (e.key === "Escape") { e.preventDefault(); $.why.value = ""; $.why.blur(); syncWhySubject(); }
+        else if (e.key === "Escape") { e.preventDefault(); $.why.value = ""; $.why.blur(); rePointWhy(); }
         e.stopPropagation();
       });
-      $.why.addEventListener("input", () => syncWhySubject());
+      $.why.addEventListener("input", () => rePointWhy());
       // The placeholder names the pair, and the first character you type hides it, which
       // leaves a sentence about two contenders nobody can see: the next duel is already
       // up. This carries the subject for as long as there is text to attach it to, and
@@ -1368,7 +1368,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       $.feed.replaceChildren(...(recent.length ? recent.map(v => {
         const a = byId[v.a] ? byId[v.a].name : v.a, b = byId[v.b] ? byId[v.b].name : v.b;
         const w = v.w === "tie" ? `${a} = ${b}` : `${v.w === "a" ? a : b} beat ${v.w === "a" ? b : a}`;
-        const why = typeof v.why === "string" ? v.why.trim() : "";
+        // `comments: false` is off everywhere, not just in the box. A dome that ran
+        // with notes and then turned them off still has them on its votes, and the
+        // gallery already drops them; the feed was showing them anyway.
+        const why = C.comments && typeof v.why === "string" ? v.why.trim() : "";
         // The bout and its timestamp are one line; the note gets its own underneath.
         // Inline, a note long enough to wrap pushes "just now" onto a line of its own
         // and the column of times stops being a column.
@@ -1443,11 +1446,25 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     // remark nobody made. So voting stays free, and the sentence keeps its subject.
     function offerWhy(v, handle) {
       if (!C.comments || !$.whyBox) return;
+      whyLatest = { v, handle };
       if (whyFor && $.why.value.trim()) return;
-      whyFor = { v, handle };
+      whyFor = whyLatest;
       $.why.value = "";
       $.why.placeholder = whyLabel(v);
       $.whyBox.hidden = false;
+      syncWhySubject();
+    }
+    // The box keeps its subject only while there is unsent text to attach to it. Once
+    // the text is gone, so is the reason: point it back at the latest vote. Without
+    // this, escaping a half-written note and then writing a fresh one filed the new
+    // sentence against a duel two votes back, and the vote you had just cast could
+    // never be noted at all.
+    function rePointWhy() {
+      if (!$.why) return;
+      if (!$.why.value.trim() && whyLatest && whyLatest !== whyFor) {
+        whyFor = whyLatest;
+        $.why.placeholder = whyLabel(whyLatest.v);
+      }
       syncWhySubject();
     }
     // Shown as soon as there is text in the box, because that is exactly when the
@@ -1476,8 +1493,17 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     }
     function clearWhy() {
       if (!$.whyBox) return;
-      whyFor = null; $.why.value = ""; $.whyBox.hidden = true;
+      whyFor = null; whyLatest = null; $.why.value = ""; $.whyBox.hidden = true;
       syncWhySubject();
+    }
+    // Undo deletes one bout. If the box is aimed somewhere else, it is holding a
+    // sentence about a vote that is still there, and taking it away is silent data
+    // loss: the user watches their own words vanish for pressing Undo on something
+    // unrelated.
+    function clearWhyOf(match) {
+      if (!$.whyBox) return;
+      if (whyLatest && match(whyLatest)) whyLatest = null;
+      if (whyFor && match(whyFor)) clearWhy();
     }
     async function saveWhy() {
       const text = $.why ? $.why.value.trim() : "";
@@ -1487,16 +1513,19 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       // the bout are one fact, so Undo takes the note with the vote it explains, the
       // question tag is already right, and the shared table needs no new schema.
       const saved = { ...v, why: text.slice(0, C.comments.max) };
-      clearWhy();
       if (handle && handle.set) {
-        try { await handle.set(saved); } catch (e) { say("Couldn't save that note."); return; }
+        // The box is emptied after the write lands, not before. Clearing first meant a
+        // dropped connection took the sentence with it: told it failed, nothing left to
+        // try again with, and no way to get the words back.
+        try { await handle.set(saved); } catch (e) { say("Couldn't save that note. It is still in the box."); return; }
       } else {
         // The local vote object is the one in `votes`, so amend it in place and rewrite.
         const mine = votes.find(x => x.id === v.id);
-        if (!mine) return;                     // undone while the note was being typed
+        if (!mine) { clearWhy(); return; }      // undone while the note was being typed
         mine.why = saved.why;
         saveLocal();
       }
+      clearWhy();
       renderStandings();
       say("Noted.");
     }
@@ -1551,11 +1580,14 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     }
     async function undo() {
       if (!myLast) return;
+      const was = myLast;
       if (myLast.local) { const id = myLast.local; votes = votes.filter(v => v.id !== id); saveLocal(); renderStandings(); say("Vote removed."); }
       else { try { await myLast.delete(); say("Vote removed."); } catch (e) { say("Couldn't remove that vote."); } }
-      // The note explains the vote, so it goes with it. Leaving the box open over a
-      // bout that no longer exists would file the sentence against nothing.
-      clearWhy();
+      // The note explains the vote, so it goes with it: leaving the box open over a
+      // bout that no longer exists would file the sentence against nothing. Only that
+      // bout, though. Vote, start writing, vote again, then undo the second one, and
+      // the box is holding a sentence about the first vote, which is still there.
+      clearWhyOf(e => (was.local ? e.v.id === was.local : e.handle === was));
       myLast = null; $.undo.hidden = true;
     }
 

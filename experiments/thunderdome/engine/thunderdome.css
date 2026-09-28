@@ -25,7 +25,7 @@
 /* A class selector outranks the UA's [hidden] rule, so anything the engine hides by
    property (the views, Undo, Replay) needs this or it stays on screen. Scoped to the two
    places the engine does it, so a config's own [hidden] handling is left alone. */
-.td-view[hidden],.td-vote button[hidden]{display:none!important}
+.td-view[hidden],.td-vote button[hidden],.td-why[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:20px 64px}
 .td-wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
 .td-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
