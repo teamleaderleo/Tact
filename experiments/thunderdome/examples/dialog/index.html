@@ -436,6 +436,54 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     return { rating, bouts, level, resamples, lo, hi, ahead };
   }
 
+  // Every fit costs a pass over the votes, so the resample count comes down as the vote
+  // list grows. It is the same trade in both directions: a short list needs the
+  // resamples because its interval is wide and ragged, a long list has a narrow
+  // interval that another 240 fits would not sharpen. 8 contenders and 2000 votes is
+  // about 50ms, against 250ms at a flat 300.
+  function resampleCount(m) {
+    return Math.max(40, Math.min(300, Math.round(120000 / Math.max(1, m))));
+  }
+
+  // What to hand `confidence` for a dome, given how many votes it has. `confidence:
+  // false` normalises to null, and the opt-out has to be spelled out rather than left
+  // to a default: no resamples and a bout floor nothing can clear, which is what makes
+  // the interval and the verdict come back empty.
+  //
+  // Up here rather than in the DOM layer because two callers now draw this table, and
+  // a second copy of these three numbers is a table that reads 1653 ±19 in the browser
+  // and 1653 ±20 on a terminal for the same votes. That happened.
+  function confidenceOpts(C, voteCount) {
+    return C.confidence
+      ? { ...C.confidence, resamples: resampleCount(voteCount) }
+      : { resamples: 0, minBouts: Infinity };
+  }
+
+  // The claim in words. "1612 ±48" next to "1564 ±51" is a puzzle the reader has to do
+  // arithmetic on; "ahead in 96% of resamples" is the answer to the question they opened
+  // the page with.
+  //
+  // The bar is the one-sided form of the interval's own level: a 90% interval leaves 5%
+  // in each tail, so the call it corresponds to is 95%. Derived rather than written
+  // down, so a dome that sets `confidence: {level}` gets a verdict that agrees with the
+  // number in the hover text instead of one fixed at somebody else's level. The
+  // comparison is against the raw share and only the display is rounded, or a share of
+  // .9457 would be called a lead by a page that also prints it as 95%.
+  //
+  // `name` maps an id to what to call it; callers that have no names can pass nothing.
+  function verdictFor(conf, order, name) {
+    const nm = name || (id => id);
+    if (!conf.ahead) {
+      return conf.bouts
+        ? `Not enough bouts to say who is ahead yet: ${conf.bouts} so far.`
+        : "No bouts yet, so the table is the prior and nothing else.";
+    }
+    const [a, b] = order, share = conf.ahead[a][b], pct = Math.round(share * 100);
+    return share >= 1 - (1 - conf.level) / 2
+      ? `${nm(a)} is ahead of ${nm(b)} in ${pct}% of resamples.`
+      : `${nm(a)} and ${nm(b)} are too close to call: ${pct}% of resamples put ${nm(a)} ahead.`;
+  }
+
   function records(ids, votes) {
     const rec = Object.fromEntries(ids.map(id => [id, { w: 0, l: 0, t: 0 }]));
     for (const v of votes) {
@@ -1139,15 +1187,6 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       render();
     }
 
-    // Every fit costs a pass over the votes, so the resample count comes down as the vote
-    // list grows. It is the same trade in both directions: a short list needs the
-    // resamples because its interval is wide and ragged, a long list has a narrow
-    // interval that another 240 fits would not sharpen. 8 contenders and 2000 votes is
-    // about 50ms here, against 250ms at a flat 300.
-    function resampleCount(m) {
-      return Math.max(40, Math.min(300, Math.round(120000 / Math.max(1, m))));
-    }
-
     // The bootstrap is a few hundred fits. That is tens of milliseconds, and it used to
     // run on every local vote, every undo and every vote that arrived over a shared
     // table, none of which the vote view can see: the cost landed on the same frame that
@@ -1162,9 +1201,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       if (!standingsDirty || view !== "results") return false;
       standingsDirty = false;
       const sorted = qVotes().sort((x, y) => x.t - y.t);
-      const conf = confidence(ids, sorted, C.confidence
-        ? { ...C.confidence, resamples: resampleCount(sorted.length) }
-        : { resamples: 0, minBouts: Infinity });
+      const conf = confidence(ids, sorted, confidenceOpts(C, sorted.length));
       const all = conf.rating;
       const perSplit = splitVals.map(s => {
         const list = sorted.filter(v => splitOf(C, resolveArena(C, v, true)) === s.id);
@@ -1218,22 +1255,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 
     // The top two, in words, because the rank column reads 1, 2, 3, 4 whether or not the
     // votes have earned it and this is the sentence that says whether to believe it.
-    //
-    // The bar is the one-sided form of the interval's own level: a 90% interval leaves
-    // 5% in each tail, so the call it corresponds to is 95%. Derived rather than written
-    // down, so a dome that sets `confidence: {level}` gets a callout that agrees with the
-    // number in the hover text instead of one fixed at somebody else's level.
+    // The rule itself lives in the core, because `results` on the command line prints
+    // this same sentence and the two must not be able to disagree.
     function calloutFor(conf, order) {
-      const name = id => (byId[id] ? byId[id].name : id);
-      if (!conf.ahead) {
-        return conf.bouts
-          ? `Not enough bouts to say who is ahead yet: ${conf.bouts} so far.`
-          : "No bouts yet, so the table is the prior and nothing else.";
-      }
-      const [a, b] = order, share = conf.ahead[a][b], pct = Math.round(share * 100);
-      return share >= 1 - (1 - conf.level) / 2
-        ? `${name(a)} is ahead of ${name(b)} in ${pct}% of resamples.`
-        : `${name(a)} and ${name(b)} are too close to call: ${pct}% of resamples put ${name(a)} ahead.`;
+      return verdictFor(conf, order, id => (byId[id] ? byId[id].name : id));
     }
 
     // Who is winning, without making you switch views to find out. A vote you cannot
@@ -1398,7 +1423,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     };
   }
 
-  const api = { start, elo, fit, confidence, records, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
+  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, records, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

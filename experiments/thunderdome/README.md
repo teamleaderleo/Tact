@@ -84,13 +84,15 @@ node cli.mjs new dialog --from-issue https://github.com/manaflow-ai/cmux/issues/
 ```
 
 Markdown images, `<img src>` and bare image URLs all count, in that order, and alt text
-becomes the contender name where there is any. Anything inside a code fence or backticks
-is left alone, so a body that quotes some markdown does not get voted on. The images are
-downloaded into the dome's `media/` folder, because a GitHub attachment URL on a private
-repo only loads for people already logged in and the point of the output is one file you
-can send someone; `--link-media` leaves them as URLs instead. The reference is recorded as
-`askedBy` so the page says where the question came from. Needs `gh` on the path and
-logged in.
+becomes the contender name where there is any. Anything inside a code fence, backticks or
+an HTML comment is left alone, so a body that quotes some markdown does not get voted on.
+The images are downloaded into the dome's `media/` folder, because a GitHub attachment URL
+on a private repo only loads for people already logged in and the point of the output is
+one file you can send someone; `--link-media` leaves them as URLs instead. Every image URL
+in the body gets fetched, so read a body you did not write before pointing the command at
+it. The reference is recorded as `askedBy`, which the lede links to and `--md` prints in
+its footer, so the answer can find its way back to the question. Needs `gh` on the path
+and logged in.
 
 For anything the flags do not cover, `--spec` takes the whole config as JSON, including
 `questions` for a multi-question dome:
@@ -102,7 +104,11 @@ node cli.mjs new density --spec - <<'JSON'
 JSON
 ```
 
-Media paths in a spec are resolved from where you ran the command, the same as `--media`.
+Media paths in a spec are resolved from where you ran the command, the same as `--media`,
+in both the `"a.png"` and the `{"src": "a.png"}` form. Keys the flags do not know about
+are written through to the config as they are, so `"confidence": {"level": 0.8}` in a spec
+is what the built page computes with. `--media` is for building the contenders out of
+files, so it cannot be combined with `--spec` or `--from-pr`.
 
 `--out <dir>` puts the dome somewhere other than `examples/<name>`, `--no-build` writes
 the config and stops, `--force` overwrites one that is already there, and `build <name>`
