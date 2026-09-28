@@ -222,7 +222,7 @@
     let votes = [];
     let votesCol = null, shared = false, myLast = null;
     let note = "", noteTimer = 0, stickyNote = "", lockNote = "";
-    let syncToken = 0, galleryIO = null, galleryKey = null, view = "vote";
+    let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, view = "vote";
 
     if (C.title) document.title = C.title;
 
@@ -257,9 +257,16 @@
     // The digits and space do the same job as the arrows, for a hand that never
     // leaves the number row. Only one key per button is printed; the rest are in
     // the title so the row of buttons stays a row of buttons.
-    $.voteA = h("button", { class: "primary", title: "Left wins (← or 1)", onclick: () => vote("a") }, "Left wins", h("kbd", { text: "←" }));
-    $.voteTie = h("button", { title: "Tie (↓, 3 or space)", onclick: () => vote("tie") }, "Tie", h("kbd", { text: "↓" }));
-    $.voteB = h("button", { class: "primary", title: "Right wins (→ or 2)", onclick: () => vote("b") }, "Right wins", h("kbd", { text: "→" }));
+    // Blur on the way out. A vote button that keeps focus turns the next space into
+    // "press me again", so space would mean tie until you used the mouse and a left win
+    // afterwards, silently and in the wrong direction. Nothing in the row wants focus
+    // once it has been clicked: the keys below take over from here.
+    // `detail` is 0 when the click came from Enter or space on a focused button, so a
+    // keyboard user keeps their place in the tab order and only the mouse gives up focus.
+    const click = w => e => { if (e.detail && e.currentTarget.blur) e.currentTarget.blur(); vote(w); };
+    $.voteA = h("button", { class: "primary", title: "Left wins (← or 1)", onclick: click("a") }, "Left wins", h("kbd", { text: "←" }));
+    $.voteTie = h("button", { title: "Tie (↓, 3 or space)", onclick: click("tie") }, "Tie", h("kbd", { text: "↓" }));
+    $.voteB = h("button", { class: "primary", title: "Right wins (→ or 2)", onclick: click("b") }, "Right wins", h("kbd", { text: "→" }));
     $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "Skip", h("kbd", { text: "S" }));
     $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "Undo my last vote", h("kbd", { text: "U" }));
     $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos(true) }, "Replay both", h("kbd", { text: "R" }));
@@ -311,7 +318,8 @@
       $.viewResults.hidden = view !== "results";
       $.tabVote.setAttribute("aria-current", view === "vote" ? "page" : "false");
       $.tabResults.setAttribute("aria-current", view === "results" ? "page" : "false");
-      tuneGalleryVideos();
+      if (!flushGallery()) tuneGalleryVideos();   // a rebuild tunes on its way out
+      tuneDuelVideos();
     }
     const viewFromHash = () => location.hash.slice(1).toLowerCase() === "results" ? "results" : "vote";
     window.addEventListener("hashchange", () => setView(viewFromHash()));
@@ -368,7 +376,12 @@
     function card(c, a, side) {
       const head = h("div", { class: "td-card-head" },
         h("div", {}, h("div", { class: "td-card-name", text: c.name }), c.note ? h("div", { class: "td-card-note", text: c.note }) : null),
-        side ? h("span", { class: "td-side-key", text: side === "a" ? "\u2190 Left" : "Right \u2192" }) : null);
+        // The arrow is a separate span because it stops being true below 760px, where the
+        // duel stacks and "left" is the card on top. CSS drops it at that width.
+        side ? h("span", { class: "td-side-key" },
+          side === "a" ? h("span", { class: "td-side-arrow", text: "\u2190 " }) : null,
+          side === "a" ? "Left" : "Right",
+          side === "b" ? h("span", { class: "td-side-arrow", text: " \u2192" }) : null) : null);
       let body, broken = false;
       try { body = renderBody(c, a); } catch (e) {
         broken = true;
@@ -385,7 +398,16 @@
       // would read its own contents out as the label.
       if (side && !broken && !C.interactiveCards) {
         el.classList.add("td-live");
-        el.addEventListener("click", () => vote(side));
+        el.addEventListener("click", e => {
+          // The card body is pointer-events:none, but the head is not: the name and the
+          // note are there to be read, and reading sometimes means dragging across them.
+          // A drag that ends with text selected was not a vote.
+          const sel = root.getSelection && root.getSelection();
+          if (sel && !sel.isCollapsed) return;
+          // Media controls are exempt from the blanket, so a click on one is a play, not a vote.
+          if (e.target.closest && e.target.closest("video,audio")) return;
+          vote(side);
+        });
       }
       // Gallery clips are played by the observer instead of autoplaying: a clip below
       // the fold, or sitting in the hidden results view, should not be decoding against
@@ -440,6 +462,26 @@
 
     // The duel is the comparison that has to stay smooth. Gallery clips below the fold,
     // or in the results view while you are voting, are competing with it for nothing.
+    // The duel's own clips are as hidden as the gallery's once you switch to the
+    // standings, and a paused <video> that nobody can see is not costing anything.
+    function tuneDuelVideos() {
+      if (view === "vote") { syncDuelVideos(); return; }
+      for (const v of $.duel.querySelectorAll("video")) v.pause();
+    }
+
+    // Built only when the results view needs it. With "New arena each duel" on, the
+    // arena changes every vote, so keying the gallery on the arena alone still tore down
+    // and re-preloaded every clip in it once per duel, on the same frame as the new duel.
+    function flushGallery() {
+      if (!galleryDirty) return false;
+      galleryDirty = false;
+      const a = arena();
+      galleryKey = JSON.stringify(a.ids);
+      $.gallery.replaceChildren(...C.contenders.map(c => card(c, a)));
+      tuneGalleryVideos();
+      return true;
+    }
+
     function tuneGalleryVideos() {
       if (galleryIO) { galleryIO.disconnect(); galleryIO = null; }
       const vids = [...$.gallery.querySelectorAll("video")];
@@ -471,16 +513,13 @@
       const a = arena();
       if (C.dims.length) syncControls(a);
       $.duel.replaceChildren(...(duel ? [card(byId[duel.a], a, "a"), card(byId[duel.b], a, "b")] : []));
-      // The gallery only depends on the arena, so it is rebuilt when the arena changes
-      // and not once per vote. Tearing down N <video> elements every duel put the whole
-      // grid back at the top of its loop and spent decode time the duel needed.
+      // The gallery only depends on the arena, so a vote that does not move the arena
+      // leaves it alone entirely, and one that does defers the rebuild to the view that
+      // can actually see it.
       const gk = JSON.stringify(a.ids);
-      if (gk !== galleryKey) {
-        galleryKey = gk;
-        $.gallery.replaceChildren(...C.contenders.map(c => card(c, a)));
-      }
-      syncDuelVideos();
-      tuneGalleryVideos();
+      if (gk !== galleryKey) { galleryKey = gk; galleryDirty = true; }
+      if (view === "results") flushGallery();
+      tuneDuelVideos();
       refreshVoteLock();
     }
 
@@ -559,8 +598,12 @@
       $.tabResults.textContent = votes.length ? `Results (${votes.length})` : "Results";
       $.status.textContent = lockNote || note || `${storageLine()} ${leaderLine()}`.trim();
     }
+    // A sticky message is always the correction to whatever transient is on screen: it
+    // is said when a vote was rejected, right after that vote said it was saved. Clearing
+    // the transient is the point, otherwise the page spends two seconds claiming a vote
+    // landed that did not.
     function say(msg, sticky) {
-      if (sticky) { stickyNote = msg; renderStatus(); return; }
+      if (sticky) { stickyNote = msg; note = ""; clearTimeout(noteTimer); renderStatus(); return; }
       note = msg; clearTimeout(noteTimer); renderStatus();
       noteTimer = setTimeout(() => { note = ""; renderStatus(); }, 2500);
     }
@@ -599,9 +642,16 @@
     }
 
     document.addEventListener("keydown", e => {
+      // The duel is hidden on the results view, and a vote on a pair you cannot see is
+      // bad data. It also means space is the page's own scroll key there, which is what
+      // anyone reading a table of standings expects it to be.
+      if (view !== "vote") return;
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
       const near = sel => e.target.closest && e.target.closest(sel);
       if (near("select,input,textarea,[contenteditable]")) return;   // typing always beats voting
+      // A focused media player owns its own keys: space plays, arrows seek. Under
+      // prefers-reduced-motion the controls are the only way to watch a clip at all.
+      if (near("video,audio")) return;
       const k = e.key;
       // Space and Enter belong to whatever is focused. The arrows and digits do not:
       // clicking "Left wins" once leaves that button focused, and the keyboard has to

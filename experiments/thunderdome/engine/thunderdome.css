@@ -23,8 +23,9 @@
 }
 *{box-sizing:border-box}
 /* A class selector outranks the UA's [hidden] rule, so anything the engine hides by
-   property (the views, Undo, Replay) needs this or it stays on screen. */
-[hidden]{display:none!important}
+   property (the views, Undo, Replay) needs this or it stays on screen. Scoped to the two
+   places the engine does it, so a config's own [hidden] handling is left alone. */
+.td-view[hidden],.td-vote button[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:20px 64px}
 .td-wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
 .td-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
@@ -61,6 +62,10 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 /* Clicks land on the card, not on whatever the mock happens to contain. Configs whose
    contenders are meant to be poked at set interactiveCards and keep their own events. */
 .td-card.td-live .td-card-body{pointer-events:none}
+/* Except the player's own controls. Under prefers-reduced-motion nothing autoplays and
+   these are the only way to watch a clip at all, so swallowing the play button would
+   leave the duel unwatchable and turn the attempt into a vote. */
+.td-card.td-live .td-card-body video[controls],.td-card.td-live .td-card-body audio[controls]{pointer-events:auto}
 .td-card-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .td-card-name{font-weight:600;font-size:15px}
 .td-card-note{font-size:12.5px;color:var(--muted)}
@@ -104,5 +109,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 @media (max-width:760px){
   .td-duel,.td-two{grid-template-columns:1fr}
   .td-arena-tag{margin-left:0}
+  /* One column, so "left" is the card on top and the arrow points at nothing. */
+  .td-side-arrow{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}

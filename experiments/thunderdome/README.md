@@ -64,9 +64,9 @@ The page opens on the duel. Click either card to vote for it, or use the keys:
 | `U` | undo your last vote |
 | `R` | replay both clips |
 
-The whole card is the button, so your cursor never leaves the thing you are judging. Keys keep working after you click one of the buttons below the cards. Space and Enter still belong to whatever is focused, so a focused button does what a focused button should.
+The whole card is the button, so your cursor never leaves the thing you are judging. Dragging to select a contender's name is not a vote, and a clip's own controls play it rather than voting for it. Clicking a vote button hands focus back, so every key in the table keeps meaning what the table says it means.
 
-Two views, `#vote` and `#results`, switched by the tabs in the header. No hash opens the duel with nothing above it to scroll past, and the Results tab carries the vote count. `#results` in a link opens the table directly. The arena controls are folded into a summary line that shows the current context; open it to pin a specific one. Changing a select turns off "New arena each duel".
+Two views, `#vote` and `#results`, switched by the tabs in the header. No hash opens the duel, with only the title and the lede above it, and the Results tab carries the vote count. `#results` in a link opens the table directly. The keys above are the vote view's; on the results view they are the browser's, so space scrolls the standings. The arena controls are folded into a summary line that shows the current context; open it to pin a specific one. Changing a select turns off "New arena each duel".
 
 Under the cards a line names the current leader once there are three votes in, so you can see your vote land without switching views.
 

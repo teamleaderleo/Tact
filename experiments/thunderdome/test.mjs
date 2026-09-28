@@ -50,6 +50,12 @@ test("normalize rejects reserved dimension ids and duplicate contenders", () => 
   assert.equal(a.theme, null); assert.equal(a.ic, true);
 });
 
+test("cards are click-to-vote unless the config opts out", () => {
+  const base = { id: "x", contenders: [{ id: "p" }, { id: "q" }] };
+  assert.equal(T.normalize(base).interactiveCards, false);
+  assert.equal(T.normalize({ ...base, interactiveCards: true }).interactiveCards, true);
+});
+
 test("mediaSpec reads the kind off the extension", () => {
   assert.equal(T.mediaSpec("shots/a.png").kind, "img");
   assert.equal(T.mediaSpec("shots/a.GIF").kind, "img");
