@@ -362,6 +362,50 @@ test("hashFor round-trips through parseHash", () => {
   }
 });
 
+test("a note hangs off the candidate it was written about", () => {
+  const votes = [
+    { id: "v1", a: "a1", b: "b2", w: "a", t: 10, why: "  crisper edge  " },
+    { id: "v2", a: "b2", b: "c3", w: "b", t: 20, why: "reads faster" },
+    { id: "v3", a: "a1", b: "c3", w: "tie", t: 30, why: "same to me" },
+    { id: "v4", a: "a1", b: "b2", w: "a", t: 40 },                        // no note
+    { id: "v5", a: "a1", b: "b2", w: "a", t: 50, why: "   " },            // blank note
+    { id: "v6", a: "a1", b: "gone", w: "a", t: 60, why: "not a contender" },
+    { id: "v7", a: "a1", b: "a1", w: "a", t: 70, why: "itself" },
+  ];
+  const notes = T.comments(ids, votes);
+  // The winner gets the note, and a tie puts it on both. Nobody carries a note about
+  // the duel they lost: a note is the reason for the pick, not a caption on the card.
+  assert.deepEqual(notes.a1.map(n => n.text), ["same to me", "crisper edge"]);
+  assert.deepEqual(notes.b2.map(n => n.text), []);
+  assert.deepEqual(notes.c3.map(n => n.text), ["same to me", "reads faster"]);
+  // Newest first, trimmed, and each note remembers what it was up against.
+  assert.equal(notes.a1[0].tie, true);
+  assert.equal(notes.a1[1].vs, "b2");
+  assert.equal(notes.a1[1].vote, "v1");
+  assert.deepEqual(Object.keys(notes).sort(), ["a1", "b2", "c3"]);
+});
+
+test("notes from the same millisecond keep a fixed order", () => {
+  const same = t => [
+    { id: "b", a: "a1", b: "b2", w: "a", t, why: "second" },
+    { id: "a", a: "a1", b: "c3", w: "a", t, why: "first" },
+  ];
+  assert.deepEqual(T.comments(ids, same(5)).a1.map(n => n.text), ["first", "second"]);
+  // Same votes, other order in: an import or a seeded dome must not shuffle between renders.
+  assert.deepEqual(T.comments(ids, same(5).reverse()).a1.map(n => n.text), ["first", "second"]);
+});
+
+test("comments are on by default and can be turned off", () => {
+  const base = { id: "x", contenders: [{ id: "p" }, { id: "q" }] };
+  assert.deepEqual(T.normalizeDome(base).comments, { max: 140 });
+  assert.equal(T.normalizeDome({ ...base, comments: false }).comments, null);
+  assert.equal(T.normalizeDome({ ...base, comments: { max: 40 } }).comments.max, 40);
+  // A question cannot turn notes on or off for itself: the box is the dome's.
+  assert.throws(() => T.normalizeDome({
+    id: "x", questions: [{ id: "one", contenders: base.contenders, comments: false }],
+  }), /dome-level/);
+});
+
 test("cards are click-to-vote unless the config opts out", () => {
   const base = { id: "x", contenders: [{ id: "p" }, { id: "q" }] };
   assert.equal(T.normalize(base).interactiveCards, false);

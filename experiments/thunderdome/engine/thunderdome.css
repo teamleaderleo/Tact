@@ -107,6 +107,24 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-vote button.primary{border-color:var(--ink)}
 .td-vote button.quiet{border-color:transparent;color:var(--muted)}
 .td-vote kbd{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:6px}
+/* The note box. Quiet by design: it sits under the vote row so it never moves the
+   buttons, and it is the last thing on the page to ask for attention. */
+.td-why{display:flex;gap:8px;justify-content:center;align-items:center}
+.td-why-input{font:inherit;font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:7px 11px;width:min(420px,100%)}
+.td-why-input::placeholder{color:var(--faint)}
+.td-why-input:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-color:var(--rule-strong)}
+.td-why button{font:inherit;font-size:13px;color:var(--muted);background:none;border:1px solid transparent;border-radius:8px;padding:7px 10px;cursor:pointer}
+.td-why button:hover{color:var(--ink);background:var(--hover)}
+.td-why button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.td-why kbd{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:6px}
+.td-why-on{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}
+/* Notes under a gallery card. The rule on the left is what makes a stack of them read
+   as quotation rather than as more of the card's own copy. */
+.td-whys{display:grid;gap:7px;margin:12px 0 0;padding:0;list-style:none}
+.td-whys li{font-size:12.5px;line-height:1.45;color:var(--muted);border-left:2px solid var(--rule);padding-left:9px}
+.td-why-text{color:var(--ink);display:block}
+.td-why-vs{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.td-feed-why{font-style:italic;display:block}
 .td-status{font-size:12.5px;color:var(--muted);text-align:center;min-height:1.5em}
 .td-two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:start}
 .td-table-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--rule);border-radius:12px}
@@ -128,7 +146,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-callout{margin:0;font-size:13px;color:var(--ink)}
 .td-lead{color:var(--win);font-weight:600}
 .td-feed{display:grid;gap:6px;font-size:13px;color:var(--muted);margin:0;padding:0;list-style:none}
-.td-feed li{display:flex;gap:8px;flex-wrap:wrap}
+.td-feed li{display:grid;gap:3px}
+.td-feed-line{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
 .td-feed b{color:var(--ink);font-weight:500}
 .td-feed .when{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-left:auto}
 .td-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:12px}
