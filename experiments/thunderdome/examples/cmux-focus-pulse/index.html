@@ -559,6 +559,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       ...splitVals.map(s => h("th", { class: "num", text: s.label })),
       h("th", { class: "num", text: "W–L–T" }));
     $.standings = h("tbody");
+    // The same table on the vote view, so each vote shows up in the Elo right away.
+    $.liveStandings = h("tbody");
     $.feed = h("ul", { class: "td-feed" });
     $.gallery = h("div", { class: "td-gallery" });
 
@@ -589,7 +591,9 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       C.dims.length ? $.arenaBox : null,
       $.duel,
       h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.replay, $.undo),
-      $.status);
+      $.status,
+      h("section", { class: "td-section" }, h("h2", { text: "Elo" }),
+        h("div", { class: "td-table-wrap" }, h("table", {}, h("thead", {}, $.liveHead = headRow.cloneNode(true)), $.liveStandings))));
 
     $.viewResults = h("section", { class: "td-view", hidden: true },
       h("div", { class: "td-two" },
@@ -618,6 +622,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         $.qTitle.hidden = !$.qTitle.textContent;
       }
       $.headName.textContent = Q.contenderLabel;
+      $.liveHead.children[1].textContent = Q.contenderLabel;
       $.galleryHead.textContent = Q.galleryTitle;
       setDocTitle();
     }
@@ -920,6 +925,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
           h("td", { class: "num", text: `${rec[id].w}–${rec[id].l}–${rec[id].t}` }));
       });
       $.standings.replaceChildren(...rows);
+      $.liveStandings.replaceChildren(...rows.map(row => row.cloneNode(true)));
 
       const recent = sorted.slice().reverse().slice(0, C.recent);
       $.feed.replaceChildren(...(recent.length ? recent.map(v => {

@@ -718,7 +718,7 @@
     let votes = [];
     let votesCol = null, shared = false, myLast = null;
     let note = "", noteTimer = 0, stickyNote = "", lockNote = "";
-    let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, standingsDirty = true, view = "vote";
+    let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, standingsDirty = true, liveTimer = null, view = "vote";
     // The vote the comment box is currently writing about, with the handle needed to
     // amend it. Not `myLast`: that one moves to every new vote, and a sentence you are
     // halfway through typing is about the pair you were looking at when you started it.
@@ -820,6 +820,8 @@
     // rewrites itself under the reader whenever a vote lands or arrives over a shared
     // table, and it is the page's headline claim.
     $.callout = C.confidence ? h("p", { class: "td-callout", role: "status" }) : null;
+    // The same table on the vote view, so each vote shows up in the Elo right away.
+    $.liveStandings = h("tbody");
     $.feed = h("ul", { class: "td-feed" });
     $.gallery = h("div", { class: "td-gallery" });
 
@@ -846,17 +848,26 @@
     $.arenaBox = h("details", { class: "td-arena" },
       h("summary", {}, h("span", { class: "td-arena-label", text: "Arena" }), $.tag), controls);
 
+    // The table is usually wanted somewhere else: the issue that asked, a message, a
+    // commit. One button, the same markdown the command line prints, so the answer gets
+    // back to the question without anyone retyping four ratings. The vote view's table
+    // gets a twin of it.
+    $.copy = h("button", { class: "td-copy", type: "button", onclick: () => copyMarkdown($.copy) },
+      "Copy as markdown");
+    $.copyLive = h("button", { class: "td-copy", type: "button", onclick: () => copyMarkdown($.copyLive) },
+      "Copy as markdown");
+    $.liveCallout = C.confidence ? h("p", { class: "td-callout" }) : null;
+
     $.viewVote = h("section", { class: "td-view" },
       C.dims.length ? $.arenaBox : null,
       $.duel,
       h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.replay, $.undo),
-      $.whyBox || null);
-
-    // The table is usually wanted somewhere else: the issue that asked, a message, a
-    // commit. One button, the same markdown the command line prints, so the answer gets
-    // back to the question without anyone retyping four ratings.
-    $.copy = h("button", { class: "td-copy", type: "button", onclick: () => copyMarkdown() },
-      "Copy as markdown");
+      $.whyBox || null,
+      // The standings again, with their own copy button: someone voting alone reads the
+      // table as they go and should not have to leave the duel to paste it somewhere.
+      h("section", { class: "td-section" },
+        h("div", { class: "td-section-head" }, h("h2", { text: "Elo" }), $.copyLive),
+        h("div", { class: "td-table-wrap" }, h("table", {}, h("thead", {}, $.liveHead = headRow.cloneNode(true)), $.liveStandings)), $.liveCallout));
 
     $.viewResults = h("section", { class: "td-view", hidden: true },
       h("div", { class: "td-two" },
@@ -891,6 +902,7 @@
         $.qTitle.hidden = !$.qTitle.textContent;
       }
       $.headName.textContent = Q.contenderLabel;
+      $.liveHead.children[1].textContent = Q.contenderLabel;
       $.galleryHead.textContent = Q.galleryTitle;
       setDocTitle();
     }
@@ -943,8 +955,7 @@
       // arena across the move: re-rolling it would mean you cannot put two questions side
       // by side in the same context, and Back would land somewhere you have never been.
       if (moved || booting) { renderQuestion(); nextDuel(moved); renderStandings(); }
-      // Arriving at the results view is what pays for the table, so votes cast on the
-      // vote view show up the moment you go looking for them and not before.
+      // Arriving at either view brings the table up to date.
       flushStandings();
       // Only tune if nothing on the way through already rebuilt the gallery and tuned it.
       if (galleryBuilds === builds && !flushGallery()) tuneGalleryVideos();
@@ -1202,8 +1213,9 @@
     // The bootstrap is a few hundred fits. That is tens of milliseconds, and it used to
     // run on every local vote, every undo and every vote that arrived over a shared
     // table, none of which the vote view can see: the cost landed on the same frame that
-    // was trying to paint the card you just picked. Mark the table dirty and build it
-    // when the results view asks for it, the way the gallery already does.
+    // was trying to paint the card you just picked. Mark the table dirty; the results
+    // view builds it when it opens, and the vote view's copy of it is built a beat after
+    // the vote, once the next card has painted.
     // Called on every vote and on every shared snapshot, which makes it the one place
     // that sees a note arrive, whether it was written here or by somebody else.
     function renderStandings() {
@@ -1212,7 +1224,8 @@
         const gk = galleryStamp();
         if (gk !== galleryKey) { galleryKey = gk; galleryDirty = true; }
       }
-      if (!flushStandings()) renderStatus();
+      if (view === "results") { if (!flushStandings()) renderStatus(); }
+      else { renderStatus(); clearTimeout(liveTimer); liveTimer = setTimeout(flushStandings, 60); }
       if (galleryDirty) flushGallery();
     }
 
@@ -1234,15 +1247,13 @@
     // The status line lives at the foot of the page, which a screen reader announces and
     // a reader looking at the button does not see: on the results view the table and the
     // gallery are between them. So the button says it too, where the eye already is.
-    let copyTimer = null;
-    function copySaid(label) {
-      if (!$.copy) return;
-      $.copy.textContent = label;
-      clearTimeout(copyTimer);
-      copyTimer = setTimeout(() => { $.copy.textContent = "Copy as markdown"; }, 2000);
+    function copySaid(btn, label) {
+      btn.textContent = label;
+      clearTimeout(btn.copyTimer);
+      btn.copyTimer = setTimeout(() => { btn.textContent = "Copy as markdown"; }, 2000);
     }
 
-    function copyMarkdown() {
+    function copyMarkdown(btn) {
       const text = markdownNow();
       const fallback = () => {
         // Whatever the reader had highlighted in the standings goes back afterwards, and
@@ -1260,18 +1271,19 @@
         try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
         ta.remove();
         if (sel) { sel.removeAllRanges(); for (const r of had) sel.addRange(r); }
-        if ($.copy) $.copy.focus();
-        copySaid(ok ? "Copied" : "Copy failed");
+        btn.focus();
+        copySaid(btn, ok ? "Copied" : "Copy failed");
         say(ok ? "Copied the table as markdown." : "Could not reach the clipboard. Press copy again with the console open to see why.", !ok);
       };
-      const done = () => { copySaid("Copied"); say("Copied the table as markdown."); };
+      const done = () => { copySaid(btn, "Copied"); say("Copied the table as markdown."); };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(done, fallback);
       } else fallback();
     }
 
     function flushStandings() {
-      if (!standingsDirty || view !== "results") return false;
+      // Both views carry the table now, so a vote pays for it on either one.
+      if (!standingsDirty) return false;
       standingsDirty = false;
       const sorted = qVotes().sort((x, y) => x.t - y.t);
       const conf = confidence(ids, sorted, confidenceOpts(C, sorted.length));
@@ -1314,7 +1326,8 @@
           h("td", { class: "num", text: `${rec[id].w}–${rec[id].l}–${rec[id].t}` }));
       });
       $.standings.replaceChildren(...rows);
-      if ($.callout) $.callout.textContent = calloutFor(conf, order);
+      if ($.callout) $.callout.textContent = $.liveCallout.textContent = calloutFor(conf, order);
+      $.liveStandings.replaceChildren(...rows.map(row => row.cloneNode(true)));
 
       const recent = sorted.slice().reverse().slice(0, C.recent);
       $.feed.replaceChildren(...(recent.length ? recent.map(v => {
