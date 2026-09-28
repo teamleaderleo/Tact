@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sidebar Organization Thunderdome</title>
-<meta name="description" content="Six ways to organize the same 24 cmux workspaces: local agents, agents on two ssh hosts and a Cloud VM, and plain terminals. Pick the sidebar you would rather work from all day. The arena flips between a busy afternoon (several agents need you) and a quiet evening. Glyphs: amber = needs input, grey ">
+<meta name="description" content="Six ways to organize the same 24 cmux workspaces: local agents, agents on two ssh hosts and a Cloud VM, and plain terminals. Pick the sidebar you would rather work from all day. The arena flips between a busy afternoon (several agents need you) and a quiet evening. Glyphs are the ones cmux draws: am">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -696,7 +696,6 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 <script>
 // cmux sidebar organization: six ways to lay out the same ~24 workspaces.
 // Arena: sidebar theme x moment (busy afternoon vs quiet evening). Split: light vs dark.
-// Design notes: manaflow-ai/cmuxterm-hq#871.
 
 const THEMES = [
   { id: "mac-light", name: "macOS Light", bg: "#E6E6E8", fg: [0, 0, 0], fgA: .85, secA: .5, dark: false },
@@ -711,7 +710,7 @@ const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 // Hosts: "local" is this Mac; "devbox" and "gpu-01" are cmux ssh targets; "cloud" is a Cloud VM.
 const W = [
   ["sidebar groups", "devbox", "claude", "cmux", "Sidebar", "rn", 4],
-  ["compact status", "local", "claude", "cmux", "Sidebar", "ui", 12],
+  ["compact status", "local", "claude", "cmux", "Sidebar", "uu", 12],
   ["row density", "local", "claude", "cmux", "Sidebar", "ri", 30],
   ["ssh failure", "devbox", "claude", "cmux", null, "ni", 2],
   ["keymap chooser", "devbox", "codex", "cmux", null, "ri", 8],
@@ -719,15 +718,15 @@ const W = [
   ["merge train", "devbox", "claude", "cmux", "Release", "ri", 1],
   ["release notes", "local", "codex", "cmux", "Release", "ii", 240],
   ["nightly smoke", "cloud", null, "cmux", "Release", "tt", 400],
-  ["thunderdome", "devbox", "claude", "tact", null, "ui", 6],
-  ["atelier notes", "local", "claude", "tact", null, "ii", 900],
-  ["glaeda queue", "devbox", "codex", "glaeda", null, "ri", 3],
-  ["gh daemon", "local", "claude", "glaeda", null, "ni", 20],
-  ["pool routing", "local", "claude", "subrouter", null, "ri", 5],
-  ["eviction rule", "devbox", "claude", "hq", null, "ri", 9],
-  ["attention feed", "devbox", "claude", "hq", null, "ui", 45],
-  ["cloud vision", "devbox", "codex", "hq", null, "ii", 130],
-  ["train eval", "gpu-01", "claude", "evals", null, "ri", 11],
+  ["vote page", "devbox", "claude", "design", null, "uu", 6],
+  ["design notes", "local", "claude", "design", null, "ii", 900],
+  ["job queue", "devbox", "codex", "queue", null, "rr", 3],
+  ["ci daemon", "local", "claude", "queue", null, "ni", 20],
+  ["pool routing", "local", "claude", "proxy", null, "ri", 5],
+  ["eviction rule", "devbox", "claude", "ops", null, "ri", 9],
+  ["attention feed", "devbox", "claude", "ops", null, "uu", 45],
+  ["cloud vision", "devbox", "codex", "ops", null, "ii", 130],
+  ["train eval", "gpu-01", "claude", "evals", null, "rr", 11],
   ["gpu shell", "gpu-01", null, "~", null, "tt", 60],
   ["tail logs", "devbox", null, "~", null, "tt", 25],
   ["dotfiles", "local", null, "dotfiles", null, "tt", 2000],
@@ -771,7 +770,7 @@ function row(w, ctx, opts = {}) {
   const st = statusOf(w, m);
   const r = h("div", { class: "r" + (opts.indent === 2 ? " in2" : opts.indent ? " in" : "") });
   r.append(glyph(st, th, h));
-  if (opts.groupTag && w.group) r.append(h("span", { class: "tag", style: `background:${GROUP_COLOR[w.group]}` }));
+  if (opts.groupTag) r.append(h("span", { class: "tag", style: w.group ? `background:${GROUP_COLOR[w.group]}` : "" }));
   r.append(h("span", { class: "nm", style: `color:${fg};font-weight:${st === "u" || st === "n" ? 650 : 500}`, text: w.t }));
   const trail = opts.trail ? opts.trail(w) : (w.host !== "local" ? HOST_NAME[w.host] : "");
   if (trail) r.append(h("span", { class: "tr", style: `color:${sec}`, text: trail }));
@@ -812,7 +811,7 @@ function sections(ws, keyOf, order, ctx, labelOf, opts = {}) {
   const out = [];
   for (const k of keys) {
     const items = buckets.get(k);
-    out.push(header(labelOf(k), ctx, { count: items.length, rollup: opts.rollup ? loudest(items) : null, icon: opts.icon && opts.icon(k), color: opts.color && opts.color(k) }));
+    out.push(header(labelOf(k), ctx, { strong: true, count: items.length, rollup: opts.rollup === false ? null : loudest(items), icon: opts.icon && opts.icon(k), color: opts.color && opts.color(k) }));
     for (const w of items) out.push(row(w, ctx, { indent: true, ...(opts.row || {}) }));
   }
   return out;
@@ -831,7 +830,7 @@ const LAYOUTS = [
         if (w.group && !seen.has(w.group)) {
           seen.add(w.group);
           const members = ws.filter(x => x.group === w.group);
-          out.push(header(w.group, ctx, { color: GROUP_COLOR[w.group], strong: true, count: members.length }));
+          out.push(header(w.group, ctx, { color: GROUP_COLOR[w.group], strong: true, count: members.length, rollup: loudest(members) }));
           for (const x of members) out.push(row(x, ctx, { indent: true }));
         } else if (!w.group) out.push(row(w, ctx));
       }
@@ -850,11 +849,10 @@ const LAYOUTS = [
 
   { id: "a-status", name: "A: Group by status", note: "Same switcher; sections by agent state, loudest first",
     body: (ws, ctx) => [switcher("Status", ctx), ...sections(ws.slice().sort(byRecent), w => w.cur, k => STATUS_META[k].rank, ctx, k => STATUS_META[k].name,
-      { row: { groupTag: true } })] },
+      { rollup: false, row: { groupTag: true } })] },
 
-  { id: "b-smart", name: "B: Smart + manual groups", note: "Rule groups live beside manual ones; manual membership wins",
+  { id: "b-smart", name: "B: Smart + manual groups", note: "Rule groups beside manual ones: Needs input first, then manual groups, then host rules",
     body: (ws, ctx) => {
-      const { th } = ctx;
       const out = [];
       const needs = ws.filter(w => w.cur === "n");
       out.push(header("Needs input", ctx, { icon: "⚙", color: AMBER, strong: true, count: needs.length }));
@@ -862,13 +860,13 @@ const LAYOUTS = [
       const rest = ws.filter(w => w.cur !== "n");
       for (const g of ["Sidebar", "Release"]) {
         const m = rest.filter(w => w.group === g);
-        out.push(header(g, ctx, { color: GROUP_COLOR[g], strong: true, count: m.length }));
+        out.push(header(g, ctx, { color: GROUP_COLOR[g], strong: true, count: m.length, rollup: m.length ? loudest(m) : null }));
         for (const w of m) out.push(row(w, ctx, { indent: true }));
       }
       const free = rest.filter(w => !w.group);
       for (const host of ["devbox", "gpu-01"]) {
         const m = free.filter(w => w.host === host);
-        out.push(header(`host = ${host}`, ctx, { icon: "⚙", count: m.length, rollup: m.length ? loudest(m) : null }));
+        out.push(header(`On ${host}`, ctx, { strong: true, icon: "⚙", count: m.length, rollup: m.length ? loudest(m) : null }));
         for (const w of m) out.push(row(w, ctx, { indent: true, trail: () => "" }));
       }
       const other = free.filter(w => w.host !== "devbox" && w.host !== "gpu-01");
@@ -883,7 +881,7 @@ const LAYOUTS = [
       const out = [];
       const hot = ws.filter(w => w.cur === "n" || w.cur === "u").sort((a, b) => STATUS_META[a.cur].rank - STATUS_META[b.cur].rank);
       const strip = h("div", { class: "strip", style: `background:${rgba(th.fg, th.dark ? .07 : .05)}` });
-      strip.append(h("div", { class: "strip-l", style: `color:${rgba(th.fg, th.secA)}`, text: hot.length ? `Attention · ${hot.length}` : "Attention · all clear" }));
+      strip.append(h("div", { class: "strip-l", style: `color:${rgba(th.fg, th.fgA)}`, text: hot.length ? `Attention · ${hot.length}` : "Attention · all clear" }));
       for (const w of hot) strip.append(row(w, ctx));
       out.push(strip);
       for (const host of HOST_ORDER) {
@@ -895,7 +893,7 @@ const LAYOUTS = [
           if (w.group && !seen.has(w.group)) {
             seen.add(w.group);
             const members = lane.filter(x => x.group === w.group);
-            const sub = header(w.group, ctx, { color: GROUP_COLOR[w.group], count: members.length });
+            const sub = header(w.group, ctx, { color: GROUP_COLOR[w.group], count: members.length, rollup: loudest(members) });
             sub.classList.add("in");
             out.push(sub);
             for (const x of members) out.push(row(x, ctx, { indent: 2, trail: () => "" }));
@@ -913,7 +911,7 @@ function h_sep(ctx) {
 Thunderdome.start({
   id: "cmux-sidebar-groups",
   title: "Sidebar Organization Thunderdome",
-  lede: "Six ways to organize the same 24 cmux workspaces: local agents, agents on two ssh hosts and a Cloud VM, and plain terminals. Pick the sidebar you would rather work from all day. The arena flips between a busy afternoon (several agents need you) and a quiet evening. Glyphs: amber = needs input, grey = running, blue = done and unseen, ✓ = idle. Design notes: <code>manaflow-ai/cmuxterm-hq#871</code>.",
+  lede: "Six ways to organize the same 24 cmux workspaces: local agents, agents on two ssh hosts and a Cloud VM, and plain terminals. Pick the sidebar you would rather work from all day. The arena flips between a busy afternoon (several agents need you) and a quiet evening. Glyphs are the ones cmux draws: amber = needs input, grey = running, blue = done and unseen, ✓ = idle. A colored bar is a manual group; ⚙ marks a rule-based smart group.",
   contenderLabel: "Layout",
   contenders: LAYOUTS,
   arena: {
