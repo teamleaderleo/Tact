@@ -1,0 +1,46 @@
+{
+  "kind": "prior_audit_log_observation",
+  "run_id": 35509887189,
+  "job_id": 106076170670,
+  "url": "https://github.com/manaflow-ai/cmux/actions/runs/35509887189/job/106076170670",
+  "audit_url": "https://github.com/manaflow-ai/cmux/issues/13095#issuecomment-5750614492",
+  "raw_sha256": "d84715a33ba2a9e3c9a21db9cd31c830e5ef3b63814bc23a5ba5286d03abcdb3",
+  "raw_download_time": null,
+  "job_conclusion": "failure",
+  "bounded_log_excerpt": "2026-09-20T12:14:34.8247220Z Cache not found for input keys: ghosttykit-sentry-off-v1-c5c31ce819131ebb2deb4c4d4a75beffe4340c8d\n2026-09-20T12:14:55.9220810Z r2-cache: restored spm-5275da5c1ef1d746e717a7928184c0ee61f768267c1c9d35e5e7315f59adb474 for prefix spm-\n2026-09-20T12:16:02.4257740Z r2-cache: restored xcode-compilation-test-macOS-ARM64-c4728a44cf18adc521070ca61d009904-f48ef36235584fdf41990995101dc54190d46622 for prefix xcode-compilation-test-macOS-ARM64-c4728a44cf18adc521070ca61d009904-",
+  "parsed": {
+    "requested_cache_backends": [
+      "r2"
+    ],
+    "suite_tokens": [],
+    "routing_tokens": [],
+    "cache_events": [
+      {
+        "backend": "actions_cache_backend_unverified",
+        "result": "miss"
+      },
+      {
+        "backend": "r2",
+        "result": "prefix",
+        "key": "spm-5275da5c1ef1d746e717a7928184c0ee61f768267c1c9d35e5e7315f59adb474",
+        "prefix": "spm-"
+      },
+      {
+        "backend": "r2",
+        "result": "prefix",
+        "key": "xcode-compilation-test-macOS-ARM64-c4728a44cf18adc521070ca61d009904-f48ef36235584fdf41990995101dc54190d46622",
+        "prefix": "xcode-compilation-test-macOS-ARM64-c4728a44cf18adc521070ca61d009904-"
+      }
+    ],
+    "test_summaries": [],
+    "producer_provenance": null,
+    "seed_age_seconds": null,
+    "test_summary_note": "May contain nested/duplicate summaries; never sum as unique tests."
+  },
+  "scope": "Separate earlier failed-job observation, excluded from primary totals and cache hit-rate estimates.",
+  "source": {
+    "head_sha": "51732aaef17f9e30b5ede32af07477d82be219c1",
+    "checkout_sha": null,
+    "workflow_execution_sha": null
+  }
+}

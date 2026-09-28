@@ -1,0 +1,10 @@
+[
+ {"case":"requested backend absent from action", "requested":"r2", "supported":false, "log":"##[group]Run cache action\n  backend: r2\n##[endgroup]\nCache not found for input keys: spm-example", "results":["miss"], "backend":"actions_cache_backend_unverified"},
+ {"case":"supported backend empty store", "supported":true,"log":"r2-cache: no entry for spm-empty", "results":["miss"], "backend":"r2"},
+ {"case":"pointer present archive corrupt", "log":"r2-cache: could not unpack spm-bad.tar.zst\nr2-cache: no entry for spm-request", "results":["corrupt_archive","miss"], "backend":"r2"},
+ {"case":"out of order seed checks repaired pointer", "log":"r2-cache: spm-old already exists; not saving archive, checking pointers\nr2-cache: pointer spm- was not updated\nr2-cache: saved spm-old\nr2-cache: restored spm-new for prefix spm-", "results":["existing_archive_pointer_check","pointer_not_updated","saved","prefix"], "backend":"r2"},
+ {"case":"fork anonymous reader does not prove write rights", "log":"r2-cache: restored spm-public", "results":["exact"], "backend":"r2"},
+ {"case":"green job with zero selected tests", "log":"Test run with 0 tests passed after 0.001 seconds.", "results":[], "tests":0},
+ {"case":"green job with failures does not prove baseline acceptance", "log":"Executed 203 tests, with 17 failures (0 unexpected) in 1.0 seconds", "results":[], "tests":203},
+ {"case":"enabled mode absent in execution", "log":"##[group]Run echo full_suite=false\nPULL_REQUEST_POLICY: compile-only\necho full_suite=false\n##[endgroup]\nfull_suite=true", "results":[], "routing":["full_suite=true"]}
+]
