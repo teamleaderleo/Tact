@@ -164,6 +164,16 @@ Under the cards a line names the current leader once there are three votes in, s
 
 Cards are click-to-vote unless the contenders are themselves interactive (a mock with its own buttons or a hover state you want people to try). Set `interactiveCards: true` for that and the vote buttons carry the whole job.
 
+### Saying why
+
+After a vote, a one-line box appears under the cards: "Why Solid red over Outlined red? (optional)". Type a reason and press Enter, or ignore it and keep voting. `C` focuses it if your hands are on the keys.
+
+The box never takes focus on its own, so a run of fast votes stays a run of fast votes, and it hands the keyboard back as soon as a note is sent. It does not retarget while it holds text you have not sent: if you start a sentence and then vote twice more, the sentence still belongs to the duel you started writing about, and the placeholder still names that pair. Escape drops the text, and an empty box aims itself back at the vote you just cast.
+
+A note rides on the vote (`vote.why`), which is what makes the rest of it fall out for free: it is tagged with the question the vote was cast in, it arrives over a shared table like any other vote, and `U` takes the note away with the bout it explains, leaving an unsent sentence about a different bout alone. Notes are trimmed and cut at `comments.max` characters, 140 by default. One line is the format, and a box that stops you at the end of it says so better than a paragraph nobody reads under a card.
+
+On the results view the notes hang under the candidate they were written about: the winner of that duel, or both sides of a tie, each with what it was up against. Nobody carries a note about a duel they lost, because a note is the reason for a pick and not a caption on a card. The recent-bouts feed shows them too, under the line for the bout. `comments: false` drops the box and the notes.
+
 ## Author a config
 
 Copy `examples/starter/` to `examples/<name>/`, edit `config.js`, and run `node build.mjs examples/<name>`.
@@ -210,7 +220,7 @@ What the engine hands you:
 - **Card body** comes from the first of: `contender.render(arena, ctx)`, config `render(contender, arena, ctx)`, `contender.media`, `contender.html` (string, or function of arena). A returned string is parsed as HTML. `ctx.h(tag, attrs, ...children)` is a small element helper (`class`, `text`, `html`, `style`, `on<event>`). A config-wide `render` sits above `media` so it can place the frame itself; call `ctx.media()` to get the element.
 - **Dimensions**: selects are re-rolled every duel while "New arena each duel" is on; toggles are not, unless you set `shuffle: true`. Set `default` to choose the starting option. Ids `id`, `a`, `b`, `w`, `t` and `q` are reserved.
 - **Styles** for contender markup go in `config.css`. The engine's own classes all start with `td-`, and the theme tokens (`--ink`, `--muted`, `--faint`, `--rule`, `--panel`, `--sans`, `--mono`) are available.
-- Other knobs: `confidence` (`false` for a bare rating, or `{prior: 200, minBouts: 8, level: .9}`), `k` (still accepted, no longer read by anything; `Thunderdome.elo()` takes its K-factor as an argument), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click.
+- Other knobs: `comments` (`false` to drop the note box, or `{max: 140}` for a different length), `confidence` (`false` for a bare rating, or `{prior: 200, minBouts: 8, level: .9}`), `k` (still accepted, no longer read by anything; `Thunderdome.elo()` takes its K-factor as an argument), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click.
 
 ## Several questions in one dome
 
@@ -291,10 +301,11 @@ Republishing to the same artifact URL keeps the collection, so you can add a con
 - **The line under the table** is the claim the ranking is making: "Solid red is ahead of Outlined red in 99% of resamples", or "too close to call: 91% of resamples put Right, danger last ahead". The bar is the one-sided form of the interval's own level, so 95% at the default `level: .9`. The rank column always reads 1, 2, 3, 4; this is the sentence that tells you whether to believe it.
 - **The vote view names a leader** once the top two are further apart than `1000 / sqrt(bouts)` Elo, which is roughly where the spread sits. It is the cheap version of the same call, so you are not made to switch views to find out whether anything is happening; it agrees with the line under the table 95% of the time or better.
 - **Split columns** refit over only that split's votes. The leader of each split is highlighted. A treatment that wins light and loses dark is a finding, not noise. No ± there: four spreads in a row is a table nobody reads, and the split columns are the place to look for a pattern rather than a verdict.
+- **[Notes](#saying-why)** are the part the numbers cannot give you. Two candidates a point apart with one of them carrying "reads at a glance, the other made me stop" is a decision; the same two points with no notes is a coin flip you have dressed up.
 - **W–L–T** shows how the rating was earned. A high rating on few bouts means "look again", not "ship it".
 - **The table is evidence, not the decision.** A contender can rate well and still be ruled out by a constraint the mock does not show. In the cmux run, the runner-up marked selection with a dot in the row's leading glyph slot, which cmux reserves for status (agent state, unread, warnings, PR state), so it was out regardless of its score.
 - **Pairing** weights each pair by 1 / (1 + times met)², and never repeats the last pair, so under-voted pairs come up first.
-- To take the raw votes out of a shared table, read the `votes` collection (Claude can do this with the artifact data tools) and recompute with `Thunderdome.confidence(ids, votes)` from `engine/thunderdome.js`. It returns `{rating, lo, hi, ahead, bouts}`, where `ahead.x.y` is the share of resamples putting `x` over `y`. `Thunderdome.fit(ids, votes)` is the point estimate on its own, and `Thunderdome.elo(ids, votes)` is still there for the sequential version.
+- To take the raw votes out of a shared table, read the `votes` collection (Claude can do this with the artifact data tools) and recompute with `Thunderdome.confidence(ids, votes)` from `engine/thunderdome.js`. It returns `{rating, lo, hi, ahead, bouts}`, where `ahead.x.y` is the share of resamples putting `x` over `y`. `Thunderdome.fit(ids, votes)` is the point estimate on its own, and `Thunderdome.elo(ids, votes)` is still there for the sequential version. `Thunderdome.comments(ids, votes)` groups the notes the same way the page does, so a summary of why people voted as they did can be written from the same export.
 
 ### Why the table is fitted rather than accumulated
 

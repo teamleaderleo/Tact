@@ -298,6 +298,33 @@
     return rec;
   }
 
+  // Every note people left while voting, gathered per contender, newest first.
+  //
+  // A note is written about a vote, not about a contender in the abstract, so it belongs
+  // to whoever won that vote. That is the whole reason this is worth having: "too heavy"
+  // is not an opinion about a button, it is an opinion about a button next to another
+  // one, and `vs` carries the other side so the remark still means something when you
+  // read it a week later on a card. A note left on a tie is a remark about the pair, so
+  // it lands on both, which is not duplication: it was said about both.
+  //
+  // Votes for contenders this question does not know are dropped, exactly as the ratings
+  // drop them, so a note from an old question cannot surface under a new one.
+  function comments(ids, votes) {
+    const out = {};
+    for (const id of ids) out[id] = [];
+    for (const v of votes || []) {
+      const text = typeof v.why === "string" ? v.why.trim() : "";
+      if (!text || !out[v.a] || !out[v.b] || v.a === v.b) continue;
+      const tie = v.w !== "a" && v.w !== "b";
+      const on = tie ? [v.a, v.b] : [v.w === "a" ? v.a : v.b];
+      for (const id of on) out[id].push({ text, t: v.t || 0, vs: id === v.a ? v.b : v.a, tie, vote: v.id });
+    }
+    // Newest first, and ties broken by id so two notes written in the same millisecond
+    // (an import, a seeded dome) do not shuffle between renders.
+    for (const id of ids) out[id].sort((x, y) => y.t - x.t || String(x.vote).localeCompare(String(y.vote)));
+    return out;
+  }
+
   function ago(t, now) {
     const s = Math.max(0, ((now || Date.now()) - t) / 1000);
     if (s < 60) return "just now";
@@ -358,6 +385,13 @@
       prior: 200, minBouts: 8, level: .9,
       ...(cfg.confidence && typeof cfg.confidence === "object" ? cfg.confidence : {}),
     };
+    // `comments: false` drops the box and the notes under the cards. `max` is a length,
+    // not a policy: one line is the format, and a box that stops you at the end of it
+    // says so better than a paragraph nobody reads under a card.
+    C.comments = cfg.comments === false ? null : {
+      max: 140,
+      ...(cfg.comments && typeof cfg.comments === "object" ? cfg.comments : {}),
+    };
     return C;
   }
 
@@ -385,7 +419,7 @@
   // anything in DOME_ONLY is rejected rather than quietly ignored, so the boundary is
   // something the config author is told about instead of something they discover.
   const Q_KEYS = ["lede", "galleryTitle", "contenderLabel", "media", "render", "swatch", "interactiveCards"];
-  const DOME_ONLY = ["arena", "dimensions", "split", "k", "recent", "collection", "localKey", "mount", "shuffle", "questions", "confidence"];
+  const DOME_ONLY = ["arena", "dimensions", "split", "k", "recent", "collection", "localKey", "mount", "shuffle", "questions", "confidence", "comments"];
 
   // One dome, several decisions. A question brings its own contenders and its own words
   // and inherits everything else, so the arena, the media defaults and the render
@@ -580,6 +614,10 @@
     let votesCol = null, shared = false, myLast = null;
     let note = "", noteTimer = 0, stickyNote = "", lockNote = "";
     let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, standingsDirty = true, view = "vote";
+    // The vote the comment box is currently writing about, with the handle needed to
+    // amend it. Not `myLast`: that one moves to every new vote, and a sentence you are
+    // halfway through typing is about the pair you were looking at when you started it.
+    let whyFor = null, whyLatest = null;
     // Bumped whenever the question changes, so a vote whose write is still in flight
     // cannot come back and hand its Undo handle to the question you moved to.
     let voteToken = 0, nextTimer = 0, galleryBuilds = 0;
@@ -635,6 +673,33 @@
     $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "Skip", h("kbd", { text: "S" }));
     $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "Undo my last vote", h("kbd", { text: "U" }));
     $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos(true) }, "Replay both", h("kbd", { text: "R" }));
+    // One line about the pick you just made, offered and never demanded. It appears
+    // after a vote and it does not take focus: the click-click-click path through a
+    // dome is the one that gets used, and a box that grabs the caret would end it at
+    // the first duel. C focuses it for the people who do want to say something.
+    if (C.comments) {
+      $.why = h("input", {
+        class: "td-why-input", type: "text", autocomplete: "off",
+        maxlength: String(C.comments.max), "aria-label": "Why this one",
+        title: "Press C to write a note about the vote you just cast",
+      });
+      $.why.addEventListener("keydown", e => {
+        if (e.key === "Enter") { e.preventDefault(); saveWhy(); }
+        // Escape abandons the note, which is the only way out that does not involve
+        // deleting what you typed by hand. The box stays on the same vote.
+        else if (e.key === "Escape") { e.preventDefault(); $.why.value = ""; $.why.blur(); rePointWhy(); }
+        e.stopPropagation();
+      });
+      $.why.addEventListener("input", () => rePointWhy());
+      // The placeholder names the pair, and the first character you type hides it, which
+      // leaves a sentence about two contenders nobody can see: the next duel is already
+      // up. This carries the subject for as long as there is text to attach it to, and
+      // is not there at all before that, so an empty box is still a box and a button.
+      $.whyOn = h("span", { class: "td-why-on", hidden: true });
+      $.whyBox = h("form", { class: "td-why", hidden: true });
+      $.whyBox.addEventListener("submit", e => { e.preventDefault(); saveWhy(); });
+      $.whyBox.append($.why, $.whyOn, h("button", { class: "quiet", type: "submit" }, "Add note", h("kbd", { text: "↵" })));
+    }
     $.status = h("div", { class: "td-status", role: "status" });
 
     const splitVals = C.split ? C.split.values : [];
@@ -680,6 +745,7 @@
       C.dims.length ? $.arenaBox : null,
       $.duel,
       h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.replay, $.undo),
+      $.whyBox || null,
       $.status);
 
     $.viewResults = h("section", { class: "td-view", hidden: true },
@@ -743,6 +809,9 @@
         clearTimeout(nextTimer); clearTimeout(noteTimer);
         duel = null; lastKey = ""; myLast = null; note = ""; lockNote = "";
         $.undo.hidden = true;
+        // Including a half-written note: its subject is two contenders that are not on
+        // this question, and the box would sit there asking about them.
+        clearWhy();
         galleryDirty = true; standingsDirty = true;
       }
       view = v === "results" ? "results" : "vote";
@@ -820,7 +889,18 @@
     // (`media: a => clips[c.id][a.theme.id]` after a theme is added without clips):
     // without this the duel advances underneath a frozen screen and the votes land on
     // pairs nobody ever saw.
-    function card(c, a, side) {
+    // The notes for one contender, under its gallery card. Each one carries who it was
+    // said against, because "too heavy" on its own is half a sentence.
+    function whyList(notes) {
+      if (!notes || !notes.length) return null;
+      const name = id => (byId[id] ? byId[id].name : id);
+      return h("ul", { class: "td-whys" }, ...notes.map(n =>
+        h("li", {},
+          h("span", { class: "td-why-text", text: n.text }),
+          h("span", { class: "td-why-vs", text: n.tie ? `tied with ${name(n.vs)}` : `over ${name(n.vs)}` }))));
+    }
+
+    function card(c, a, side, notes) {
       const head = h("div", { class: "td-card-head" },
         h("div", {}, h("div", { class: "td-card-name", text: c.name }), c.note ? h("div", { class: "td-card-note", text: c.note }) : null),
         // The arrow is a separate span because it stops being true below 760px, where the
@@ -836,7 +916,7 @@
         body = failNode("Couldn't draw this one.", String((e && e.message) || e));
       }
       const el = h("article", { class: "td-card", "data-contender": c.id },
-        head, h("div", { class: "td-card-body" }, body));
+        head, h("div", { class: "td-card-body" }, body), side ? null : whyList(notes));
       if (broken) el.dataset.tdBroken = "1";
       // The whole card is the button. Reaching for a button under the thing you are
       // judging is the difference between twenty votes and five.
@@ -922,13 +1002,27 @@
     // Built only when the results view needs it. With "New arena each duel" on, the
     // arena changes every vote, so keying the gallery on the arena alone still tore down
     // and re-preloaded every clip in it once per duel, on the same frame as the new duel.
+    // What the gallery is a picture of: the arena it renders in, and how many notes are
+    // hanging off the cards. Anything else that moves (a vote, a rating) is the table's
+    // business, and rebuilding a wall of video for it is what the dirty flag exists to
+    // avoid. Notes have to be in here, or a note you just wrote would not appear until
+    // the arena happened to change.
+    function galleryStamp(a) {
+      const ids = JSON.stringify((a || arena()).ids);
+      if (!C.comments) return ids;
+      let n = 0;
+      for (const v of qVotes()) if (typeof v.why === "string" && v.why.trim()) n++;
+      return `${ids}|${n}`;
+    }
+
     function flushGallery() {
       if (!galleryDirty || view !== "results") return false;
       galleryDirty = false;
       galleryBuilds++;
       const a = arena();
-      galleryKey = JSON.stringify(a.ids);
-      $.gallery.replaceChildren(...Q.contenders.map(c => card(c, a)));
+      galleryKey = galleryStamp(a);
+      const notes = C.comments ? comments(ids, qVotes()) : null;
+      $.gallery.replaceChildren(...Q.contenders.map(c => card(c, a, null, notes && notes[c.id])));
       tuneGalleryVideos();
       return true;
     }
@@ -967,11 +1061,12 @@
       // The gallery only depends on the arena, so a vote that does not move the arena
       // leaves it alone entirely, and one that does defers the rebuild to the view that
       // can actually see it.
-      const gk = JSON.stringify(a.ids);
+      const gk = galleryStamp(a);
       if (gk !== galleryKey) { galleryKey = gk; galleryDirty = true; }
       if (view === "results") flushGallery();
       tuneDuelVideos();
       refreshVoteLock();
+      if (C.comments) syncWhySubject();
     }
 
     // keepArena is the question switch: the arena is the context every contender is being
@@ -993,9 +1088,16 @@
     // table, none of which the vote view can see: the cost landed on the same frame that
     // was trying to paint the card you just picked. Mark the table dirty and build it
     // when the results view asks for it, the way the gallery already does.
+    // Called on every vote and on every shared snapshot, which makes it the one place
+    // that sees a note arrive, whether it was written here or by somebody else.
     function renderStandings() {
       standingsDirty = true;
+      if (C.comments) {
+        const gk = galleryStamp();
+        if (gk !== galleryKey) { galleryKey = gk; galleryDirty = true; }
+      }
       if (!flushStandings()) renderStatus();
+      if (galleryDirty) flushGallery();
     }
 
     function flushStandings() {
@@ -1048,7 +1150,20 @@
       $.feed.replaceChildren(...(recent.length ? recent.map(v => {
         const a = byId[v.a] ? byId[v.a].name : v.a, b = byId[v.b] ? byId[v.b].name : v.b;
         const w = v.w === "tie" ? `${a} = ${b}` : `${v.w === "a" ? a : b} beat ${v.w === "a" ? b : a}`;
-        return h("li", {}, h("b", { text: w }), h("span", { text: describe(v) }), h("span", { class: "when", text: ago(v.t) }));
+        // `comments: false` is off everywhere, not just in the box. A dome that ran
+        // with notes and then turned them off still has them on its votes, and the
+        // gallery already drops them; the feed was showing them anyway.
+        const why = C.comments && typeof v.why === "string" ? v.why.trim() : "";
+        // The bout and its timestamp are one line; the note gets its own underneath.
+        // Inline, a note long enough to wrap pushes "just now" onto a line of its own
+        // and the column of times stops being a column.
+        return h("li", {},
+          h("span", { class: "td-feed-line" },
+            h("b", { text: w }), h("span", { text: describe(v) }),
+            h("span", { class: "when", text: ago(v.t) })),
+          // In the feed the note reads as what somebody said at the time, so it keeps
+          // its quotes. On a card it is the card's own line and does not need them.
+          why ? h("span", { class: "td-feed-why", text: `“${why}”` }) : null);
       }) : [h("li", { class: "td-empty", text: "No bouts yet. Vote above to start the table." })]));
       renderStatus();
       return true;
@@ -1105,6 +1220,98 @@
       noteTimer = setTimeout(() => { note = ""; renderStatus(); }, 2500);
     }
 
+    // ---- notes ----
+    // Offered after a vote lands, aimed at that vote. If there is unsent text in the box
+    // it is left where it is, still aimed at the older vote: someone typing "the red one
+    // reads as destructive" and voting again mid-sentence meant that about the pair they
+    // were looking at, and quietly re-pointing it at a different pair would file it as a
+    // remark nobody made. So voting stays free, and the sentence keeps its subject.
+    function offerWhy(v, handle) {
+      if (!C.comments || !$.whyBox) return;
+      whyLatest = { v, handle };
+      if (whyFor && $.why.value.trim()) return;
+      whyFor = whyLatest;
+      $.why.value = "";
+      $.why.placeholder = whyLabel(v);
+      $.whyBox.hidden = false;
+      syncWhySubject();
+    }
+    // The box keeps its subject only while there is unsent text to attach to it. Once
+    // the text is gone, so is the reason: point it back at the latest vote. Without
+    // this, escaping a half-written note and then writing a fresh one filed the new
+    // sentence against a duel two votes back, and the vote you had just cast could
+    // never be noted at all.
+    function rePointWhy() {
+      if (!$.why) return;
+      if (!$.why.value.trim() && whyLatest && whyLatest !== whyFor) {
+        whyFor = whyLatest;
+        $.why.placeholder = whyLabel(whyLatest.v);
+      }
+      syncWhySubject();
+    }
+    // Shown as soon as there is text in the box, because that is exactly when the
+    // placeholder stops saying it. The next duel is already on screen by then, so the
+    // subject is never the pair in front of you.
+    function syncWhySubject() {
+      if (!$.whyOn) return;
+      const v = whyFor && $.why.value.trim() ? whyFor.v : null;
+      $.whyOn.textContent = v ? `about ${whySubject(v)}` : "";
+      $.whyOn.hidden = !v;
+    }
+    function whySubject(v) {
+      const name = id => (byId[id] ? byId[id].name : id);
+      return v.w !== "a" && v.w !== "b"
+        ? `${name(v.a)} = ${name(v.b)}`
+        : `${name(v.w === "a" ? v.a : v.b)} over ${name(v.w === "a" ? v.b : v.a)}`;
+    }
+    // Both names, always. The next duel is already on screen by the time anyone reads
+    // this, so a box that said only "Why Solid red?" would be asking about a pair that
+    // is no longer in front of them, against two cards that are.
+    function whyLabel(v) {
+      const name = id => (byId[id] ? byId[id].name : id);
+      if (v.w !== "a" && v.w !== "b") return `Why the tie between ${name(v.a)} and ${name(v.b)}? (optional)`;
+      const win = v.w === "a" ? v.a : v.b, lose = v.w === "a" ? v.b : v.a;
+      return `Why ${name(win)} over ${name(lose)}? (optional)`;
+    }
+    function clearWhy() {
+      if (!$.whyBox) return;
+      whyFor = null; whyLatest = null; $.why.value = ""; $.whyBox.hidden = true;
+      syncWhySubject();
+    }
+    // Undo deletes one bout. If the box is aimed somewhere else, it is holding a
+    // sentence about a vote that is still there, and taking it away is silent data
+    // loss: the user watches their own words vanish for pressing Undo on something
+    // unrelated.
+    function clearWhyOf(match) {
+      if (!$.whyBox) return;
+      if (whyLatest && match(whyLatest)) whyLatest = null;
+      if (whyFor && match(whyFor)) clearWhy();
+    }
+    async function saveWhy() {
+      const text = $.why ? $.why.value.trim() : "";
+      if (!whyFor || !text) return;
+      const { v, handle } = whyFor;
+      // Written onto the vote itself rather than into a second collection. The note and
+      // the bout are one fact, so Undo takes the note with the vote it explains, the
+      // question tag is already right, and the shared table needs no new schema.
+      const saved = { ...v, why: text.slice(0, C.comments.max) };
+      if (handle && handle.set) {
+        // The box is emptied after the write lands, not before. Clearing first meant a
+        // dropped connection took the sentence with it: told it failed, nothing left to
+        // try again with, and no way to get the words back.
+        try { await handle.set(saved); } catch (e) { say("Couldn't save that note. It is still in the box."); return; }
+      } else {
+        // The local vote object is the one in `votes`, so amend it in place and rewrite.
+        const mine = votes.find(x => x.id === v.id);
+        if (!mine) { clearWhy(); return; }      // undone while the note was being typed
+        mine.why = saved.why;
+        saveLocal();
+      }
+      clearWhy();
+      renderStandings();
+      say("Noted.");
+    }
+
     // ---- voting ----
     function saveLocal() {
       try { localStorage.setItem(C.localKey, JSON.stringify(votes.filter(x => String(x.id).startsWith("local-")))); } catch (e) { /* storage blocked */ }
@@ -1113,7 +1320,7 @@
     // gets no Undo handle. Undo is "take back the vote you just cast on this page".
     function localVote(v, stale) {
       v.id = "local-" + v.t; votes.push(v);
-      if (!stale) { myLast = { local: v.id }; $.undo.hidden = false; }
+      if (!stale) { myLast = { local: v.id }; $.undo.hidden = false; offerWhy(v, null); }
       saveLocal(); renderStandings();
     }
     async function vote(w) {
@@ -1139,6 +1346,9 @@
           await ref.set(v);
           if (token !== voteToken) return;
           myLast = ref; $.undo.hidden = false;
+          // `v` has no id of its own on this path and should not gain one: identity is
+          // the doc, and writing an id field into it would fight the snapshot's own.
+          offerWhy(v, ref);
           say("Vote saved to the shared table.");
         } catch (e) {
           // The vote itself is still saved, correctly tagged. Only the handle and the
@@ -1152,8 +1362,14 @@
     }
     async function undo() {
       if (!myLast) return;
+      const was = myLast;
       if (myLast.local) { const id = myLast.local; votes = votes.filter(v => v.id !== id); saveLocal(); renderStandings(); say("Vote removed."); }
       else { try { await myLast.delete(); say("Vote removed."); } catch (e) { say("Couldn't remove that vote."); } }
+      // The note explains the vote, so it goes with it: leaving the box open over a
+      // bout that no longer exists would file the sentence against nothing. Only that
+      // bout, though. Vote, start writing, vote again, then undo the second one, and
+      // the box is holding a sentence about the first vote, which is still there.
+      clearWhyOf(e => (was.local ? e.v.id === was.local : e.handle === was));
       myLast = null; $.undo.hidden = true;
     }
 
@@ -1176,6 +1392,9 @@
       if (k === "ArrowLeft" || k === "1") vote("a");
       else if (k === "ArrowRight" || k === "2") vote("b");
       else if (k === "ArrowDown" || k === "3" || k === " ") vote("tie");
+      // C only does something when there is a vote to write about, so on a dome with
+      // comments off, or before the first vote, the key stays the browser's.
+      else if ((k === "c" || k === "C") && $.whyBox && !$.whyBox.hidden) $.why.focus();
       else if (k === "s" || k === "S") nextDuel();
       else if (k === "u" || k === "U") undo();
       else if (k === "r" || k === "R") syncDuelVideos(true);
@@ -1224,7 +1443,7 @@
     };
   }
 
-  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, records, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
+  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, comments, records, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);
