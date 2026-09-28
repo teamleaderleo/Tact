@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="820" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">CMUX sidebar selection — current versus proposed</title>
+  <desc id="desc">A recreated CMUX sidebar and terminal compare current selected row styling using fill, accent outline, and brighter text with a proposed styling using neutral fill and brighter text while reserving the accent outline for keyboard focus.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000" flood-opacity="0.32"/></filter>
+    <linearGradient id="terminal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121419"/><stop offset="1" stop-color="#0d0f13"/></linearGradient>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .kicker { font-size:12px; font-weight:700; letter-spacing:1.6px; fill:#8c94a4; }
+      .title { font-size:28px; font-weight:700; fill:#f4f6fb; }
+      .subtitle { font-size:14px; fill:#9ba3b4; }
+      .panelLabel { font-size:13px; font-weight:700; letter-spacing:1.2px; }
+      .rowTitle { font-size:13px; font-weight:600; }
+      .meta { font-size:10.5px; fill:#7f8796; }
+      .terminalText { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11px; fill:#727b8c; }
+      .callout { font-size:12px; font-weight:650; fill:#dce2ee; }
+      .small { font-size:11px; fill:#8e97a8; }
+      .chip { font-size:11px; font-weight:700; letter-spacing:.25px; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="820" fill="#090a0d"/>
+  <text x="64" y="58" class="kicker">CMUX / REAL SURFACE / SIDEBAR SELECTION</text>
+  <text x="64" y="98" class="title">Stop drawing the same state twice.</text>
+  <text x="64" y="126" class="subtitle">Hold geometry constant. Remove one persistent emphasis channel: the accent perimeter.</text>
+
+  <!-- Current window -->
+  <g filter="url(#shadow)">
+    <rect x="64" y="170" width="638" height="522" rx="18" fill="#111319" stroke="#242833"/>
+    <rect x="64" y="170" width="638" height="42" rx="18" fill="#171a20"/>
+    <rect x="64" y="196" width="638" height="16" fill="#171a20"/>
+    <circle cx="88" cy="191" r="5" fill="#5e636f"/><circle cx="106" cy="191" r="5" fill="#5e636f"/><circle cx="124" cy="191" r="5" fill="#5e636f"/>
+    <text x="655" y="196" text-anchor="end" class="small">recreated current</text>
+
+    <rect x="64" y="212" width="230" height="480" fill="#15181e"/>
+    <line x1="294" y1="212" x2="294" y2="692" stroke="#292d36"/>
+    <text x="82" y="241" class="kicker" style="font-size:9.5px">WORKSPACES</text>
+
+    <!-- row 1 -->
+    <g transform="translate(76 255)">
+      <rect width="206" height="54" rx="10" fill="transparent"/>
+      <rect x="8" y="12" width="18" height="18" rx="4" fill="#242936"/><path d="M13 21h8M17 17v8" stroke="#8992a3" stroke-width="1.2"/>
+      <text x="36" y="21" class="rowTitle" fill="#c7ccd6">agent-search</text>
+      <text x="36" y="37" class="meta">feature/search · PR #8912</text>
+    </g>
+
+    <!-- selected row current -->
+    <g transform="translate(76 313)">
+      <rect width="206" height="54" rx="10" fill="#2c3038" stroke="#6a9cff" stroke-opacity="0.78" stroke-width="1"/>
+      <rect x="8" y="12" width="18" height="18" rx="4" fill="#303849"/><path d="M13 21h8M17 17v8" stroke="#cfd8eb" stroke-width="1.2"/>
+      <text x="36" y="21" class="rowTitle" fill="#ffffff">cmux-web</text>
+      <text x="36" y="37" class="meta" style="fill:#969faf">main · localhost:3000</text>
+    </g>
+
+    <!-- row 3 -->
+    <g transform="translate(76 371)">
+      <rect width="206" height="54" rx="10" fill="transparent"/>
+      <rect x="8" y="12" width="18" height="18" rx="4" fill="#242936"/><path d="M13 21h8M17 17v8" stroke="#8992a3" stroke-width="1.2"/>
+      <text x="36" y="21" class="rowTitle" fill="#c7ccd6">docs-pass</text>
+      <text x="36" y="37" class="meta">koi/microcraft · clean</text>
+    </g>
+
+    <g transform="translate(76 429)">
+      <rect width="206" height="54" rx="10" fill="transparent"/>
+      <rect x="8" y="12" width="18" height="18" rx="4" fill="#242936"/><path d="M13 21h8M17 17v8" stroke="#8992a3" stroke-width="1.2"/>
+      <text x="36" y="21" class="rowTitle" fill="#c7ccd6">api-refactor</text>
+      <text x="36" y="37" class="meta">fix/socket · PR #9031</text>
+    </g>
+
+    <!-- terminal -->
+    <rect x="295" y="212" width="407" height="480" fill="url(#terminal)"/>
+    <text x="322" y="252" class="terminalText" fill="#a7afbd">~/cmux/web  git:main</text>
+    <text x="322" y="283" class="terminalText">$ bun dev</text>
+    <text x="322" y="311" class="terminalText">ready in 412ms</text>
+    <text x="322" y="332" class="terminalText">local: http://localhost:3000/</text>
+    <rect x="322" y="357" width="7" height="16" fill="#aeb6c4" opacity="0.72"/>
+
+    <!-- callout -->
+    <path d="M276 342 C330 342 330 455 382 455" fill="none" stroke="#6a9cff" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <circle cx="276" cy="342" r="3" fill="#6a9cff"/>
+    <rect x="380" y="425" width="266" height="76" rx="10" fill="#181c24" stroke="#303744"/>
+    <text x="395" y="449" class="callout">3 persistent selection channels</text>
+    <text x="395" y="469" class="small">neutral fill + accent outline + brighter title</text>
+    <text x="395" y="487" class="small">Two edges describe the same row.</text>
+  </g>
+
+  <!-- Proposed window -->
+  <g filter="url(#shadow)">
+    <rect x="738" y="170" width="638" height="522" rx="18" fill="#111319" stroke="#242833"/>
+    <rect x="738" y="170" width="638" height="42" rx="18" fill="#171a20"/>
+    <rect x="738" y="196" width="638" height="16" fill="#171a20"/>
+    <circle cx="762" cy="191" r="5" fill="#5e636f"/><circle cx="780" cy="191" r="5" fill="#5e636f"/><circle cx="798" cy="191" r="5" fill="#5e636f"/>
+    <text x="1329" y="196" text-anchor="end" class="small">proposed</text>
+
+    <rect x="738" y="212" width="230" height="480" fill="#15181e"/>
+    <line x1="968" y1="212" x2="968" y2="692" stroke="#292d36"/>
+    <text x="756" y="241" class="kicker" style="font-size:9.5px">WORKSPACES</text>
+
+    <g transform="translate(750 255)">
+      <rect width="206" height="54" rx="10" fill="transparent"/>
+      <rect x="8" y="12" width="18" height="18" rx="4" fill="#242936"/><path d="M13 21h8M17 17v8" stroke="#8992a3" stroke-width="1.2"/>
+      <text x="36" y="21" class="rowTitle" fill="#c7ccd6">agent-search</text>
+      <text x="36" y="37" class="meta">feature/search · PR #8912</text>
+    </g>
+
+    <!-- selected row proposed -->
+    <g transform="translate(750 313)">
+      <rect width="206" height="54" rx="10" fill="#2c3038"/>
+      <rect x="8" y="12" width="18" height="18" rx="4" fill="#303849"/><path d="M13 21h8M17 17v8" stroke="#cfd8eb" stroke-width="1.2"/>
+      <text x="36" y="21" class="rowTitle" fill="#ffffff">cmux-web</text>
+      <text x="36" y="37" class="meta" style="fill:#969faf">main · localhost:3000</text>
+    </g>
+
+    <g transform="translate(750 371)">
+      <rect width="206" height="54" rx="10" fill="transparent"/>
+      <rect x="8" y="12" width="18" height="18" rx="4" fill="#242936"/><path d="M13 21h8M17 17v8" stroke="#8992a3" stroke-width="1.2"/>
+      <text x="36" y="21" class="rowTitle" fill="#c7ccd6">docs-pass</text>
+      <text x="36" y="37" class="meta">koi/microcraft · clean</text>
+    </g>
+
+    <g transform="translate(750 429)">
+      <rect width="206" height="54" rx="10" fill="transparent"/>
+      <rect x="8" y="12" width="18" height="18" rx="4" fill="#242936"/><path d="M13 21h8M17 17v8" stroke="#8992a3" stroke-width="1.2"/>
+      <text x="36" y="21" class="rowTitle" fill="#c7ccd6">api-refactor</text>
+      <text x="36" y="37" class="meta">fix/socket · PR #9031</text>
+    </g>
+
+    <rect x="969" y="212" width="407" height="480" fill="url(#terminal)"/>
+    <text x="996" y="252" class="terminalText" fill="#a7afbd">~/cmux/web  git:main</text>
+    <text x="996" y="283" class="terminalText">$ bun dev</text>
+    <text x="996" y="311" class="terminalText">ready in 412ms</text>
+    <text x="996" y="332" class="terminalText">local: http://localhost:3000/</text>
+    <rect x="996" y="357" width="7" height="16" fill="#aeb6c4" opacity="0.72"/>
+
+    <path d="M950 342 C1003 342 1003 455 1055 455" fill="none" stroke="#8492aa" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <circle cx="950" cy="342" r="3" fill="#8492aa"/>
+    <rect x="1053" y="425" width="266" height="76" rx="10" fill="#181c24" stroke="#303744"/>
+    <text x="1068" y="449" class="callout">2 persistent selection channels</text>
+    <text x="1068" y="469" class="small">neutral fill + brighter title</text>
+    <text x="1068" y="487" class="small">Accent edge is free for keyboard focus.</text>
+  </g>
+
+  <!-- labels and bottom summary -->
+  <rect x="64" y="714" width="638" height="54" rx="12" fill="#14171d" stroke="#272c36"/>
+  <text x="82" y="738" class="panelLabel" fill="#f0b7a5">CURRENT</text>
+  <text x="82" y="756" class="small">Selection behaves like selection + focus simultaneously.</text>
+
+  <rect x="738" y="714" width="638" height="54" rx="12" fill="#14171d" stroke="#272c36"/>
+  <text x="756" y="738" class="panelLabel" fill="#9ec0ff">PROPOSED</text>
+  <text x="756" y="756" class="small">Same row, same density, one quieter edge hierarchy.</text>
+
+  <rect x="1036" y="61" width="340" height="36" rx="18" fill="#151922" stroke="#2e3542"/>
+  <circle cx="1058" cy="79" r="5" fill="#6a9cff"/>
+  <text x="1072" y="83" class="chip" fill="#c7d7fa">ONE VARIABLE: persistent selected perimeter</text>
+</svg>
