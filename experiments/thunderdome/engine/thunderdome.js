@@ -325,6 +325,82 @@
     return out;
   }
 
+  // ---- the result, as data and as text ----
+  // A dome's whole answer: one table per question, each one a ranking, a record and the
+  // sentence that says whether to believe it. The page draws it, the command line
+  // prints it and GitHub gets it as markdown, all from here, because three renderings
+  // of the same run that disagree about a number are worse than no rendering at all.
+
+  // Which votes belong to a question. An untagged vote counts toward the first one: a
+  // dome that grew a second question after people had already voted should not throw
+  // their votes away.
+  function votesFor(D, Q, votes) {
+    return D.multi
+      ? votes.filter(v => v.q === Q.id || (v.q == null && Q === D.questions[0]))
+      : votes.slice();
+  }
+
+  function tableFor(D, Q, votes) {
+    const ids = Q.contenders.map(c => c.id);
+    const byId = Object.fromEntries(Q.contenders.map(c => [c.id, c]));
+    const mine = votesFor(D, Q, votes).slice().sort((a, b) => a.t - b.t);
+    const conf = confidence(ids, mine, confidenceOpts(D, mine.length));
+    const rec = records(ids, mine);
+    const order = ids.slice().sort((x, y) => conf.rating[y] - conf.rating[x]);
+    const name = id => (byId[id] ? byId[id].name : id);
+    const rows = order.map((id, i) => ({
+      rank: i + 1,
+      id,
+      name: name(id),
+      rating: Math.round(conf.rating[id]),
+      spread: conf.lo ? Math.round((conf.hi[id] - conf.lo[id]) / 2) : null,
+      // En dashes, as the browser table writes them, so a record pasted from a terminal
+      // and a record read off the page are the same string.
+      record: `${rec[id].w}–${rec[id].l}–${rec[id].t}`,
+    }));
+    // `confidence: false` builds a page with no callout under the table at all, so there
+    // is no sentence to match. Printing one anyway said "not enough bouts to say who is
+    // ahead yet" under a table with 240 bouts in it, which is both wrong and the exact
+    // disagreement between terminal and browser this function exists to rule out.
+    const verdict = D.confidence ? verdictFor(conf, order, name) : null;
+    return { question: Q.id, title: Q.title || Q.label || "", bouts: conf.bouts, rows, verdict };
+  }
+
+  // `cfg` is a raw config, the same object the page was started with.
+  function tablesFor(cfg, votes) {
+    const D = normalizeDome(cfg);
+    return D.questions.map(Q => tableFor(D, Q, votes));
+  }
+
+  // GFM tables, no HTML, so it renders the same in an issue body, a PR body and a
+  // comment. `meta` carries the title and `askedBy`; a raw config or a normalized dome
+  // both work, since both have those two fields.
+  function markdown(tables, meta) {
+    const out = [];
+    // A contender's name can be alt text a stranger typed into an issue, and this table
+    // is going straight back into that issue under your name. An unescaped pipe is a row
+    // with an extra cell in a four-column table, which is a wrecked table at best and a
+    // forged one at worst; a newline ends the row early and turns the rest into prose;
+    // and `[click me](https://evil.example)` is a live link you did not write. Everything
+    // a stranger could have chosen goes through here, the verdict sentence included,
+    // since it is made of two contender names.
+    const cell = s => String(s)
+      .replace(/\s*[\r\n]+\s*/g, " ")
+      .replace(/([\\`*_[\]<>|])/g, "\\$1");
+    if (meta && meta.title) out.push(`## ${cell(meta.title)}`, "");
+    for (const t of tables) {
+      if (t.title) out.push(`### ${cell(t.title)}`, "");
+      out.push("| # | | Elo | W–L–T |", "|---:|---|---:|---:|");
+      for (const r of t.rows) {
+        const elo = r.spread == null ? String(r.rating) : `${r.rating} ±${r.spread}`;
+        out.push(`| ${r.rank} | ${cell(r.name)} | ${elo} | ${r.record} |`);
+      }
+      out.push("", t.verdict ? cell(t.verdict) : "", "");
+    }
+    if (meta && meta.askedBy) out.push(`Asked by ${cell(meta.askedBy)}.`);
+    return out.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+  }
+
   function ago(t, now) {
     const s = Math.max(0, ((now || Date.now()) - t) / 1000);
     if (s < 60) return "just now";
@@ -748,9 +824,16 @@
       $.whyBox || null,
       $.status);
 
+    // The table is usually wanted somewhere else: the issue that asked, a message, a
+    // commit. One button, the same markdown the command line prints, so the answer gets
+    // back to the question without anyone retyping four ratings.
+    $.copy = h("button", { class: "td-copy", type: "button", onclick: () => copyMarkdown() },
+      "Copy as markdown");
+
     $.viewResults = h("section", { class: "td-view", hidden: true },
       h("div", { class: "td-two" },
-        h("section", { class: "td-section" }, h("h2", { text: "Standings" }),
+        h("section", { class: "td-section" },
+          h("div", { class: "td-section-head" }, h("h2", { text: "Standings" }), $.copy),
           h("div", { class: "td-table-wrap" }, h("table", {}, h("thead", {}, headRow), $.standings)), $.callout),
         h("section", { class: "td-section" }, h("h2", { text: "Recent bouts" }), $.feed)),
       h("section", { class: "td-section" }, $.galleryHead = h("h2"), $.gallery));
@@ -1100,6 +1183,35 @@
       if (galleryDirty) flushGallery();
     }
 
+    // C is already a normalized dome, so this is `tablesFor` minus the second normalize.
+    // Every question goes in, not just the one on screen: someone copying a result wants
+    // the dome's answer, and scrolling back through the tabs to paste four tables in a
+    // row is how you end up pasting three.
+    function markdownNow() {
+      return markdown(C.questions.map(q => tableFor(C, q, votes)), C);
+    }
+
+    // The clipboard API needs a user gesture and a secure context, and a page opened
+    // from a file:// URL has neither in some browsers. The fallback selects the text in
+    // a textarea so the failure mode is "press ctrl-c yourself" rather than "nothing
+    // happened".
+    function copyMarkdown() {
+      const text = markdownNow();
+      const fallback = () => {
+        const ta = h("textarea", { class: "td-copy-sink" });
+        ta.value = text;
+        document.body.append(ta);
+        ta.select();
+        let ok = false;
+        try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+        ta.remove();
+        say(ok ? "Copied the table as markdown." : "Could not reach the clipboard. Press copy again with the console open to see why.", !ok);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => say("Copied the table as markdown."), fallback);
+      } else fallback();
+    }
+
     function flushStandings() {
       if (!standingsDirty || view !== "results") return false;
       standingsDirty = false;
@@ -1443,7 +1555,7 @@
     };
   }
 
-  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, comments, records, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
+  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, comments, records, votesFor, tableFor, tablesFor, markdown, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

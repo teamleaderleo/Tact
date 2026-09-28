@@ -256,52 +256,12 @@ export function renderConfig(spec) {
 
 // ---------- results ----------
 
-const first = (Q, D) => Q === D.questions[0];
-export function votesFor(D, Q, votes) {
-  return D.multi
-    ? votes.filter(v => v.q === Q.id || (v.q == null && first(Q, D)))
-    : votes.slice();
-}
-
-// One question's table, as data. The CLI and whatever posts it to GitHub both read
-// this, so the text and the markdown cannot drift apart.
-export function tableFor(D, Q, votes) {
-  const ids = Q.contenders.map(c => c.id);
-  const byId = Object.fromEntries(Q.contenders.map(c => [c.id, c]));
-  const mine = votesFor(D, Q, votes).slice().sort((a, b) => a.t - b.t);
-  // The engine's own options, not defaults of our own: `confidence: false` has to stay
-  // off here, and the resample count has to be the one the browser picked for this many
-  // votes, or the same dome prints ±18 on the page and ±20 in a terminal.
-  const conf = T.confidence(ids, mine, T.confidenceOpts(D, mine.length));
-  const rec = T.records(ids, mine);
-  const order = ids.slice().sort((x, y) => conf.rating[y] - conf.rating[x]);
-  const name = id => (byId[id] ? byId[id].name : id);
-  const rows = order.map((id, i) => ({
-    rank: i + 1,
-    id,
-    name: name(id),
-    rating: Math.round(conf.rating[id]),
-    spread: conf.lo ? Math.round((conf.hi[id] - conf.lo[id]) / 2) : null,
-    // En dashes, as the browser table writes them, so a record pasted from here and
-    // a record read off the page are the same string.
-    record: `${rec[id].w}–${rec[id].l}–${rec[id].t}`,
-  }));
-  // The same sentence the page puts under its table, from the same function. Written
-  // out here once, it drifted: the bar was hardcoded at 95 instead of derived from the
-  // dome's own level, and it compared the rounded percentage, so a share of .9457 was
-  // called a lead by a table that also printed it as 95%.
-  // `confidence: false` builds a page with no callout under the table at all, so there
-  // is no sentence to match. Printing one anyway said "not enough bouts to say who is
-  // ahead yet" under a table with 240 bouts in it, which is both wrong and the exact
-  // disagreement between terminal and browser this function exists to rule out.
-  const verdict = D.confidence ? T.verdictFor(conf, order, name) : null;
-  return { question: Q.id, title: Q.title || Q.label || "", bouts: conf.bouts, rows, verdict };
-}
-
-export function tablesFor(cfg, votes) {
-  const D = T.normalizeDome(cfg);
-  return D.questions.map(Q => tableFor(D, Q, votes));
-}
+// The tables, the markdown and the sentence under them are the engine's, not ours. They
+// used to live here, and they drifted: the verdict's bar was hardcoded at 95% instead of
+// derived from the dome's own level, and the resample count was a second guess at what
+// the browser had picked, so the same dome printed ±18 on the page and ±20 in a terminal.
+export const { votesFor, tableFor, tablesFor } = T;
+export const renderMarkdown = (tables, cfg) => T.markdown(tables, cfg);
 
 const pad = (s, w, right) => (right ? String(s).padStart(w) : String(s).padEnd(w));
 
@@ -323,41 +283,16 @@ export function renderText(tables, cfg) {
   return out.join("\n");
 }
 
-// Markdown, for pasting back into the issue that asked. GFM tables, no HTML, so it
-// renders the same in an issue, a PR body and a comment.
-export function renderMarkdown(tables, cfg) {
-  const out = [];
-  // A contender's name can be alt text a stranger typed into an issue, and this table
-  // is going straight back into that issue under your name. An unescaped pipe is a row
-  // with an extra cell in a four-column table, which is a wrecked table at best and a
-  // forged one at worst; a newline ends the row early and turns the rest into prose;
-  // and `[click me](https://evil.example)` is a live link you did not write. Everything
-  // a stranger could have chosen goes through here, the verdict sentence included,
-  // since it is made of two contender names.
-  const cell = s => String(s)
-    .replace(/\s*[\r\n]+\s*/g, " ")
-    .replace(/([\\`*_[\]<>|])/g, "\\$1");
-  if (cfg && cfg.title) out.push(`## ${cell(cfg.title)}`, "");
-  for (const t of tables) {
-    if (t.title) out.push(`### ${cell(t.title)}`, "");
-    out.push("| # | | Elo | W–L–T |", "|---:|---|---:|---:|");
-    for (const r of t.rows) {
-      const elo = r.spread == null ? String(r.rating) : `${r.rating} ±${r.spread}`;
-      out.push(`| ${r.rank} | ${cell(r.name)} | ${elo} | ${r.record} |`);
-    }
-    out.push("", t.verdict ? cell(t.verdict) : "", "");
-  }
-  if (cfg && cfg.askedBy) out.push(`Asked by ${cell(cfg.askedBy)}.`);
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
-}
-
 // ---------- commands ----------
 
-function gh(args) {
+function gh(args, input) {
   try {
     // stderr captured rather than inherited: otherwise gh prints its own "Not Found"
     // and then we print the same line back inside ours, which reads like two failures.
-    return execFileSync("gh", args, { encoding: "utf8", maxBuffer: 32 * 1024 * 1024, stdio: ["ignore", "pipe", "pipe"] });
+    return execFileSync("gh", args, {
+      encoding: "utf8", maxBuffer: 32 * 1024 * 1024,
+      input, stdio: [input == null ? "ignore" : "pipe", "pipe", "pipe"],
+    });
   } catch (e) {
     const msg = (e.stderr || e.message || "").toString().trim().split("\n")[0];
     // Only suggest the fix that matches the failure. "Is gh installed and logged in?"
@@ -616,9 +551,61 @@ function cmdResults(args) {
     console.error("No --votes given, so this is the empty table. Export the collection and pass it in.");
   }
   const tables = tablesFor(cfg, votes);
+  if (args.post || args["dry-run"]) return void postResults(cfg, tables, args);
   if (args.json) console.log(JSON.stringify({ id: cfg.id, title: cfg.title || null, askedBy: cfg.askedBy || null, tables }, null, 2));
   else if (args.md || args.markdown) process.stdout.write(renderMarkdown(tables, cfg));
   else console.log(renderText(tables, cfg));
+}
+
+// The marker is how a second run finds the first one. It is an HTML comment, so it is
+// invisible in the rendered thread, and it carries the dome id, so two domes posting to
+// the same issue keep their own comments.
+// A run of hyphens is collapsed on the way in. Ids are slugs, so single hyphens belong,
+// but `--` inside an HTML comment is malformed markup, and a stripped `>` is all that
+// stands between `-->` in an id and a comment that ends early with the rest of it
+// showing in the thread.
+export const marker = id => `<!-- thunderdome:${String(id).replace(/[^\w.-]/g, "").replace(/-{2,}/g, "-")} -->`;
+
+// The whole point of the round trip: a run that went out with four screenshots comes
+// back as a table under them. Repeated runs edit the comment they already wrote rather
+// than adding another, because a thread with six versions of the same standings is a
+// thread nobody reads to the end of.
+export function postBody(cfg, tables, bouts) {
+  const counted = bouts == null ? tables.reduce((n, t) => n + t.bouts, 0) : bouts;
+  return [
+    marker(cfg.id),
+    renderMarkdown(tables, cfg).trim(),
+    "",
+    `<sub>${counted} bout${counted === 1 ? "" : "s"}. Posted by \`thunderdome results --post\`.</sub>`,
+    "",
+  ].join("\n");
+}
+
+function postResults(cfg, tables, args) {
+  const where = args.post === true || args.post == null ? cfg.askedBy : str(args.post, "post");
+  if (!where) {
+    throw new Error("--post needs somewhere to post: pass owner/repo#123, or build the dome with --from-pr so it knows where the question came from");
+  }
+  const ref = parseRef(where);
+  const body = postBody(cfg, tables);
+  if (args["dry-run"]) {
+    console.error(`would post to ${ref.owner}/${ref.repo}#${ref.number}:`);
+    process.stdout.write(body);
+    return;
+  }
+  const api = `repos/${ref.owner}/${ref.repo}/issues`;
+  const mine = gh(["api", "user", "--jq", ".login"]).trim();
+  // Only our own comments are candidates to edit: the marker is public text and anyone
+  // can paste it, and editing somebody else's comment would fail anyway, louder.
+  const found = JSON.parse(gh(["api", `${api}/${ref.number}/comments`, "--paginate"]))
+    .filter(c => c.user && c.user.login === mine && String(c.body || "").includes(marker(cfg.id)))
+    .pop();
+  const payload = JSON.stringify({ body });
+  const out = found
+    ? gh(["api", `${api}/comments/${found.id}`, "-X", "PATCH", "--input", "-"], payload)
+    : gh(["api", `${api}/${ref.number}/comments`, "--input", "-"], payload);
+  const url = (JSON.parse(out) || {}).html_url || `https://github.com/${ref.owner}/${ref.repo}/issues/${ref.number}`;
+  console.log(`${found ? "updated" : "posted"} ${url}`);
 }
 
 const USAGE = `thunderdome
@@ -627,6 +614,7 @@ const USAGE = `thunderdome
   node cli.mjs new <name> --spec spec.json        (--spec - reads stdin)
   node cli.mjs new <name> --from-pr owner/repo#123
   node cli.mjs results <name> --votes votes.json [--md | --json]
+  node cli.mjs results <name> --votes votes.json --post
   node cli.mjs build <name>
 
 new       writes examples/<name>/config.js and builds index.html
@@ -639,6 +627,9 @@ new       writes examples/<name>/config.js and builds index.html
           --from-issue and --from are accepted as aliases of --from-pr
 results   recomputes the table from an exported votes list
           --votes -      reads the votes list from stdin
+          --post         comment the table on the issue or PR that asked
+          --post o/r#12  post somewhere else
+          --dry-run      print what --post would send, and send nothing
 build     rebuilds an existing dome
 `;
 

@@ -918,3 +918,97 @@ test("the evaluator a config is read in has nothing of ours in it", async () => 
   assert.equal(probe("console.log"), "undefined");
   assert.equal(probe("Thunderdome.start"), "undefined");
 });
+
+const twoWay = () => {
+  const cfg = {
+    id: "round-trip", title: "Which one?", askedBy: "teamleaderleo/Tact#1",
+    contenders: [{ id: "a", name: "Outline" }, { id: "b", name: "Solid" }],
+  };
+  const votes = Array.from({ length: 30 }, (_, i) => ({ id: `v${i}`, a: "a", b: "b", w: i % 4 ? "a" : "b", t: i }));
+  return { cfg, votes };
+};
+
+test("the page and the command line write the same markdown, byte for byte", async () => {
+  const { tablesFor, renderMarkdown } = await import("./cli.mjs");
+  const { cfg, votes } = twoWay();
+  // Not the engine on disk: the engine as it sits inside a built page, which is the copy
+  // the Copy button actually runs. The whole reason this function moved into the engine
+  // is that two copies of it drifted, so the test compares the two copies that ship.
+  const html = readFileSync(new URL("examples/starter/index.html", import.meta.url), "utf8");
+  const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+  const engine = blocks.find(b => b.includes("root.Thunderdome = api"));
+  assert.ok(engine, "the built page carries the engine");
+  const ctx = vm.createContext({});
+  vm.runInContext(engine, ctx, { filename: "page-engine" });
+  // JSON in and a string out: nothing crosses the realm boundary that has a prototype.
+  const onPage = vm.runInContext(
+    `(function (j) { const { cfg, votes } = JSON.parse(j);
+       return Thunderdome.markdown(Thunderdome.tablesFor(cfg, votes), cfg); })`, ctx,
+  )(JSON.stringify({ cfg, votes }));
+  assert.equal(onPage, renderMarkdown(tablesFor(cfg, votes), cfg));
+  assert.match(onPage, /\| 1 \| Outline \| \d+ ±\d+ \| 22–8–0 \|/);
+});
+
+test("a name somebody else chose cannot forge a row or a link", async () => {
+  const { tablesFor, renderMarkdown } = await import("./cli.mjs");
+  const cfg = {
+    id: "x", title: "A | B",
+    askedBy: "[nowhere](https://evil.example)",
+    contenders: [
+      { id: "a", name: "ok | not ok" },
+      { id: "b", name: "[click me](https://evil.example)\nand a second line" },
+    ],
+  };
+  const md = renderMarkdown(tablesFor(cfg, [{ a: "a", b: "b", w: "a", t: 1 }]), cfg);
+  // Four columns stay four columns, and every row is one line.
+  const rows = md.split("\n").filter(l => l.startsWith("| "));
+  assert.equal(rows.length, 3, "a header and two contenders, nothing extra");
+  for (const r of rows) assert.equal(r.split(/(?<!\\)\|/).length, 6, `row has extra cells: ${r}`);
+  // Escaped brackets are fine; an unescaped `](` is a link nobody meant to publish.
+  assert.equal(/(?<!\\)\]\(/.test(md), false, "no link anybody wrote by hand");
+  assert.equal(/^and a second line/m.test(md), false, "a newline in a name does not become prose");
+});
+
+test("the marker is invisible, and two domes in one thread keep their own comment", async () => {
+  const { marker, postBody, tablesFor } = await import("./cli.mjs");
+  assert.equal(marker("one"), "<!-- thunderdome:one -->");
+  assert.notEqual(marker("one"), marker("two"));
+  // The id goes into a comment in somebody's issue: anything that could close the comment
+  // early, or carry markup after it, comes out first.
+  assert.equal(marker("a b--><script>x</script>"), "<!-- thunderdome:ab-scriptxscript -->");
+
+  const { cfg, votes } = twoWay();
+  const body = postBody(cfg, tablesFor(cfg, votes));
+  assert.ok(body.startsWith(marker(cfg.id)), "the marker leads, so a second run can find it");
+  assert.match(body, /<sub>30 bouts\./);
+  assert.match(postBody(cfg, tablesFor(cfg, votes.slice(0, 1))), /<sub>1 bout\./);
+  assert.match(body, /Asked by teamleaderleo\/Tact#1\./);
+});
+
+test("--dry-run prints what it would post and reaches nothing", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "thunderdome-post-"));
+  const here = dirname(fileURLToPath(import.meta.url));
+  const png = join(dir, "red.png");
+  writeFileSync(png, Buffer.from("89504e470d0a1a0a", "hex"));
+  const run = (...args) => spawnSync(process.execPath, [join(here, "cli.mjs"), ...args], {
+    encoding: "utf8", cwd: dir,
+    // No PATH, so a run that tries to shell out to gh fails loudly instead of posting.
+    env: { ...process.env, PATH: "" },
+  });
+  const dome = join(dir, "d");
+  assert.equal(run("new", "d", "--out", dome, "--media", png, "--media", png).status, 0);
+  writeFileSync(join(dome, "votes.json"), JSON.stringify(
+    Array.from({ length: 12 }, (_, i) => ({ id: `v${i}`, a: "red", b: "red-2", w: "a", t: i }))));
+
+  const dry = run("results", dome, "--votes", join(dome, "votes.json"), "--dry-run", "--post", "o/r#7");
+  assert.equal(dry.status, 0, dry.stderr);
+  assert.match(dry.stderr, /would post to o\/r#7/);
+  assert.match(dry.stdout, /^<!-- thunderdome:d -->/);
+  assert.match(dry.stdout, /12–0–0/);
+
+  // Nowhere to post and no dome that remembers being asked: an error, not a guess.
+  const lost = run("results", dome, "--votes", join(dome, "votes.json"), "--dry-run");
+  assert.equal(lost.status, 1);
+  assert.match(lost.stderr, /needs somewhere to post/);
+  rmSync(dir, { recursive: true, force: true });
+});
