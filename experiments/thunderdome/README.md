@@ -37,6 +37,7 @@ experiments/thunderdome/
     cmux-selection/       cmux sidebar selection, eight treatments (see RESULTS.md)
     cmux-sidebar-groups/  cmux sidebar organization: six layouts of the same 24 workspaces (overview-*.png show all six)
     motion/               four busy indicators as video, one clip per theme
+    dialog/               one destructive dialog, three questions about it
 ```
 
 Each example folder has `config.js`, optional `config.css`, and a generated `index.html`. No dependencies and no package install. Media files sit next to the config and get inlined by the build.
@@ -67,7 +68,7 @@ The page opens on the duel. Click either card to vote for it, or use the keys:
 
 The whole card is the button, so your cursor never leaves the thing you are judging. Dragging to select a contender's name is not a vote, and a clip's own controls play it rather than voting for it. Clicking a vote button hands focus back, so every key in the table keeps meaning what the table says it means.
 
-Two views, `#vote` and `#results`, switched by the tabs in the header. No hash opens the duel, with only the title and the lede above it, and the Results tab carries the vote count. `#results` in a link opens the table directly. The keys above are the vote view's; on the results view they are the browser's, so space scrolls the standings. The arena controls are folded into a summary line that shows the current context; open it to pin a specific one. Changing a select turns off "New arena each duel".
+Two views, `#vote` and `#results`, switched by the tabs in the header. No hash opens the duel, with only the title and the lede above it, and the Results tab carries the vote count. `#results` in a link opens the table directly. A dome with several [questions](#several-questions-in-one-dome) puts the question id in front: `#wording/results`. The keys above are the vote view's; on the results view they are the browser's, so space scrolls the standings. The arena controls are folded into a summary line that shows the current context; open it to pin a specific one. Changing a select turns off "New arena each duel".
 
 Under the cards a line names the current leader once there are three votes in, so you can see your vote land without switching views.
 
@@ -117,9 +118,45 @@ What the engine hands you:
 
 - **`arena`** has one entry per dimension: the chosen option object for a select (with every field you gave it), a boolean for a toggle, plus `arena.ids` with the raw ids.
 - **Card body** comes from the first of: `contender.render(arena, ctx)`, config `render(contender, arena, ctx)`, `contender.media`, `contender.html` (string, or function of arena). A returned string is parsed as HTML. `ctx.h(tag, attrs, ...children)` is a small element helper (`class`, `text`, `html`, `style`, `on<event>`). A config-wide `render` sits above `media` so it can place the frame itself; call `ctx.media()` to get the element.
-- **Dimensions**: selects are re-rolled every duel while "New arena each duel" is on; toggles are not, unless you set `shuffle: true`. Set `default` to choose the starting option. Ids `id`, `a`, `b`, `w`, `t` are reserved.
+- **Dimensions**: selects are re-rolled every duel while "New arena each duel" is on; toggles are not, unless you set `shuffle: true`. Set `default` to choose the starting option. Ids `id`, `a`, `b`, `w`, `t` and `q` are reserved.
 - **Styles** for contender markup go in `config.css`. The engine's own classes all start with `td-`, and the theme tokens (`--ink`, `--muted`, `--faint`, `--rule`, `--panel`, `--sans`, `--mono`) are available.
 - Other knobs: `k` (Elo K-factor, default 24), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click.
+
+## Several questions in one dome
+
+One screen usually raises more than one question. A destructive dialog is a button, a footer layout, and a sentence, and they are worth judging separately even though they share the mock, the arena, and the styles. Give the config a `questions` array instead of a top-level `contenders` and each one gets its own table, its own link, and its own votes.
+
+```js
+Thunderdome.start({
+  id: "dialog-thunderdome",
+  title: "Destructive Dialog Thunderdome",
+  questions: [
+    { id: "button", short: "Button", title: "Which delete button?",
+      lede: "The dialog is the same in all four...",
+      contenderLabel: "Button", contenders: [ /* ... */ ] },
+    { id: "wording", short: "Wording", title: "How should it say it?",
+      contenders: [ /* ... */ ] },
+  ],
+  arena: { /* shared */ },
+  render: (c, a, { h }) => /* shared */,
+});
+```
+
+- **Each question brings its own `contenders`.** That is the one thing it cannot inherit: borrowing the dome's list would put one set of contenders under two question tags, so a question without its own is an error rather than a second table of the same four things.
+- **It may also set** `lede`, `contenderLabel`, `galleryTitle`, `media`, `render`, `swatch` and `interactiveCards`, and inherits the dome's for any it does not name. Those are all per-question because how a card is drawn is part of the question: one dome can ask about HTML mocks and about clips.
+- **`id` is the link.** Lowercased, unique, and not `vote` or `results` because those are the views. `title` is the question itself, shown above the cards. `short` is the tab label, falling back to `title` and then to the id.
+- **Dome-level, on purpose:** the arena, the split, `k`, `recent`, `collection`, `localKey`, `shuffle`. A question that sets one of those is an error, not a silent no-op. A question asked against a different arena is a different dome, not a tab on this one, and the arena is held steady as you move between questions so you can put two of them side by side in the same context.
+- **The hash** is `#<question>/<view>`, either order, case-insensitive: `#wording`, `#wording/results`, `#results/wording`. Both segments are optional. A missing question means the first one, and the page writes it back into the address bar on load, so the URL you copy always says which question it opens. A question that has since been renamed opens the dome rather than a blank page. The tabs are plain `<a href>`s, so back and forward walk your questions.
+
+### Storage and older domes
+
+Votes go in one table per dome, tagged with `q`.
+
+- A config with **no** `questions` writes exactly the vote shape it always did, with no tag, so every dome built before this keeps reading its own history.
+- A dome that **gains** `questions` later keeps its untagged votes: they count toward the first question. Elo ignores contender ids it does not know, so any old vote whose contenders are not in question one drops out on its own instead of landing in the wrong table.
+- `q` is now a reserved arena dimension id, alongside `id`, `a`, `b`, `w` and `t`. A config with a dimension called `q` has to rename it.
+
+`examples/dialog/` is three questions about one dialog: `node build.mjs examples/dialog`.
 
 ## Images, GIFs and video
 
@@ -153,7 +190,7 @@ Artifact publish
   capabilities: { "db": {} }
 ```
 
-With `db` granted, every vote is a document in the `votes` collection (`{a, b, w, t, ...arena ids}`, where `w` is `"a"`, `"b"`, or `"tie"`), and every open copy of the page updates live. Signed-in Contributors and up can vote; Viewers see the table and their votes stay local. Without the capability, or opened from disk, votes stay in the browser.
+With `db` granted, every vote is a document in the `votes` collection (`{a, b, w, t, ...arena ids}`, where `w` is `"a"`, `"b"`, or `"tie"`, plus `q` when the dome has questions), and every open copy of the page updates live. Signed-in Contributors and up can vote; Viewers see the table and their votes stay local. Without the capability, or opened from disk, votes stay in the browser.
 
 Republishing to the same artifact URL keeps the collection, so you can add a contender mid-run. Old votes still count; the newcomer starts at 1500 and the pairing weights push it into fights until it catches up. Removing a contender drops its bouts from the table without deleting them.
 

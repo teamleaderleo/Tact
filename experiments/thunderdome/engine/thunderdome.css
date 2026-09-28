@@ -35,6 +35,25 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-tab:hover{color:var(--ink);background:var(--hover)}
 .td-tab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .td-tab[aria-current=page]{color:var(--ink);background:var(--panel);border-color:var(--rule-strong)}
+/* One dome, several decisions. Reads as a row of questions rather than a second set of
+   pill tabs, so it does not compete with Vote/Results for the same glance.
+   Scrolls rather than wraps: the underline is pulled 1px onto the nav's own rule, and a
+   wrapped row would drag that pull through the row above it. A long list or a narrow
+   phone slides sideways instead. */
+.td-qnav{display:flex;gap:0 18px;border-bottom:1px solid var(--rule);overflow-x:auto;scrollbar-width:none}
+.td-qnav::-webkit-scrollbar{display:none}
+.td-qtab{font-size:13.5px;color:var(--muted);text-decoration:none;padding:9px 2px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none}
+.td-qtab:hover{color:var(--ink)}
+.td-qtab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+/* Colour and the underline mark the current tab. Bolding it too would change the label's
+   width on selection and shuffle every tab to its right as you click along the row. */
+.td-qtab[aria-current=page]{color:var(--ink);border-bottom-color:var(--ink)}
+/* The question in words. h2 elsewhere in the page is a small uppercase section label,
+   which this is not: it is the sentence the two cards below it are answering. */
+.td-wrap h2.td-qtitle{font-size:17px;font-weight:600;letter-spacing:-.005em;text-transform:none;color:var(--ink);margin:2px 0 -4px;text-wrap:balance}
+/* It is a focus target so a screen reader is told which question it landed on, not a
+   control. A ring around a full-width heading nobody can act on reads as a text field. */
+.td-qtitle:focus,.td-qtitle:focus-visible{outline:none}
 .td-wrap h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .td-wrap h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
 .td-section{display:grid;gap:10px}

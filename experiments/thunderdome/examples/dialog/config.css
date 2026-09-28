@@ -1,0 +1,37 @@
+/* Contender styles for examples/dialog. The engine styles the page; this styles the
+   thing being judged. Two surfaces and a compact toggle, driven by the arena classes. */
+.arena{
+  --paper:#FFFFFF; --ink:#16181D; --sub:#5B6270; --edge:#E1E4EA;
+  --danger:#C2372B; --danger-soft:#FBEBE9; --accent:#2F6FEB;
+  background:#EDEFF3;padding:22px;border-radius:8px;display:grid;place-items:center;
+  font:14px/1.5 var(--sans);
+}
+.arena.slate{
+  --paper:#1B1E25; --ink:#E7E9EE; --sub:#9AA1AE; --edge:#2E333D;
+  --danger:#F0776A; --danger-soft:#2A1C1B; --accent:#7AA7FF;
+  background:#12141A;
+}
+.dlg{
+  width:min(100%,360px);background:var(--paper);color:var(--ink);
+  border:1px solid var(--edge);border-radius:10px;
+  box-shadow:0 10px 28px rgba(12,14,20,.14);overflow:hidden;
+}
+.dlg-body{padding:18px 18px 14px}
+.arena.compact .dlg-body{padding:13px 14px 10px}
+.dlg-body h3{margin:0 0 6px;font-size:15.5px;font-weight:600;letter-spacing:-.01em}
+.dlg-body p{margin:0;color:var(--sub);font-size:13.5px}
+.dlg-foot{display:flex;justify-content:flex-end;gap:8px;padding:0 18px 16px}
+.arena.compact .dlg-foot{padding:0 14px 12px}
+.dlg-foot .split-left{margin-right:auto}
+.dlg-foot .stack{display:grid;gap:8px;width:100%}
+.b{
+  font:inherit;font-size:13.5px;font-weight:500;padding:7px 14px;border-radius:7px;
+  border:1px solid transparent;cursor:pointer;background:transparent;color:var(--ink);
+}
+.arena.compact .b{padding:5px 11px;font-size:13px}
+.b.ghost{color:var(--sub);border-color:var(--edge)}
+.b.solid{background:var(--accent);color:#fff}
+.b.danger{background:var(--danger);color:#fff}
+.arena.slate .b.danger{color:#1B1E25}
+.b.danger-outline{color:var(--danger);border-color:var(--danger)}
+.b.danger-text{color:var(--danger);background:var(--danger-soft)}

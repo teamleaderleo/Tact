@@ -50,6 +50,108 @@ test("normalize rejects reserved dimension ids and duplicate contenders", () => 
   assert.equal(a.theme, null); assert.equal(a.ic, true);
 });
 
+test("a dome with no questions is a dome with one anonymous question", () => {
+  const D = T.normalizeDome({ id: "x", title: "T", contenders: [{ id: "p" }, { id: "q" }] });
+  assert.equal(D.multi, false);
+  assert.equal(D.questions.length, 1);
+  assert.equal(D.questions[0].id, null, "no id means no q tag on the votes, so old tables still read");
+  assert.deepEqual(D.questions[0].contenders.map(c => c.id), ["p", "q"]);
+});
+
+test("questions inherit the dome and override what they name", () => {
+  const domeRender = () => "dome", ownRender = () => "own", sw = () => "#000";
+  const D = T.normalizeDome({
+    id: "d", title: "Dome", lede: "shared", contenderLabel: "Thing", k: 32,
+    render: domeRender, swatch: sw, media: { aspect: "16/9" },
+    arena: { dimensions: [{ id: "theme", options: [{ id: "l" }, { id: "d" }] }] },
+    questions: [
+      { id: "Button", title: "Which button?", contenders: [{ id: "a" }, { id: "b" }] },
+      { id: "copy", short: "Words", lede: "its own", contenderLabel: "Wording",
+        render: ownRender, media: { aspect: "4/3" }, interactiveCards: true,
+        contenders: [{ id: "c" }, { id: "d" }] },
+    ],
+  });
+  assert.equal(D.multi, true);
+  assert.equal(D.k, 32, "the K factor is the dome's");
+  assert.equal(D.dims.length, 1, "so is the arena");
+  assert.equal(D.questions[0].id, "button", "ids are lowercased so the hash is case-insensitive");
+  assert.equal(D.questions[0].label, "Which button?", "a question with no short is labelled by its title");
+  assert.equal(D.questions[0].lede, "shared", "and inherits the dome's lede");
+  assert.equal(D.questions[0].contenderLabel, "Thing");
+  assert.equal(D.questions[1].label, "Words");
+  assert.equal(D.questions[1].lede, "its own");
+  assert.equal(D.questions[1].contenderLabel, "Wording");
+  assert.deepEqual(D.questions[1].contenders.map(c => c.id), ["c", "d"]);
+  // How a card is drawn is per-question: one dome can ask about HTML mocks and about
+  // clips, and the README says so, so the engine has to actually carry these across.
+  assert.equal(D.questions[0].render, domeRender);
+  assert.equal(D.questions[1].render, ownRender);
+  assert.equal(D.questions[0].media.aspect, "16/9");
+  assert.equal(D.questions[1].media.aspect, "4/3");
+  assert.equal(D.questions[0].swatch, sw, "and inherited when the question says nothing");
+  assert.equal(D.questions[0].interactiveCards, false);
+  assert.equal(D.questions[1].interactiveCards, true);
+});
+
+test("normalizeDome rejects ids it cannot route", () => {
+  const two = [{ id: "a" }, { id: "b" }];
+  const dome = q => ({ id: "d", questions: q });
+  assert.throws(() => T.normalizeDome(dome([])), /empty/);
+  assert.throws(() => T.normalizeDome(dome([{ contenders: two }])), /needs an id/);
+  assert.throws(() => T.normalizeDome(dome([{ id: "x", contenders: two }, { id: "X", contenders: two }])), /unique/);
+  // "results" in the hash is the view, so it cannot also be a question.
+  assert.throws(() => T.normalizeDome(dome([{ id: "results", contenders: two }])), /view name/);
+  assert.throws(() => T.normalizeDome({ ...dome([{ id: "x", contenders: two }]), arena: { dimensions: [{ id: "q" }] } }), /reserved/);
+});
+
+test("normalizeDome will not guess at a config it cannot read", () => {
+  const two = [{ id: "a" }, { id: "b" }];
+  // An object map of questions is a plausible thing to write, and silently ignoring it
+  // gave you a working-looking single-question dome writing untagged votes.
+  assert.throws(() => T.normalizeDome({ id: "d", questions: { x: { contenders: two } } }), /must be a list/);
+  assert.throws(() => T.normalizeDome({ id: "d", questions: "x" }), /must be a list/);
+  assert.throws(() => T.normalizeDome({ id: "d", questions: [null] }), /not an object/);
+  // Borrowing the dome's contenders would put one contender set under two question tags,
+  // so a typo'd key is an error rather than a second table of the same four things.
+  assert.throws(() => T.normalizeDome({ id: "d", contenders: two, questions: [{ id: "x" }] }), /its own contenders/);
+  // A question that reaches for a dome-level knob is told, not quietly ignored.
+  assert.throws(() => T.normalizeDome({ id: "d", questions: [{ id: "x", contenders: two, k: 99 }] }), /dome-level/);
+  assert.throws(() => T.normalizeDome({ id: "d", questions: [{ id: "x", contenders: two, arena: {} }] }), /dome-level/);
+  // A numeric id is an id.
+  assert.equal(T.normalizeDome({ id: "d", questions: [{ id: 0, contenders: two }] }).questions[0].id, "0");
+});
+
+test("a broken question says which question it is", () => {
+  const two = [{ id: "a" }, { id: "b" }];
+  assert.throws(() => T.normalizeDome({ id: "d", questions: [
+    { id: "one", contenders: two },
+    { id: "two", contenders: [{ id: "z" }, { id: "z" }] },
+  ] }), /question "two"/);
+});
+
+test("the hash carries a question and a view, in either order", () => {
+  const ids = ["density", "copy"];
+  assert.deepEqual(T.parseHash("", ids), { q: null, view: "vote" });
+  assert.deepEqual(T.parseHash("#results", ids), { q: null, view: "results" });
+  assert.deepEqual(T.parseHash("#density", ids), { q: "density", view: "vote" });
+  assert.deepEqual(T.parseHash("#density/results", ids), { q: "density", view: "results" });
+  assert.deepEqual(T.parseHash("#results/density", ids), { q: "density", view: "results" });
+  assert.deepEqual(T.parseHash("#DENSITY/Results", ids), { q: "density", view: "results" });
+  // First of each kind wins, so a hash carrying two of either reads the same way round.
+  assert.deepEqual(T.parseHash("#results/vote", ids), { q: null, view: "results" });
+  assert.deepEqual(T.parseHash("#density/copy", ids), { q: "density", view: "vote" });
+  // A question that no longer exists still opens the dome instead of a blank page.
+  assert.deepEqual(T.parseHash("#gone/results", ids), { q: null, view: "results" });
+  assert.deepEqual(T.parseHash("#td-shuffle", ids), { q: null, view: "vote" });
+});
+
+test("hashFor round-trips through parseHash", () => {
+  const ids = ["a b", "c"];
+  for (const q of [null, "a b", "c"]) for (const v of ["vote", "results"]) {
+    assert.deepEqual(T.parseHash(T.hashFor(q, v), ids), { q, view: v });
+  }
+});
+
 test("cards are click-to-vote unless the config opts out", () => {
   const base = { id: "x", contenders: [{ id: "p" }, { id: "q" }] };
   assert.equal(T.normalize(base).interactiveCards, false);
