@@ -36,6 +36,7 @@ experiments/thunderdome/
     starter/              smallest config: four HTML-snippet buttons
     cmux-selection/       cmux sidebar selection, eight treatments (see RESULTS.md)
     cmux-sidebar-groups/  cmux sidebar organization: six layouts of the same 24 workspaces (overview-*.png show all six)
+    cmux-agent-inbox/     cmux agent inbox: six placements for one inbox with a quick reply (overview-*.png show all six)
     motion/               four busy indicators as video, one clip per theme
     dialog/               one destructive dialog, three questions about it
 ```
