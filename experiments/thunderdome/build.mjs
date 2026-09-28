@@ -78,8 +78,12 @@ export function inlineMedia(source, dir, label, seen = new Map(), root = dir) {
 export function readConfig(js, file) {
   let captured = null;
   const sandbox = { Thunderdome: { start: c => { captured = c; } }, console };
+  // A config that throws here throws in the browser too, so this is not a metadata
+  // nicety being skipped: it is the one place that notices the page is broken before
+  // anyone opens it. Said plainly enough that it does not read like a warning you can
+  // scroll past.
   try { vm.runInNewContext(js, sandbox, { filename: file, timeout: 1000 }); }
-  catch (e) { console.warn(`${file}: could not evaluate for metadata (${e.message}); using folder name`); }
+  catch (e) { console.warn(`${file}: threw while loading (${e.message}). The built page will do the same. Using the folder name for the title.`); }
   return captured || {};
 }
 

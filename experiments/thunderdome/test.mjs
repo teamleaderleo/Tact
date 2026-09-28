@@ -3,6 +3,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { tmpdir } from "node:os";
+import { spawnSync } from "node:child_process";
+import vm from "node:vm";
 
 const T = createRequire(import.meta.url)("./engine/thunderdome.js");
 const ids = ["a1", "b2", "c3"];
@@ -478,14 +483,6 @@ test("an issue body becomes a field of contenders", async () => {
   assert.equal(spec.contenders.length, 3);
 });
 
-test("a reference can be a URL or an owner/repo#n", async () => {
-  const { parseRef } = await import("./cli.mjs");
-  assert.deepEqual(parseRef("manaflow-ai/cmux#1234"), { owner: "manaflow-ai", repo: "cmux", number: 1234 });
-  assert.deepEqual(parseRef("https://github.com/o/r/pull/9"), { owner: "o", repo: "r", number: 9 });
-  assert.deepEqual(parseRef("https://github.com/o/r/issues/9"), { owner: "o", repo: "r", number: 9 });
-  assert.throws(() => parseRef("cmux#1234"), /owner\/repo#123/);
-});
-
 test("the generated config is source someone can edit, and the engine accepts it", async () => {
   const { renderConfig } = await import("./cli.mjs");
   const src = renderConfig({
@@ -551,28 +548,192 @@ test("an untagged vote counts toward the first question, as it does in the brows
   assert.deepEqual(tables.map(t => t.bouts), [1, 0]);
 });
 
-test("media is copied in, and a path that is not a file stops the whole command", async () => {
-  const { gatherMedia } = await import("./cli.mjs");
-  const copied = [];
-  const fs = { isFile: p => !p.includes("nope"), copyIn: (s, d) => copied.push([s, d]) };
+const fakeFs = (extra = {}) => ({
+  isFile: p => !p.includes("nope"),
+  list: () => [],
+  copyIn: () => {},
+  write: () => {},
+  get: async () => { throw new Error("offline"); },
+  ...extra,
+});
+
+test("media is planned before anything is written, and a path that is not a file stops the whole command", async () => {
+  const { planMedia } = await import("./cli.mjs");
   const spec = {
     contenders: [
       { id: "a", media: "/tmp/shot.png" },
       { id: "b", media: "/elsewhere/shot.png" },              // same basename, different folder
-      { id: "c", media: "https://example.com/c.gif" },        // already reachable from anywhere
+      { id: "c", media: "https://example.com/c.gif" },        // fetched, so the page stays one file
       { id: "d", media: "/dome/media/already.png" },          // already under the dome
     ],
   };
-  assert.equal(gatherMedia(spec, "/dome", fs), 2);
-  assert.deepEqual(spec.contenders.map(c => c.media),
-    ["media/shot.png", "media/shot-2.png", "https://example.com/c.gif", "/dome/media/already.png"]);
-  assert.deepEqual(copied, [["/tmp/shot.png", "/dome/media/shot.png"], ["/elsewhere/shot.png", "/dome/media/shot-2.png"]]);
+  const plan = planMedia(spec, "/dome", {}, fakeFs());
+  assert.deepEqual(plan.spec.contenders.map(c => c.media),
+    ["media/shot.png", "media/shot-2.png", "media/c.gif", "/dome/media/already.png"]);
+  assert.deepEqual(plan.copies, [["/tmp/shot.png", "/dome/media/shot.png"], ["/elsewhere/shot.png", "/dome/media/shot-2.png"]]);
+  assert.deepEqual(plan.fetches.map(f => f.url), ["https://example.com/c.gif"]);
+  // Planning is pure: the caller's spec is untouched until applyMedia runs.
+  assert.equal(spec.contenders[0].media, "/tmp/shot.png");
+
+  // --link leaves remote media where it is, for people who would rather not carry it.
+  const linked = planMedia(spec, "/dome", { link: true }, fakeFs());
+  assert.equal(linked.spec.contenders[2].media, "https://example.com/c.gif");
+  assert.deepEqual(linked.fetches, []);
+
+  // A name already sitting in media/ is not clobbered, even though nothing in this
+  // spec collides with it.
+  const one = { contenders: [{ id: "a", media: "/tmp/shot.png" }] };
+  const clobber = planMedia(one, "/dome", {}, fakeFs({ list: () => ["shot.png"] }));
+  assert.equal(clobber.spec.contenders[0].media, "media/shot-2.png");
 
   // One typo and nothing is copied: a folder half full of media whose config never got
   // written is harder to clean up than a command that did nothing.
   const bad = { contenders: [{ id: "a", media: "/tmp/shot.png" }, { id: "b", media: "/tmp/nope.png" }] };
-  const none = [];
-  assert.throws(() => gatherMedia(bad, "/dome", { ...fs, copyIn: (s, d) => none.push([s, d]) }), /no such media file: \/tmp\/nope\.png/);
-  assert.deepEqual(none, []);
-  assert.equal(bad.contenders[0].media, "/tmp/shot.png");
+  assert.throws(() => planMedia(bad, "/dome", {}, fakeFs()), /no such media file: \/tmp\/nope\.png/);
+});
+
+test("a download that fails leaves the URL in place and says so", async () => {
+  const { planMedia, applyMedia } = await import("./cli.mjs");
+  const spec = {
+    contenders: [
+      { id: "a", media: "https://example.com/good" },   // no extension: content-type names it
+      { id: "b", media: "https://example.com/bad.gif" },
+    ],
+  };
+  const wrote = [];
+  const fs = fakeFs({
+    write: (d, b) => wrote.push([d, String(b)]),
+    get: async url => {
+      if (url.endsWith("bad.gif")) throw new Error("HTTP 404");
+      return { body: Buffer.from("bytes"), type: "image/webp" };
+    },
+  });
+  const out = await applyMedia(planMedia(spec, "/dome", {}, fs), fs);
+  assert.deepEqual(out.spec.contenders.map(c => c.media), ["media/a.webp", "https://example.com/bad.gif"]);
+  assert.deepEqual(wrote, [["/dome/media/a.webp", "bytes"]]);
+  assert.equal(out.fetched, 1);
+  assert.deepEqual(out.failed.map(f => f.url), ["https://example.com/bad.gif"]);
+});
+
+test("the table a terminal prints is the table the page draws", async () => {
+  const { tableFor } = await import("./cli.mjs");
+  const four = [{ id: "a", name: "A" }, { id: "b", name: "B" }, { id: "c", name: "C" }, { id: "d", name: "D" }];
+  const votes = [];
+  for (let i = 0; i < 60; i++) {
+    const [x, y] = [["a", "b"], ["b", "c"], ["c", "d"], ["a", "c"]][i % 4];
+    votes.push({ a: x, b: y, w: i % 5 === 0 ? "b" : "a", t: i });
+  }
+  // A level of its own, so a verdict fixed at somebody else's 95% would show up here.
+  for (const confidence of [{ level: .99 }, { level: .5 }, false]) {
+    const D = T.normalizeDome({ id: "d", contenders: four, confidence });
+    const Q = D.questions[0];
+    const table = tableFor(D, Q, votes);
+    // What the browser does, spelled out: same options, same resample count, same rule.
+    const qIds = Q.contenders.map(c => c.id);
+    const conf = T.confidence(qIds, votes, T.confidenceOpts(D, votes.length));
+    const order = qIds.slice().sort((x, y) => conf.rating[y] - conf.rating[x]);
+    const nm = id => Q.contenders.find(c => c.id === id).name;
+    assert.deepEqual(table.rows.map(r => r.id), order);
+    assert.deepEqual(table.rows.map(r => r.rating), order.map(id => Math.round(conf.rating[id])));
+    assert.deepEqual(table.rows.map(r => r.spread),
+      order.map(id => (conf.lo ? Math.round((conf.hi[id] - conf.lo[id]) / 2) : null)));
+    assert.equal(table.verdict, T.verdictFor(conf, order, nm));
+  }
+});
+
+test("the resample count comes down as the votes go up, and never off the ends", () => {
+  assert.equal(T.resampleCount(0), 300);
+  assert.equal(T.resampleCount(400), 300);
+  assert.equal(T.resampleCount(1200), 100);
+  assert.equal(T.resampleCount(1e6), 40);
+  // confidence: false is off, not "off by default": no resamples and no bar to clear.
+  assert.deepEqual(T.confidenceOpts({ confidence: null }, 50), { resamples: 0, minBouts: Infinity });
+  assert.equal(T.confidenceOpts({ confidence: { level: .9 } }, 1200).resamples, 100);
+});
+
+test("a hostile title cannot write code into the generated config", async () => {
+  const { renderConfig } = await import("./cli.mjs");
+  // U+2028 and U+2029 end a line to a JS parser but not to JSON.stringify, so an issue
+  // whose title carries one could close a comment, or a string, and keep going as code.
+  const src = renderConfig({
+    id: "d",
+    title: "Which?\u2028globalThis.PWNED = 1;\u2028//",
+    askedBy: "o/r#7\u2029globalThis.PWNED = 1;",
+    contenders: [
+      { id: "a", name: "A\u2028globalThis.PWNED = 1;", media: "media/a.png" },
+      { id: "b", name: "B</script><script>", media: "media/b.png" },
+    ],
+  });
+  assert.equal(/[\u2028\u2029]/.test(src), false);
+  const sandbox = { Thunderdome: { start: () => {} } };
+  vm.runInNewContext(src, sandbox, { filename: "hostile", timeout: 1000 });
+  assert.equal(sandbox.PWNED, undefined);
+  assert.equal("PWNED" in sandbox, false);
+  // The header is still one comment per line, so the title is readable and inert.
+  assert.match(src, /^\/\/ Which\? globalThis\.PWNED = 1; \/\/\n/);
+});
+
+test("fenced code and inline code are not candidates", async () => {
+  const { mediaFromMarkdown } = await import("./cli.mjs");
+  const body = [
+    "Try `![nope](https://example.com/inline.png)` first.",
+    "```md\n![nope](https://example.com/fenced.png)\n```",
+    "![yes](https://example.com/real.png)",
+    "See https://example.com/trailing.gif.",              // sentence period is not part of it
+    "![spaced](  <https://example.com/angle.png>  \"t\")",
+    "![no scheme](/relative/a.png)",
+  ].join("\n\n");
+  assert.deepEqual(mediaFromMarkdown(body).map(f => f.src), [
+    "https://example.com/real.png",
+    "https://example.com/angle.png",
+    "https://example.com/trailing.gif",
+  ]);
+});
+
+test("parseRef takes the shapes people paste", async () => {
+  const { parseRef } = await import("./cli.mjs");
+  const want = { owner: "o", repo: "r", number: 9 };
+  assert.deepEqual(parseRef("manaflow-ai/cmux#1234"), { owner: "manaflow-ai", repo: "cmux", number: 1234 });
+  assert.deepEqual(parseRef("https://github.com/o/r/pull/9"), want);
+  assert.deepEqual(parseRef("https://github.com/o/r/issues/9"), want);
+  assert.deepEqual(parseRef("  https://www.github.com/o/r/pull/9  "), want);
+  assert.deepEqual(parseRef("https://github.com/o/r/issues/9#issuecomment-123"), want);
+  assert.deepEqual(parseRef("https://github.com/o/r/pull/9/files"), want);
+  assert.deepEqual(parseRef("o/r#9"), want);
+  assert.deepEqual(parseRef("teamleaderleo/Tact#9"), { owner: "teamleaderleo", repo: "Tact", number: 9 });
+  // A number that runs into a word is not a number someone meant.
+  assert.throws(() => parseRef("o/r#9abc"), /owner\/repo#123/);
+  assert.throws(() => parseRef("https://gitlab.com/o/r/issues/9"), /owner\/repo#123/);
+  assert.throws(() => parseRef("o/r"), /owner\/repo#123/);
+});
+
+test("the CLI runs as a command and builds a dome that opens", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "thunderdome-cli-"));
+  const dome = join(dir, "which-one");
+  const png = join(dir, "red.png");
+  writeFileSync(png, Buffer.from("89504e470d0a1a0a", "hex"));
+  const here = dirname(fileURLToPath(import.meta.url));
+  const run = (...args) => {
+    const r = spawnSync(process.execPath, [join(here, "cli.mjs"), ...args], { encoding: "utf8", cwd: dir });
+    assert.equal(r.status, 0, `${args.join(" ")} failed: ${r.stderr}`);
+    return r.stdout;
+  };
+  const out = run("new", "which-one", "--out", dome, "--title", "Which one?", "--media", png, "--media", png);
+  assert.match(out, /index\.html/);
+  const html = readFileSync(join(dome, "index.html"), "utf8");
+  // Self-contained: the media came along as a data URI, not a path out of the folder.
+  assert.match(html, /data:image\/png;base64,/);
+  assert.equal(html.includes(png), false);
+  assert.match(html, /<title>Which one\?<\/title>/);
+  // Two files with the same name both arrive, under names that do not collide.
+  assert.deepEqual(readdirSync(join(dome, "media")).sort(), ["red-2.png", "red.png"]);
+
+  writeFileSync(join(dome, "votes.json"), JSON.stringify(
+    Array.from({ length: 20 }, (_, i) => ({ id: `v${i}`, a: "red", b: "red-2", w: "a", t: i }))));
+  const text = run("results", dome, "--votes", join(dome, "votes.json"));
+  assert.match(text, /20–0–0/);
+  assert.match(text, /of resamples/);
+  const md = run("results", dome, "--votes", join(dome, "votes.json"), "--md");
+  assert.match(md, /\| 1 \| Red \| \d+ ±\d+ \| 20–0–0 \|/);
+  rmSync(dir, { recursive: true, force: true });
 });

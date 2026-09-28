@@ -62,9 +62,10 @@ disk, or an issue where someone has pasted four mocks and asked which one.
 
 ```bash
 node cli.mjs new red-button --title "Which delete button?" \
-  --media shots/solid-red.png --media shots/outlined-red.png --media shots/text-red.png
-# wrote examples/red-button/config.js (3 contenders, 3 media files copied in)
-# wrote examples/red-button/index.html (522.1 KB, 3 media files inlined)
+  --media shots/solid-red.png --media shots/outlined-red.png \
+  --media shots/text-red.png --media shots/solid-grey.png
+# wrote examples/red-button/config.js (4 contenders, 4 media files copied in)
+# wrote examples/red-button/index.html (691.4 KB, 4 media files inlined)
 ```
 
 Names come off the filenames, so `shots/dense-rows@2x.png` becomes "Dense rows". Media is
@@ -72,8 +73,10 @@ copied into the dome folder first, because the build only inlines what sits insi
 a page built from `/tmp` would come out with empty cards. A `--media` path that is not a
 file stops the command rather than building a dome with a hole in it.
 
-`--from-pr` reads the title and every image out of an issue or a PR, which is the other
-half of the round trip: the thread asking the question becomes the thing that answers it.
+`--from-pr` reads the title and the images out of the body of an issue or a PR, which is
+the other half of the round trip: the thread asking the question becomes the thing that
+answers it. The body only, not the comments and not the diff, so what you get is the
+question as it was asked.
 
 ```bash
 node cli.mjs new dialog --from-pr teamleaderleo/Tact#105
@@ -81,8 +84,13 @@ node cli.mjs new dialog --from-issue https://github.com/manaflow-ai/cmux/issues/
 ```
 
 Markdown images, `<img src>` and bare image URLs all count, in that order, and alt text
-becomes the contender name where there is any. The reference is recorded as `askedBy` so
-the page says where the question came from. Needs `gh` on the path and logged in.
+becomes the contender name where there is any. Anything inside a code fence or backticks
+is left alone, so a body that quotes some markdown does not get voted on. The images are
+downloaded into the dome's `media/` folder, because a GitHub attachment URL on a private
+repo only loads for people already logged in and the point of the output is one file you
+can send someone; `--link-media` leaves them as URLs instead. The reference is recorded as
+`askedBy` so the page says where the question came from. Needs `gh` on the path and
+logged in.
 
 For anything the flags do not cover, `--spec` takes the whole config as JSON, including
 `questions` for a multi-question dome:
@@ -93,6 +101,8 @@ node cli.mjs new density --spec - <<'JSON'
                                        {"id": "tight", "name": "Tight", "media": "b.png"}]}
 JSON
 ```
+
+Media paths in a spec are resolved from where you ran the command, the same as `--media`.
 
 `--out <dir>` puts the dome somewhere other than `examples/<name>`, `--no-build` writes
 the config and stops, `--force` overwrites one that is already there, and `build <name>`
@@ -121,7 +131,11 @@ Which delete button?
 
 `--md` gives the same thing as a markdown table to paste back into the thread that asked,
 and `--json` gives the numbers. A multi-question dome prints one table per question, and
-votes with no `q` tag count toward the first question, the same as in the browser.
+votes with no `q` tag count toward the first question, the same as in the browser. The
+rating, the interval and the sentence underneath come from the same functions the page
+calls, with the dome's own `confidence` settings, so the two cannot drift apart. The one
+thing the terminal leaves out is the per-[`split`](#author-a-config) columns: open the
+page for those.
 
 ## Voting
 
