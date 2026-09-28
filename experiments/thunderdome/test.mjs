@@ -920,11 +920,18 @@ test("the evaluator a config is read in has nothing of ours in it", async () => 
 });
 
 const twoWay = () => {
+  const two = [{ id: "a", name: "Outline" }, { id: "b", name: "Solid" }];
   const cfg = {
     id: "round-trip", title: "Which one?", askedBy: "teamleaderleo/Tact#1",
-    contenders: [{ id: "a", name: "Outline" }, { id: "b", name: "Solid" }],
+    // Two questions, both titled, so the `### title` line is inside the comparison. With
+    // one untitled question that line never renders and a change to it goes unnoticed.
+    questions: [
+      { id: "button", title: "Which delete button?", contenders: two },
+      { id: "WORDING", title: "How should it say it?", contenders: two },
+    ],
   };
-  const votes = Array.from({ length: 30 }, (_, i) => ({ id: `v${i}`, a: "a", b: "b", w: i % 4 ? "a" : "b", t: i }));
+  const votes = Array.from({ length: 30 }, (_, i) =>
+    ({ id: `v${i}`, q: i % 3 ? "button" : "wording", a: "a", b: "b", w: i % 4 ? "a" : "b", t: i }));
   return { cfg, votes };
 };
 
@@ -946,7 +953,9 @@ test("the page and the command line write the same markdown, byte for byte", asy
        return Thunderdome.markdown(Thunderdome.tablesFor(cfg, votes), cfg); })`, ctx,
   )(JSON.stringify({ cfg, votes }));
   assert.equal(onPage, renderMarkdown(tablesFor(cfg, votes), cfg));
-  assert.match(onPage, /\| 1 \| Outline \| \d+ ±\d+ \| 22–8–0 \|/);
+  assert.match(onPage, /### Which delete button\?/);
+  assert.match(onPage, /### How should it say it\?/);
+  assert.match(onPage, /\| 1 \| \w+ \| \d+ ±\d+ \| \d+–\d+–0 \|/);
 });
 
 test("a name somebody else chose cannot forge a row or a link", async () => {
@@ -975,7 +984,19 @@ test("the marker is invisible, and two domes in one thread keep their own commen
   assert.notEqual(marker("one"), marker("two"));
   // The id goes into a comment in somebody's issue: anything that could close the comment
   // early, or carry markup after it, comes out first.
-  assert.equal(marker("a b--><script>x</script>"), "<!-- thunderdome:ab-scriptxscript -->");
+  assert.match(marker("a b--><script>x</script>"), /^<!-- thunderdome:ab-scriptxscript-\w+ -->$/);
+  // Two ids that sanitize to the same string would edit each other's comment out of the
+  // thread. Every non-ASCII id sanitizes to nothing at all, so that is every dome in
+  // Japanese against every dome in Korean.
+  const apart = ids => assert.equal(new Set(ids.map(marker)).size, ids.length, ids.join(" / "));
+  apart(["ダイアログ", "\ud55c\uad6d\uc5b4", "\u0434\u0438\u0437\u0430\u0439\u043d", ""]);
+  apart(["a/b", "ab", "a b"]);
+  apart(["a--b", "a-b"]);
+  // An id that needed nothing done to it is still readable in the thread.
+  assert.equal(marker("red-button.v2"), "<!-- thunderdome:red-button.v2 -->");
+  // Prefix safety: the trailing space and arrow mean one marker is never a substring of
+  // another, which is what the comment lookup relies on.
+  assert.equal(marker("ab").includes(marker("a")), false);
 
   const { cfg, votes } = twoWay();
   const body = postBody(cfg, tablesFor(cfg, votes));
@@ -1011,4 +1032,134 @@ test("--dry-run prints what it would post and reaches nothing", async () => {
   assert.equal(lost.status, 1);
   assert.match(lost.stderr, /needs somewhere to post/);
   rmSync(dir, { recursive: true, force: true });
+});
+
+test("a name somebody else chose cannot open a block on the lines that are not rows", async () => {
+  const { tablesFor, renderMarkdown } = await import("./cli.mjs");
+  // The two heading lines and the verdict sentence are bare paragraphs, and the verdict
+  // starts with whichever name is winning. Everything here is what a contender is called.
+  const md = name => {
+    const cfg = { id: "x", contenders: [{ id: "a", name }, { id: "b", name: "Solid" }] };
+    const votes = Array.from({ length: 30 }, (_, i) => ({ id: `v${i}`, a: "a", b: "b", w: "a", t: i }));
+    return renderMarkdown(tablesFor(cfg, votes), cfg);
+  };
+  const verdict = name => md(name).split("\n").find(l => / is ahead of /.test(l));
+  assert.equal(verdict("# Free money, click here"), "\\# Free money, click here is ahead of Solid in 100% of resamples.");
+  assert.equal(verdict("- item"), "\\- item is ahead of Solid in 100% of resamples.");
+  assert.equal(verdict("+ item"), "\\+ item is ahead of Solid in 100% of resamples.");
+  assert.equal(verdict("1. item"), "1\\. item is ahead of Solid in 100% of resamples.");
+  assert.equal(verdict("> quoted"), "\\> quoted is ahead of Solid in 100% of resamples.");
+  assert.equal(verdict("~~deleted~~"), "\\~\\~deleted\\~\\~ is ahead of Solid in 100% of resamples.");
+  // Four leading spaces, or a tab, is a code block. The trim takes both.
+  assert.equal(verdict("    Outline"), "Outline is ahead of Solid in 100% of resamples.");
+  assert.equal(verdict("\tOutline"), "Outline is ahead of Solid in 100% of resamples.");
+  // A title is its own heading line, and a `#` there ends the heading and starts prose.
+  const titled = { id: "x", title: "# Free money", contenders: [{ id: "a", name: "A" }, { id: "b", name: "B" }] };
+  assert.match(renderMarkdown(tablesFor(titled, []), titled), /^## \\# Free money$/m);
+});
+
+test("a name cannot mention a stranger or plant a live link", async () => {
+  const { tablesFor, renderMarkdown } = await import("./cli.mjs");
+  // Checked against GitHub's own renderer while writing this: a backslash does not stop
+  // a mention and neither does `&#64;`, because entities are decoded before the mention
+  // pass. A word joiner does, and `&#58;` does stop an autolink.
+  const cfg = {
+    id: "x", title: "@torvalds asks",
+    askedBy: "https://evil.example/x",
+    contenders: [
+      { id: "a", name: "@torvalds" },
+      { id: "b", name: "https://evil.example/pwn" },
+      { id: "c", name: "www.evil.example" },
+      { id: "d", name: "who@evil.example" },
+    ],
+  };
+  const md = renderMarkdown(tablesFor(cfg, [{ a: "a", b: "b", w: "a", t: 1 }]), cfg);
+  assert.equal(/@\w/.test(md), false, "every @ is followed by the joiner, never by a name");
+  assert.equal(md.includes("://"), false, "no scheme GitHub would autolink");
+  assert.equal(/\bwww\.\w/.test(md), false, "no bare www host either");
+  // And the names are still readable once the invisible character is taken back out.
+  const plain = md.replace(/⁠/g, "").replace(/&#58;/g, ":").replace(/&#46;/g, ".");
+  for (const c of cfg.contenders) assert.ok(plain.includes(c.name), `${c.name} survived`);
+});
+
+test("a table with no bouts in it is not posted by accident", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "thunderdome-post-"));
+  const here = dirname(fileURLToPath(import.meta.url));
+  const png = join(dir, "red.png");
+  writeFileSync(png, Buffer.from("89504e470d0a1a0a", "hex"));
+  const run = (...args) => spawnSync(process.execPath, [join(here, "cli.mjs"), ...args], {
+    encoding: "utf8", cwd: dir, env: { ...process.env, PATH: "" },
+  });
+  const dome = join(dir, "d");
+  assert.equal(run("new", "d", "--out", dome, "--media", png, "--media", png).status, 0);
+  const votes = join(dome, "votes.json");
+  writeFileSync(votes, JSON.stringify(
+    Array.from({ length: 12 }, (_, i) => ({ id: `v${i}`, a: "red", b: "red-2", w: "a", t: i }))));
+
+  // One mistyped flag used to comment "no bouts yet, so the table is the prior and
+  // nothing else" into somebody's issue, on top of the real table a previous run posted.
+  const typo = run("results", dome, "--vote", votes, "--dry-run", "--post", "o/r#7");
+  assert.equal(typo.status, 1);
+  assert.match(typo.stderr, /nothing to post/);
+  assert.equal(typo.stdout, "");
+  // Unless an empty table is the message, which is announcing a dome nobody has voted in.
+  const meant = run("results", dome, "--vote", votes, "--dry-run", "--post", "o/r#7", "--post-empty");
+  assert.equal(meant.status, 0, meant.stderr);
+  assert.match(meant.stdout, /No bouts yet/);
+
+  // `--post ""` is a shell script whose ref came back empty. Under a truthiness check it
+  // printed the text table, posted nothing, and exited 0, and the caller believed it.
+  const blank = run("results", dome, "--votes", votes, "--post", "");
+  assert.equal(blank.status, 1);
+  assert.match(blank.stderr, /needs somewhere to post|owner\/repo#123/);
+  assert.equal(blank.stdout, "");
+
+  const both = run("results", dome, "--votes", votes, "--dry-run", "--post", "o/r#7", "--json");
+  assert.equal(both.status, 1);
+  assert.match(both.stderr, /--json/);
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("a second run edits the comment the first one wrote, and nobody else's", async () => {
+  const { postResults, tablesFor, marker } = await import("./cli.mjs");
+  const { cfg, votes } = twoWay();
+  const tables = tablesFor(cfg, votes);
+  const calls = [];
+  const fake = comments => (args, input) => {
+    calls.push(args.join(" "));
+    if (args[1] === "user") return "leo\n";
+    if (args.includes("--paginate")) return JSON.stringify(comments);
+    return JSON.stringify({ html_url: "https://github.com/o/r/issues/7#issuecomment-1" });
+  };
+  const post = (comments, extra) => {
+    calls.length = 0;
+    const r = postResults(cfg, tables, { post: "o/r#7", ...extra }, votes, fake(comments));
+    return { ...r, calls: calls.slice() };
+  };
+
+  const fresh = post([]);
+  assert.equal(fresh.updated, false);
+  assert.ok(fresh.calls.some(c => c.includes("repos/o/r/issues/7/comments --input -")), fresh.calls.join("\n"));
+
+  const ours = { id: 42, user: { login: "leo" }, body: `${marker(cfg.id)}\nold table` };
+  const again = post([ours]);
+  assert.equal(again.updated, true);
+  assert.ok(again.calls.some(c => c.includes("repos/o/r/issues/comments/42 -X PATCH")), again.calls.join("\n"));
+
+  // The marker is public text. Somebody quoting our comment back does not hand them an
+  // edit, and neither does a different dome reporting into the same thread.
+  assert.equal(post([{ id: 9, user: { login: "someone-else" }, body: ours.body }]).updated, false);
+  assert.equal(post([{ id: 9, user: { login: "leo" }, body: marker("another-dome") }]).updated, false);
+
+  // A token that cannot say who it is posts rather than editing the wrong comment.
+  const blind = postResults(cfg, tables, { post: "o/r#7" }, votes, (args, input) => {
+    if (args[1] === "user") throw new Error("Resource not accessible by integration");
+    return JSON.stringify({ html_url: "u" });
+  });
+  assert.equal(blind.updated, false);
+
+  // And the body carries the marker, the bout count and where the question came from.
+  assert.ok(again.body.startsWith(marker(cfg.id)));
+  assert.match(again.body, /<sub>30 bouts\./);
+  assert.match(again.body, /Asked by teamleaderleo\/Tact#1\./);
 });

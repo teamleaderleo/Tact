@@ -366,27 +366,56 @@
     return { question: Q.id, title: Q.title || Q.label || "", bouts: conf.bouts, rows, verdict };
   }
 
-  // `cfg` is a raw config, the same object the page was started with.
-  function tablesFor(cfg, votes) {
-    const D = normalizeDome(cfg);
+  // `D` is already normalized; `cfg` is a raw config, the same object the page was
+  // started with. Two entry points and one body, because the page has a normalized dome
+  // in hand and the command line has a config it just read off disk, and the version
+  // where each of them writes its own one-line loop is the version where the page's
+  // copy quietly grows a second argument.
+  function tablesForDome(D, votes) {
     return D.questions.map(Q => tableFor(D, Q, votes));
   }
 
-  // GFM tables, no HTML, so it renders the same in an issue body, a PR body and a
-  // comment. `meta` carries the title and `askedBy`; a raw config or a normalized dome
-  // both work, since both have those two fields.
+  function tablesFor(cfg, votes) {
+    return tablesForDome(normalizeDome(cfg), votes);
+  }
+
+  // A contender's name can be alt text a stranger typed into an issue, and this table is
+  // going straight back into that issue under your name. Everything a stranger could
+  // have chosen goes through here, the verdict sentence included, since it is made of
+  // two contender names.
+  //
+  // Four separate things have to be defused, and only the first is the obvious one:
+  //
+  // - Inline markup. An unescaped pipe is a row with an extra cell in a four-column
+  //   table, which is a wrecked table at best and a forged one at worst; a newline ends
+  //   the row early and turns the rest into prose; `[click me](https://evil.example)` is
+  //   a live link you did not write.
+  // - Block openers. `cell()`'s output also starts three lines that are not table rows:
+  //   the two heading lines and the verdict paragraph, which begins with the top-ranked
+  //   name. A leading `#` there is an H1 in somebody's issue with text you did not
+  //   choose in it; a leading `-` is a list; leading spaces are a code block.
+  // - Mentions. GitHub decodes `&#64;` before it looks for mentions and a backslash does
+  //   not stop one either, both checked against its own renderer, so `@someone` in a
+  //   name subscribes a stranger to the thread and mails them, from your account, every
+  //   time the table is posted. A word joiner after the `@` is invisible, survives a
+  //   copy and paste, and is the only thing found that GitHub respects.
+  // - Bare URLs, which GFM autolinks with no brackets at all. `&#58;` and `&#46;` do
+  //   work here (also checked), and a name that was meant to be a URL still reads as
+  //   one; it just is not clickable.
+  const cell = s => String(s)
+    .replace(/\s+/g, " ").trim()
+    .replace(/([\\`*_[\]<>|~])/g, "\\$1")
+    .replace(/^([#+-])/, "\\$1")
+    .replace(/^(\d+)([.)])/, "$1\\$2")
+    .replace(/@(?=\w)/g, "@⁠")
+    .replace(/:\/\//g, "&#58;//")
+    .replace(/\bwww\./gi, "www&#46;");
+
+  // GFM tables, no HTML of our own inside the table, so it renders the same in an issue
+  // body, a PR body and a comment. `meta` carries the title and `askedBy`; a raw config
+  // or a normalized dome both work, since both have those two fields.
   function markdown(tables, meta) {
     const out = [];
-    // A contender's name can be alt text a stranger typed into an issue, and this table
-    // is going straight back into that issue under your name. An unescaped pipe is a row
-    // with an extra cell in a four-column table, which is a wrecked table at best and a
-    // forged one at worst; a newline ends the row early and turns the rest into prose;
-    // and `[click me](https://evil.example)` is a live link you did not write. Everything
-    // a stranger could have chosen goes through here, the verdict sentence included,
-    // since it is made of two contender names.
-    const cell = s => String(s)
-      .replace(/\s*[\r\n]+\s*/g, " ")
-      .replace(/([\\`*_[\]<>|])/g, "\\$1");
     if (meta && meta.title) out.push(`## ${cell(meta.title)}`, "");
     for (const t of tables) {
       if (t.title) out.push(`### ${cell(t.title)}`, "");
@@ -821,8 +850,7 @@
       C.dims.length ? $.arenaBox : null,
       $.duel,
       h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.replay, $.undo),
-      $.whyBox || null,
-      $.status);
+      $.whyBox || null);
 
     // The table is usually wanted somewhere else: the issue that asked, a message, a
     // commit. One button, the same markdown the command line prints, so the answer gets
@@ -843,7 +871,12 @@
         h("h1", { text: C.title || C.id }),
         h("nav", { class: "td-tabs", "aria-label": "View" }, $.tabVote, $.tabResults)),
       $.qNav, $.qTitle, $.qLede,
-      $.viewVote, $.viewResults);
+      // Outside both views. It used to live at the foot of the vote view, which was fine
+      // while only voting had anything to say; then the copy button started saying
+      // "Copied the table as markdown" into a subtree the results view keeps hidden, so
+      // there was no confirmation on screen and nothing for a screen reader to announce,
+      // and a copy that failed looked exactly like one that worked.
+      $.viewVote, $.viewResults, $.status);
     mount.append(wrap);
 
     // Everything on the page that names the question rather than the dome. The lede is
@@ -1183,32 +1216,57 @@
       if (galleryDirty) flushGallery();
     }
 
-    // C is already a normalized dome, so this is `tablesFor` minus the second normalize.
+    // The same two functions the command line calls, not a hand-copy of their bodies:
+    // `tablesForDome` exists so that this line and `tablesFor` cannot come apart, which
+    // is the entire argument for having moved any of this into the engine.
+    //
     // Every question goes in, not just the one on screen: someone copying a result wants
     // the dome's answer, and scrolling back through the tabs to paste four tables in a
     // row is how you end up pasting three.
     function markdownNow() {
-      return markdown(C.questions.map(q => tableFor(C, q, votes)), C);
+      return markdown(tablesForDome(C, votes), C);
     }
 
     // The clipboard API needs a user gesture and a secure context, and a page opened
     // from a file:// URL has neither in some browsers. The fallback selects the text in
     // a textarea so the failure mode is "press ctrl-c yourself" rather than "nothing
     // happened".
+    // The status line lives at the foot of the page, which a screen reader announces and
+    // a reader looking at the button does not see: on the results view the table and the
+    // gallery are between them. So the button says it too, where the eye already is.
+    let copyTimer = null;
+    function copySaid(label) {
+      if (!$.copy) return;
+      $.copy.textContent = label;
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => { $.copy.textContent = "Copy as markdown"; }, 2000);
+    }
+
     function copyMarkdown() {
       const text = markdownNow();
       const fallback = () => {
-        const ta = h("textarea", { class: "td-copy-sink" });
+        // Whatever the reader had highlighted in the standings goes back afterwards, and
+        // so does the caret: a button that silently eats your selection and drops you at
+        // the top of the page is a worse outcome than a copy that did not happen.
+        const sel = window.getSelection ? window.getSelection() : null;
+        const had = sel ? Array.from({ length: sel.rangeCount }, (_, i) => sel.getRangeAt(i)) : [];
+        // readonly, or iOS brings the keyboard up over the table for a field nobody can
+        // see and nobody meant to type in.
+        const ta = h("textarea", { class: "td-copy-sink", readonly: "" });
         ta.value = text;
         document.body.append(ta);
         ta.select();
         let ok = false;
         try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
         ta.remove();
+        if (sel) { sel.removeAllRanges(); for (const r of had) sel.addRange(r); }
+        if ($.copy) $.copy.focus();
+        copySaid(ok ? "Copied" : "Copy failed");
         say(ok ? "Copied the table as markdown." : "Could not reach the clipboard. Press copy again with the console open to see why.", !ok);
       };
+      const done = () => { copySaid("Copied"); say("Copied the table as markdown."); };
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => say("Copied the table as markdown."), fallback);
+        navigator.clipboard.writeText(text).then(done, fallback);
       } else fallback();
     }
 
@@ -1555,7 +1613,7 @@
     };
   }
 
-  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, comments, records, votesFor, tableFor, tablesFor, markdown, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
+  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, comments, records, votesFor, tableFor, tablesFor, tablesForDome, markdown, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

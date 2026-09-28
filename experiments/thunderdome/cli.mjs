@@ -298,7 +298,7 @@ function gh(args, input) {
     // Only suggest the fix that matches the failure. "Is gh installed and logged in?"
     // under a 404 sends people to re-authenticate over a typo in the issue number.
     const hint = e.code === "ENOENT"
-      ? ". Install the GitHub CLI, or pass --spec instead"
+      ? ". Install the GitHub CLI: everything that reads or writes GitHub here goes through it"
       : /\b401\b|auth|login|credential/i.test(msg) ? ". Try `gh auth login`" : "";
     throw new Error(`gh failed: ${msg || e.message}${hint}`);
   }
@@ -551,7 +551,11 @@ function cmdResults(args) {
     console.error("No --votes given, so this is the empty table. Export the collection and pass it in.");
   }
   const tables = tablesFor(cfg, votes);
-  if (args.post || args["dry-run"]) return void postResults(cfg, tables, args);
+  // `args.post` truthiness is not the test. `--post ""` is what a shell script does when
+  // the variable it was building the ref out of came back empty, and under a truthiness
+  // check that printed the text table, posted nothing, and exited 0, so the script that
+  // called it believed it had published.
+  if (args.post !== undefined || args["dry-run"]) return void postResults(cfg, tables, args, votes);
   if (args.json) console.log(JSON.stringify({ id: cfg.id, title: cfg.title || null, askedBy: cfg.askedBy || null, tables }, null, 2));
   else if (args.md || args.markdown) process.stdout.write(renderMarkdown(tables, cfg));
   else console.log(renderText(tables, cfg));
@@ -564,7 +568,28 @@ function cmdResults(args) {
 // but `--` inside an HTML comment is malformed markup, and a stripped `>` is all that
 // stands between `-->` in an id and a comment that ends early with the rest of it
 // showing in the thread.
-export const marker = id => `<!-- thunderdome:${String(id).replace(/[^\w.-]/g, "").replace(/-{2,}/g, "-")} -->`;
+export function marker(id) {
+  const raw = String(id);
+  const safe = raw.replace(/[^\w.-]/g, "").replace(/-{2,}/g, "-");
+  // Two ids that sanitize to the same string are two domes that edit each other's
+  // comment out of the thread. `\w` here is the ASCII one, so every id in Japanese,
+  // Korean or Russian sanitizes to the empty string and they all collide; so do "a/b"
+  // and "ab". A short digest of the id as written keeps them apart, and it is only
+  // added when the sanitizing changed something, so the ordinary slug id stays readable.
+  const tag = safe === raw ? safe : `${safe}${safe && "-"}${digest(raw)}`;
+  return `<!-- thunderdome:${tag} -->`;
+}
+
+// FNV-1a, 32 bits, base36. Not a security property: the marker is public text either
+// way, and what this has to do is tell two ids apart, not hide them.
+function digest(s) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(36);
+}
 
 // The whole point of the round trip: a run that went out with four screenshots comes
 // back as a table under them. Repeated runs edit the comment they already wrote rather
@@ -581,31 +606,63 @@ export function postBody(cfg, tables, bouts) {
   ].join("\n");
 }
 
-function postResults(cfg, tables, args) {
+// GitHub's own cap on a comment body. Worth catching here rather than as a 422 after
+// the lookup has already run, and worth saying which dome is too big.
+const MAX_BODY = 65536;
+
+export function postResults(cfg, tables, args, votes, run) {
+  const gh_ = run || gh;
   const where = args.post === true || args.post == null ? cfg.askedBy : str(args.post, "post");
   if (!where) {
     throw new Error("--post needs somewhere to post: pass owner/repo#123, or build the dome with --from-pr so it knows where the question came from");
   }
+  // A table with nothing in it is not a result, and posting one is worse than doing
+  // nothing: because a second run edits the first one's comment, a mistyped `--votes`
+  // replaces a real 240-bout table with "no bouts yet, so the table is the prior and
+  // nothing else" and exits 0. `--post-empty` is for the one case where an empty table
+  // is the message, which is announcing a dome before anyone has voted in it.
+  const bouts = tables.reduce((n, t) => n + t.bouts, 0);
+  if (!bouts && !args["post-empty"]) {
+    throw new Error(`nothing to post: ${(votes || []).length} vote${(votes || []).length === 1 ? "" : "s"} read, 0 bouts counted. Check --votes, or pass --post-empty if an empty table is what you meant`);
+  }
+  if (args.json) throw new Error("--post sends markdown, so --json has nothing to do here. Drop one of them");
   const ref = parseRef(where);
-  const body = postBody(cfg, tables);
+  const body = postBody(cfg, tables, bouts);
+  if (body.length > MAX_BODY) {
+    throw new Error(`the table is ${body.length} characters and GitHub takes ${MAX_BODY}. Post a link to the page instead, or split the dome`);
+  }
+  const at = `${ref.owner}/${ref.repo}#${ref.number}`;
   if (args["dry-run"]) {
-    console.error(`would post to ${ref.owner}/${ref.repo}#${ref.number}:`);
+    console.error(`would post to ${at}:`);
     process.stdout.write(body);
     return;
   }
   const api = `repos/${ref.owner}/${ref.repo}/issues`;
-  const mine = gh(["api", "user", "--jq", ".login"]).trim();
+  // Said before the write, not after. With no argument the target is whatever `askedBy`
+  // recorded, which somebody else may have baked in months ago in another repo, and the
+  // first time you find out should not be the success line.
+  console.error(`posting to ${at}`);
   // Only our own comments are candidates to edit: the marker is public text and anyone
-  // can paste it, and editing somebody else's comment would fail anyway, louder.
-  const found = JSON.parse(gh(["api", `${api}/${ref.number}/comments`, "--paginate"]))
+  // can paste it, and editing somebody else's comment would fail anyway, louder. A token
+  // that cannot read /user (a GitHub App installation token, which is what `gh` has
+  // inside Actions) gets a new comment each run rather than an edit of the wrong one.
+  let mine = null;
+  try { mine = gh_(["api", "user", "--jq", ".login"]).trim() || null; }
+  catch (e) { console.error(`could not read the logged-in account (${e.message}), so this posts a new comment instead of editing the last one`); }
+  const found = !mine ? undefined : JSON.parse(gh_(["api", `${api}/${ref.number}/comments`, "--paginate"]))
     .filter(c => c.user && c.user.login === mine && String(c.body || "").includes(marker(cfg.id)))
     .pop();
+  if (found) console.error(`updating the comment this dome already wrote (${found.id})`);
   const payload = JSON.stringify({ body });
   const out = found
-    ? gh(["api", `${api}/comments/${found.id}`, "-X", "PATCH", "--input", "-"], payload)
-    : gh(["api", `${api}/${ref.number}/comments`, "--input", "-"], payload);
-  const url = (JSON.parse(out) || {}).html_url || `https://github.com/${ref.owner}/${ref.repo}/issues/${ref.number}`;
-  console.log(`${found ? "updated" : "posted"} ${url}`);
+    ? gh_(["api", `${api}/comments/${found.id}`, "-X", "PATCH", "--input", "-"], payload)
+    : gh_(["api", `${api}/${ref.number}/comments`, "--input", "-"], payload);
+  // The comment is written by now, so a reply we cannot parse is not a reason to exit
+  // non-zero and have the caller post it again.
+  let url = null;
+  try { url = (JSON.parse(out) || {}).html_url || null; } catch (e) { url = null; }
+  console.log(`${found ? "updated" : "posted"} ${url || `https://github.com/${ref.owner}/${ref.repo}/issues/${ref.number}`}`);
+  return { updated: !!found, url, body };
 }
 
 const USAGE = `thunderdome
@@ -630,6 +687,7 @@ results   recomputes the table from an exported votes list
           --post         comment the table on the issue or PR that asked
           --post o/r#12  post somewhere else
           --dry-run      print what --post would send, and send nothing
+          --post-empty   allow posting a table with no bouts in it
 build     rebuilds an existing dome
 `;
 

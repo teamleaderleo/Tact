@@ -60,7 +60,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 /* The heading and the copy button share a row so the button sits over the table it
    copies, and the heading keeps its baseline whether or not a button is next to it. */
 .td-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.td-copy{flex:none;font-size:12px;padding:3px 8px;border:1px solid var(--rule);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
+/* min-width so the heading row does not jump when the label becomes "Copied". */
+.td-copy{flex:none;min-width:15ch;font-size:12px;padding:3px 8px;border:1px solid var(--rule);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
 .td-copy:hover{color:var(--ink);border-color:var(--faint)}
 .td-copy:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 /* Offscreen, not display:none: a textarea that is not rendered cannot be selected,
