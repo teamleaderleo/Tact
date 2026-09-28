@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "id": "tact.quiet-review",
+  "version": "0.1.0",
+  "description": "Reduce sidebar metadata while retaining PR and notification evidence.",
+  "settings": {
+    "sidebar.hideAllDetails": false,
+    "sidebar.showBranchDirectory": false,
+    "sidebar.showPorts": false,
+    "sidebar.showLog": false,
+    "sidebar.showPullRequests": true,
+    "sidebar.showNotificationMessage": true
+  }
+}

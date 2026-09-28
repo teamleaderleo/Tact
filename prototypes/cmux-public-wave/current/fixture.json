@@ -1,0 +1,17 @@
+{
+  "fixture_kind": "synthetic wire-shaped conformance input, not a live session capture",
+  "observed_at": "2026-09-20T15:00:00Z",
+  "catalog": {
+    "machines": [{"id": "local", "local": true}, {"id": "example-vm", "local": false}],
+    "resources": [
+      {"id": "local/terminal/panel-a", "machine": "local", "kind": "terminal", "title": "Review changes", "detail": "/example/cmux", "lifecycle": "running", "agent": {"state": "needs_input", "source": "fixture"}},
+      {"id": "example-vm/terminal/t1", "machine": "example-vm", "kind": "terminal", "title": "Cloud test run", "detail": "/workspace/cmux", "lifecycle": "running", "agent": {"state": "working", "source": "fixture"}}
+    ],
+    "projections": [{"resource": "local/terminal/panel-a", "workspace_id": "workspace-example", "surface_id": "panel-a", "panel_id": "panel-a"}],
+    "cloud_states": [{"machine": "example-vm", "freshness": "stale", "stale_reason": "disconnected", "cursor": {"generation": "example-g1", "revision": "17"}, "pending_writes": [{"kind": "rename", "resource": "example-vm/terminal/t1", "receipt": {"generation": "example-g1", "revision": "18"}}]}]
+  },
+  "facts": [
+    {"resource_ref": "local/terminal/panel-a", "kind": "attention", "value": "needs_input", "owner": "notification-owner", "evidence": "fixture://notifications/n1", "freshness": "current", "observed_at": "2026-09-20T15:00:00Z"},
+    {"resource_ref": "example-vm/terminal/t1", "kind": "attention", "value": "failure", "owner": "notification-owner", "evidence": "fixture://notifications/n2", "freshness": "current", "observed_at": "2026-09-20T15:00:00Z"}
+  ]
+}

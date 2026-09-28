@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "fixture_origin": "Synthetic examples grounded in pinned source; not live captures. IDs are readable placeholders.",
+  "upstream_sha": "ad34966d0641efcacc436ecd264fda9105285c49",
+  "objects": [
+    {
+      "kind": "local-terminal",
+      "label": "Review",
+      "resource": "local/terminal/panel-1",
+      "durable_identity": {
+        "owner": "Panel.stableSurfaceId",
+        "value": "stable-1",
+        "public_catalog_join_available": false
+      },
+      "runtime_binding": {
+        "panel_id": "panel-1",
+        "pty": "unexported"
+      },
+      "projection": {
+        "panel_id": "panel-1",
+        "workspace_id": "workspace-1",
+        "remote_tab_id": null
+      },
+      "cursor": null,
+      "resume": null
+    },
+    {
+      "kind": "resumable-agent-terminal",
+      "label": "Review",
+      "resource": "local/terminal/panel-2",
+      "durable_identity": {
+        "owner": "Panel.stableSurfaceId",
+        "value": "stable-2",
+        "public_catalog_join_available": false
+      },
+      "runtime_binding": {
+        "panel_id": "panel-2"
+      },
+      "projection": {
+        "panel_id": "panel-2",
+        "workspace_id": "workspace-1",
+        "remote_tab_id": null
+      },
+      "cursor": null,
+      "resume": {
+        "kind": "codex",
+        "checkpointId": "session-fixture",
+        "source": "agent-hook"
+      }
+    },
+    {
+      "kind": "browser",
+      "label": "Review",
+      "resource": "local/browser/panel-3",
+      "durable_identity": {
+        "owner": "Panel.stableSurfaceId",
+        "value": "stable-3",
+        "public_catalog_join_available": false
+      },
+      "runtime_binding": {
+        "panel_id": "panel-3",
+        "webview": "unexported"
+      },
+      "projection": {
+        "panel_id": "panel-3",
+        "workspace_id": "workspace-1",
+        "remote_tab_id": null
+      },
+      "cursor": null,
+      "resume": null
+    },
+    {
+      "kind": "cloud-terminal",
+      "label": "Review",
+      "resource": "vm-fixture/terminal/term_fixture",
+      "durable_identity": {
+        "owner": "cmux-tui registry",
+        "value": "term_fixture",
+        "public_catalog_join_available": true
+      },
+      "runtime_binding": {
+        "numeric_surface_id": 42,
+        "generation": "generation-A"
+      },
+      "projection": {
+        "panel_id": "mirror-1",
+        "workspace_id": "workspace-1",
+        "remote_tab_id": "tab_fixture"
+      },
+      "cursor": {
+        "generation": "generation-A",
+        "revision": "4"
+      },
+      "resume": null
+    }
+  ],
+  "transitions": {
+    "cloud_reproject": {
+      "before": {
+        "resource": "vm-fixture/terminal/term_fixture",
+        "panel_id": "mirror-1"
+      },
+      "closed": {
+        "resource_alive": true,
+        "projections": []
+      },
+      "after": {
+        "resource": "vm-fixture/terminal/term_fixture",
+        "panel_id": "mirror-2"
+      }
+    },
+    "local_close": {
+      "catalog_resource_survives": false,
+      "persisted_stable_identity_can_be_adopted_on_restore": true
+    },
+    "local_restore": {
+      "before": {
+        "resource": "local/terminal/panel-1",
+        "panel_id": "panel-1",
+        "stable_surface_id": "stable-1"
+      },
+      "after": [
+        {
+          "resource": "local/terminal/panel-restored",
+          "panel_id": "panel-restored",
+          "stable_surface_id": "stable-1"
+        }
+      ]
+    }
+  }
+}

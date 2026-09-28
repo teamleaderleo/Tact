@@ -1,0 +1,192 @@
+{
+  "number": 13229,
+  "url": "https://github.com/manaflow-ai/cmux/pull/13229",
+  "headRefOid": "d550afed709734a2e2b48747c650ea8de665e8d4",
+  "updatedAt": "2026-09-20T12:12:17Z",
+  "state": "OPEN",
+  "mergeStateStatus": "BLOCKED",
+  "reviewThreads": {
+    "pageInfo": {
+      "hasNextPage": false
+    },
+    "nodes": [
+      {
+        "id": "PRRT_kwDORDHQWM6kI9Pj",
+        "isResolved": false,
+        "isOutdated": false,
+        "comments": {
+          "pageInfo": {
+            "hasNextPage": false
+          },
+          "nodes": [
+            {
+              "id": "PRRC_kwDORDHQWM7xzzNr",
+              "url": "https://github.com/manaflow-ai/cmux/pull/13229#discussion_r4056888171",
+              "createdAt": "2026-09-20T12:00:51Z",
+              "author": {
+                "login": "greptile-apps"
+              },
+              "commit": {
+                "oid": "d550afed709734a2e2b48747c650ea8de665e8d4"
+              },
+              "body_sha256": "67b7dc15264c5214c56ad77f37a595518899555eb4aec5ebac04384487cb5f56",
+              "body_excerpt": "<a href=\"#\"><img alt=\"P1\" src=\"https://greptile-static-assets.s3.amazonaws.com/badges/p1.svg?v=9\" align=\"top\"></a> **Ownership check still races**\n\nIf another process replaces the socket path after `ownsConfiguredSocketPath()` validates its inode but before `applySocketPermissions()` runs, the pathname-based `chmod` changes permissions on the replacement inode. Because that operation can succeed, reconfiguration may return success even though the listener no longer owns the path. Apply permissions through the bound socket descriptor or another operation that cannot resolve a different inode between validation and mutation.",
+              "signals": [
+                "P1"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "comments": {
+    "nodes": [
+      {
+        "id": "IC_kwDORDHQWM8AAAABVrSvFQ",
+        "url": "https://github.com/manaflow-ai/cmux/pull/13229#issuecomment-5749649173",
+        "createdAt": "2026-09-20T11:58:20Z",
+        "author": {
+          "login": "cursor"
+        },
+        "body_sha256": "51a280777f5b475da4c3783684d0de306aa906c2284726b88184a88711ecb6e9",
+        "body_excerpt": "<h3>Bugbot is paused \u2014 on-demand spend limit reached</h3>\n\nBugbot uses usage-based billing for this team and has hit its on-demand spend limit.\n\nA team admin can raise the spend limit in the [Cursor dashboard](https://www.cursor.com/dashboard/spending), or wait for the next billing cycle to continue.\n\n",
+        "signals": [
+          "rate_limit"
+        ]
+      },
+      {
+        "id": "IC_kwDORDHQWM8AAAABVrSwLw",
+        "url": "https://github.com/manaflow-ai/cmux/pull/13229#issuecomment-5749649455",
+        "createdAt": "2026-09-20T11:58:23Z",
+        "author": {
+          "login": "coderabbitai"
+        },
+        "body_sha256": "43cc12e208c4c1a651f6c26e1c3d5765bfab69cb9197b878f3aa7b8ec60c811d",
+        "body_excerpt": "<!-- This is an auto-generated comment: summarize by coderabbit.ai -->\n<!-- This is an auto-generated comment: rate limited by coderabbit.ai -->\n\n> [!WARNING]\n> ## Review limit reached\n> \n> **Next included review available in 7 minutes.**\n> \n> [Check out review usage here](https://app.coderabbit.ai/dashboard/review-capacity?orgId=aa3503b0-cb4f-4f8f-bd01-c176881dd435).\n> \n> <details>\n> <summary>View limit details</summary>\n> \n> **Limit details:** You\u2019ve used all 10 included reviews currently available.\n> \n> You've used all free OSS reviews for now. Wait for the free limit to reset to keep reviewing this public repository.\n> \n> [Learn how review limits work](https://docs.coderabbit.ai/management/plans#rate-limits).\n> \n> **Review configuration:**\n> \n> <details>\n> <summary>\u2699\ufe0f Run configuration</summary>\n> \n> **Configuration used**: Repository: manaflow-ai/cmux/.coderabbit.yaml\n> \n> **Review ",
+        "signals": [
+          "rate_limit",
+          "summary"
+        ]
+      },
+      {
+        "id": "IC_kwDORDHQWM8AAAABVrSw8g",
+        "url": "https://github.com/manaflow-ai/cmux/pull/13229#issuecomment-5749649650",
+        "createdAt": "2026-09-20T11:58:26Z",
+        "author": {
+          "login": "chatgpt-codex-connector"
+        },
+        "body_sha256": "6549f5b20a70b165b215b86547769f62264a8853fe2573c43c2e19515197500a",
+        "body_excerpt": "To use Codex here, [create an environment for this repo](https://chatgpt.com/codex/cloud/settings/environments).",
+        "signals": []
+      },
+      {
+        "id": "IC_kwDORDHQWM8AAAABVrSykw",
+        "url": "https://github.com/manaflow-ai/cmux/pull/13229#issuecomment-5749650067",
+        "createdAt": "2026-09-20T11:58:31Z",
+        "author": {
+          "login": "github-actions"
+        },
+        "body_sha256": "e0e1f193d16498af0b59687766316b831d94cb255a4490eead31d843bc531664",
+        "body_excerpt": "All contributors have signed the CLA  \u270d\ufe0f \u2705<br/><sub>Posted by the **CLA Assistant Lite bot**.</sub>",
+        "signals": []
+      },
+      {
+        "id": "IC_kwDORDHQWM8AAAABVrTdig",
+        "url": "https://github.com/manaflow-ai/cmux/pull/13229#issuecomment-5749661066",
+        "createdAt": "2026-09-20T12:00:47Z",
+        "author": {
+          "login": "greptile-apps"
+        },
+        "body_sha256": "82ac9b488b0f17d875e57c3a0bbd4613dca6b2f791a3195c108fb7ce9ce41b87",
+        "body_excerpt": "<!-- greptile_summary -->\n\n<h2><a href=\"https://app.greptile.com/api/retrigger?id=66619987\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://greptile-static-assets.s3.amazonaws.com/badges/RetriggerDark.svg?v=2\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://greptile-static-assets.s3.amazonaws.com/badges/Retrigger.svg?v=2\"><img alt=\"Retrigger\" src=\"https://greptile-static-assets.s3.amazonaws.com/badges/Retrigger.svg?v=2\" align=\"right\"></picture></a>Confidence Score: 4/5</h2>\n\nThe PR is not yet safe to merge because the existing configuration-update ownership race remains unresolved.\n\n<h2>Findings</h2>\n\n1. <img alt=\"P1\" src=\"https://greptile-static-assets.s3.amazonaws.com/badges/p1.svg?v=9\" align=\"top\">&nbsp;**Ownership check still races** <a href=\"https://github.com/manaflow-ai/cmux/pull/13229#discussion_r4056888171\">\u25b6</a>\n\n<h3>Summary</h3>\n\nThe PR hard",
+        "signals": [
+          "summary",
+          "P1"
+        ]
+      },
+      {
+        "id": "IC_kwDORDHQWM8AAAABVrWgjA",
+        "url": "https://github.com/manaflow-ai/cmux/pull/13229#issuecomment-5749710988",
+        "createdAt": "2026-09-20T12:10:47Z",
+        "author": {
+          "login": "cursor"
+        },
+        "body_sha256": "51a280777f5b475da4c3783684d0de306aa906c2284726b88184a88711ecb6e9",
+        "body_excerpt": "<h3>Bugbot is paused \u2014 on-demand spend limit reached</h3>\n\nBugbot uses usage-based billing for this team and has hit its on-demand spend limit.\n\nA team admin can raise the spend limit in the [Cursor dashboard](https://www.cursor.com/dashboard/spending), or wait for the next billing cycle to continue.\n\n",
+        "signals": [
+          "rate_limit"
+        ]
+      }
+    ]
+  },
+  "reviews": {
+    "nodes": [
+      {
+        "id": "PRR_kwDORDHQWM8AAAABOY0f1Q",
+        "url": "https://github.com/manaflow-ai/cmux/pull/13229#pullrequestreview-5260517333",
+        "state": "COMMENTED",
+        "submittedAt": "2026-09-20T12:00:52Z",
+        "author": {
+          "login": "greptile-apps"
+        },
+        "commit": {
+          "oid": "5b9773ddea23ee8f0f1fcf39b2ef93c12abb9324"
+        },
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "body_excerpt": "",
+        "signals": []
+      }
+    ]
+  },
+  "checks": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-20T12:11:17Z",
+      "conclusion": "CANCELLED",
+      "detailsUrl": "https://github.com/manaflow-ai/cmux/actions/runs/35509879317/job/106075815133",
+      "name": "Web complexity",
+      "startedAt": "2026-09-20T12:10:50Z",
+      "status": "COMPLETED",
+      "workflowName": "Web complexity"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-20T12:18:23Z",
+      "conclusion": "FAILURE",
+      "detailsUrl": "https://github.com/manaflow-ai/cmux/actions/runs/35509880186/job/106076163903",
+      "name": "macOS compile admission",
+      "startedAt": "2026-09-20T12:14:07Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-20T12:18:28Z",
+      "conclusion": "FAILURE",
+      "detailsUrl": "https://github.com/manaflow-ai/cmux/actions/runs/35509880186/job/106076742671",
+      "name": "tests",
+      "startedAt": "2026-09-20T12:18:24Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-09-20T12:18:34Z",
+      "conclusion": "FAILURE",
+      "detailsUrl": "https://github.com/manaflow-ai/cmux/actions/runs/35509880186/job/106076753613",
+      "name": "ci-status",
+      "startedAt": "2026-09-20T12:18:30Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    }
+  ],
+  "reviewDecision": "",
+  "fixture_provenance": {
+    "observed_at": "2026-09-20T14:51:16.978974+00:00",
+    "source": "GitHub GraphQL pullRequest + gh pr view statusCheckRollup",
+    "bounded_selection": true,
+    "complete": false,
+    "notes": "Recent comments/reviews and first 50 threads; selected non-success checks only. Excerpts <=900 chars; original body SHA256 and classifier marker presence retained. Never certify completion from this fixture."
+  }
+}

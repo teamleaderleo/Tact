@@ -1,0 +1,11 @@
+## ExecutionRequest lane: existing public owner already spans local + Cloud
+
+Audited public `manaflow-ai/cmux` at [`ad34966d0641efcacc436ecd264fda9105285c49`](https://github.com/manaflow-ai/cmux/commit/ad34966d0641efcacc436ecd264fda9105285c49), 2026-09-20. **Disposition: Tact prototype; no new API/RFC needed for the first shared request.**
+
+The concrete common intent is “open an interactive project terminal in this explicitly selected existing target and show/focus it locally.” Current CLI `cmux surface new-terminal --machine <local|existing-cloud-id>` already maps both paths to socket `surface.new_terminal`, `SurfaceProvider.createTerminal`, and the catalog's projection owner. Local creates a terminal pane; Cloud uses the existing machine link and daemon `workspace.run` with native cwd, generation guards and internal creation retry receipts.
+
+The pure prototype at `prototypes/cmux-public-wave/execution/` compiles the same work/source request against two explicit target resolutions and adapts actual success-shaped results into bounded observations. The mapping, pinned source links, limitations and promotion decision are in its README. Nine tests cover both socket plans, exact placement/source matching, unsupported lifecycle/security promises, non-interpolated paths, partial failures and truthful receipt unknowns. No terminal launch, VM provisioning, native build or Cloud spend occurred.
+
+Key limits: paths do not prove repository/revision identity; local configured shell and Cloud bash remain backend defaults; persistence/resume and effective capabilities are not invented; returned resource/projection ids retain their existing meanings. The socket result does not expose Cloud correlation/generation/cursor. Replaying a plan is **not** safe retry. Creation precedes projection, so a projection failure/timeout can leave a resource the caller did not observe. The next focused experiment is fault injection and reconciliation through this existing owner before requesting any additive public receipt field.
+
+Keep the compiler and receipt experiment in Tact, feed its owner references/unknowns into current-work, and coordinate any receipt proposal with identity conformance. Stop a new generic execution service, scheduler or speculative backend abstraction here: current CMUX already provides the useful two-path seam.

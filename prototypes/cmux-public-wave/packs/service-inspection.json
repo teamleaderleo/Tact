@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "id": "tact.service-inspection",
+  "version": "0.1.0",
+  "description": "Expose directory, ports, logs, and notifications when inspecting services.",
+  "settings": {
+    "sidebar.hideAllDetails": false,
+    "sidebar.showBranchDirectory": true,
+    "sidebar.showPorts": true,
+    "sidebar.showLog": true,
+    "sidebar.showNotificationMessage": true
+  }
+}
