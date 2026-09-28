@@ -8,98 +8,105 @@
 <meta name="description" content="Eight ways to draw the selected workspace in the cmux sidebar, fighting in pairs. Each card shows the same sidebar with the window active and with the window in the background. Pick the one you'd rather look at all day. Every vote feeds a shared Elo table, split by light and dark sidebars. Proposal ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
 <style>
-/* Thunderdome engine styles. Page chrome only; contender styles belong in the config's config.css. */
+/* Thunderdome engine styles. Page chrome only; contender styles belong in the config's config.css.
+   The look is a terminal notebook: JetBrains Mono for everything the page says about itself
+   (title, arena, keys, buttons, tables), IBM Plex Sans for prose (the lede, notes, the
+   feed), hairline rules instead of boxes, and a near-black ground in dark mode. */
 :root{
   color-scheme:light;
-  --bg:#F3F4F6; --panel:#FFFFFF; --ink:#15171C; --muted:#5A6170; --faint:#8A909C;
-  --rule:#DCDFE5; --rule-strong:#C3C8D1; --hover:#EBEDF1; --win:#1F7A4D; --win-bg:#E3F3EA;
-  --focus:#2F6FEB;
+  --bg:#EEF0F3; --panel:#F7F8FA; --ink:#1B1F27; --muted:#5D6573; --faint:#8A919E;
+  --rule:#CFD4DC; --rule-strong:#B4BBC6; --hover:#E4E7EC; --win:#1F7A4D; --win-bg:#DCEFE4;
+  --focus:#2F6FDE;
   --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --mono:"JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --bg:#101216; --panel:#181B21; --ink:#E6E8ED; --muted:#9AA1AE; --faint:#6F7684;
-    --rule:#2A2F38; --rule-strong:#3A404B; --hover:#20242B; --win:#6FD39F; --win-bg:#16291F;
-    --focus:#7AA7FF;
+    --bg:#111318; --panel:#171A20; --ink:#E4E7EE; --muted:#8B93A3; --faint:#646C7A;
+    --rule:#2A2F39; --rule-strong:#3A404B; --hover:#1B1F26; --win:#6FD39F; --win-bg:#16291F;
+    --focus:#6EA0FF;
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --bg:#101216; --panel:#181B21; --ink:#E6E8ED; --muted:#9AA1AE; --faint:#6F7684;
-  --rule:#2A2F38; --rule-strong:#3A404B; --hover:#20242B; --win:#6FD39F; --win-bg:#16291F;
-  --focus:#7AA7FF;
+  --bg:#111318; --panel:#171A20; --ink:#E4E7EE; --muted:#8B93A3; --faint:#646C7A;
+  --rule:#2A2F39; --rule-strong:#3A404B; --hover:#1B1F26; --win:#6FD39F; --win-bg:#16291F;
+  --focus:#6EA0FF;
 }
 *{box-sizing:border-box}
 /* A class selector outranks the UA's [hidden] rule, so anything the engine hides by
-   property (the views, Undo, Replay) needs this or it stays on screen. Scoped to the two
-   places the engine does it, so a config's own [hidden] handling is left alone. */
-.td-view[hidden],.td-vote button[hidden],.td-why[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:20px 64px}
-.td-wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
-.td-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-.td-view{display:grid;gap:18px}
-.td-tabs{display:flex;gap:4px;flex:none}
-.td-tab{font-size:13px;color:var(--muted);text-decoration:none;padding:5px 13px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
-.td-tab:hover{color:var(--ink);background:var(--hover)}
+   property (the views, Undo, Replay, Reset, the arena controls) needs this or it stays on
+   screen. Scoped to the places the engine does it, so a config's own [hidden] handling is
+   left alone. */
+.td-view[hidden],.td-vote button[hidden],.td-why[hidden],.td-row button[hidden],.td-arena[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:20px 48px}
+.td-wrap{max-width:1040px;margin:0 auto;display:grid;gap:20px}
+.td-view{display:grid;gap:20px;min-width:0}
+
+/* ---- header: title and lede on the left, arena and views on the right ---- */
+.td-head{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:flex-start;justify-content:space-between}
+.td-head-main{display:grid;gap:4px;min-width:0;flex:1 1 420px}
+.td-head-side{display:grid;gap:8px;justify-items:end;flex:none;margin-left:auto}
+.td-wrap h1{font:700 20px/1.2 var(--mono);letter-spacing:-.01em;text-transform:lowercase;margin:0;text-wrap:balance}
+.td-lede{color:var(--muted);max-width:62ch;margin:0;font-size:13px}
+.td-lede code{font-family:var(--mono);font-size:12px}
+.td-arena-label{font:12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:none;border:0;padding:2px 0;cursor:pointer;text-align:right}
+.td-arena-label:hover,.td-arena-label[aria-expanded=true]{color:var(--ink)}
+.td-arena-label:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.td-tabs{display:flex;gap:14px;flex:none}
+.td-tab{font:12px var(--mono);color:var(--faint);text-decoration:none;text-transform:lowercase;padding:1px 0;border-bottom:1px solid transparent;white-space:nowrap}
+.td-tab:hover{color:var(--ink)}
 .td-tab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.td-tab[aria-current=page]{color:var(--ink);background:var(--panel);border-color:var(--rule-strong)}
+.td-tab[aria-current=page]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* The arena controls, opened from the label top right. */
+.td-arena{border-block:1px solid var(--rule)}
+.td-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 0}
+.td-controls label{display:flex;gap:8px;align-items:center;font:12px var(--mono);color:var(--muted)}
+.td-controls select{font:12px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--rule-strong);border-radius:6px;padding:4px 8px}
+.td-controls input[type=checkbox]{accent-color:var(--ink)}
+.td-controls select:focus-visible,.td-controls input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
 /* One dome, several decisions. Reads as a row of questions rather than a second set of
-   pill tabs, so it does not compete with Vote/Results for the same glance.
+   tabs, so it does not compete with vote/results for the same glance.
    Scrolls rather than wraps: the underline is pulled 1px onto the nav's own rule, and a
-   wrapped row would drag that pull through the row above it. A long list or a narrow
-   phone slides sideways instead. */
+   wrapped row would drag that pull through the row above it. */
 .td-qnav{display:flex;gap:0 18px;border-bottom:1px solid var(--rule);overflow-x:auto;scrollbar-width:none}
 .td-qnav::-webkit-scrollbar{display:none}
-.td-qtab{font-size:13.5px;color:var(--muted);text-decoration:none;padding:9px 2px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none}
+.td-qtab{font:13px var(--mono);color:var(--muted);text-decoration:none;padding:8px 2px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none}
 .td-qtab:hover{color:var(--ink)}
 .td-qtab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 /* Colour and the underline mark the current tab. Bolding it too would change the label's
    width on selection and shuffle every tab to its right as you click along the row. */
 .td-qtab[aria-current=page]{color:var(--ink);border-bottom-color:var(--ink)}
-/* The question in words. h2 elsewhere in the page is a small uppercase section label,
-   which this is not: it is the sentence the two cards below it are answering. */
-.td-wrap h2.td-qtitle{font-size:17px;font-weight:600;letter-spacing:-.005em;text-transform:none;color:var(--ink);margin:2px 0 -4px;text-wrap:balance}
-/* It is a focus target so a screen reader is told which question it landed on, not a
-   control. A ring around a full-width heading nobody can act on reads as a text field. */
+/* The question in words: the sentence the two cards below it are answering. */
+.td-wrap h2.td-qtitle{font:600 17px/1.35 var(--sans);letter-spacing:-.005em;text-transform:none;color:var(--ink);margin:0 0 -8px;text-wrap:balance}
 .td-qtitle:focus,.td-qtitle:focus-visible{outline:none}
-.td-wrap h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
-.td-wrap h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
-.td-section{display:grid;gap:10px}
-/* The heading and the copy button share a row so the button sits over the table it
-   copies, and the heading keeps its baseline whether or not a button is next to it. */
+
+/* Section labels: uppercase, letter-spaced mono. */
+.td-wrap h2{font:700 13px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);margin:0}
+.td-section{display:grid;gap:8px;min-width:0}
 .td-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.td-row{display:flex;flex-wrap:wrap;gap:8px}
 /* min-width so the heading row does not jump when the label becomes "Copied". */
-.td-copy{flex:none;min-width:15ch;font-size:12px;padding:3px 8px;border:1px solid var(--rule);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
-.td-copy:hover{color:var(--ink);border-color:var(--faint)}
+.td-copy{flex:none;min-width:15ch;font:12px var(--mono);padding:5px 10px;border:1px solid var(--rule);border-radius:6px;background:transparent;color:var(--ink);cursor:pointer}
+.td-copy:hover{border-color:var(--faint)}
 .td-copy:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 /* Offscreen, not display:none: a textarea that is not rendered cannot be selected,
    and selecting it is the entire point of the fallback. */
 .td-copy-sink{position:fixed;left:-9999px;top:0;opacity:0}
-.td-lede{color:var(--muted);max-width:68ch;margin:0;font-size:14px}
-.td-lede code{font-family:var(--mono);font-size:13px}
-.td-arena{border:1px solid var(--rule);border-radius:10px;background:var(--panel)}
-.td-arena>summary{display:flex;gap:9px;align-items:center;padding:8px 14px;cursor:pointer;font-size:13px;list-style:none}
-.td-arena>summary::-webkit-details-marker{display:none}
-.td-arena>summary::before{content:"";flex:none;width:0;height:0;border:4px solid transparent;border-left-color:var(--faint);transition:transform .15s}
-.td-arena[open]>summary::before{transform:rotate(90deg)}
-.td-arena>summary:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:10px}
-.td-arena-label{color:var(--muted)}
-.td-arena[open]>summary{border-bottom:1px solid var(--rule)}
-.td-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px 14px}
-.td-controls label{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
-.td-controls select{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--rule-strong);border-radius:6px;padding:4px 8px}
-.td-controls input[type=checkbox]{accent-color:var(--ink)}
-.td-arena-tag{font-family:var(--mono);font-size:12px;color:var(--faint);margin-left:auto}
+
+/* ---- the duel ---- */
 .td-duel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
-.td-card{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px;display:grid;gap:12px;align-content:start;min-width:0}
-.td-card.picked{border-color:var(--win);box-shadow:0 0 0 2px var(--win-bg)}
+.td-card{border:2px solid transparent;border-radius:10px;padding:6px;display:grid;gap:8px;align-content:start;min-width:0}
+.td-card-key{display:flex;justify-content:space-between;font:12px var(--mono);color:var(--muted)}
+.td-card.picked{border-color:var(--win)}
 .td-card.td-live{cursor:pointer}
-.td-card.td-live:hover{border-color:var(--rule-strong);background:var(--hover)}
-.td-card.td-live:hover .td-side-key{color:var(--ink);border-color:var(--rule-strong)}
+.td-card.td-live:hover{border-color:var(--focus)}
+.td-card.td-live:hover .td-card-key{color:var(--ink)}
 /* Clicks land on the card, not on whatever the mock happens to contain. Configs whose
    contenders are meant to be poked at set interactiveCards and keep their own events. */
 .td-card.td-live .td-card-body{pointer-events:none}
@@ -107,80 +114,102 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
    these are the only way to watch a clip at all, so swallowing the play button would
    leave the duel unwatchable and turn the attempt into a vote. */
 .td-card.td-live .td-card-body video[controls],.td-card.td-live .td-card-body audio[controls]{pointer-events:auto}
-.td-card-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
-.td-card-name{font-weight:600;font-size:15px}
-.td-card-note{font-size:12.5px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){
+  .td-card .td-card-body{transition:transform .12s}
+  .td-card.td-live:hover .td-card-body{transform:translateY(-2px)}
+}
+.td-card-head{display:grid;gap:1px}
+.td-card-name{font:12px var(--mono);color:var(--ink)}
+.td-card-note{font-size:12px;color:var(--muted)}
 .td-card-body{min-width:0}
 .td-media{display:grid;place-items:center;min-width:0;min-height:72px;border-radius:8px;overflow:hidden}
-.td-media.td-framed{background:var(--bg);border:1px solid var(--rule)}
+.td-media.td-framed{background:var(--panel);border:1px solid var(--rule)}
 .td-media>img,.td-media>video{display:block;width:100%;height:auto;max-height:min(52vh,440px);background:transparent}
 .td-media>video[controls]{max-height:min(48vh,400px)}
 .td-gallery .td-media>img,.td-gallery .td-media>video{max-height:220px}
-.td-media.td-media-broken{background:var(--bg);border:1px dashed var(--rule-strong)}
+.td-media.td-media-broken{background:var(--panel);border:1px dashed var(--rule-strong)}
 .td-media-fail{display:grid;gap:4px;justify-items:center;text-align:center;padding:20px 14px;font-size:12.5px;color:var(--muted)}
 .td-media-fail b{color:var(--ink);font-weight:500}
 .td-media-fail code{font-family:var(--mono);font-size:11px;color:var(--faint);word-break:break-all}
-.td-side-key{font-family:var(--mono);font-size:11px;color:var(--faint);border:1px solid var(--rule);border-radius:4px;padding:0 5px}
-.td-vote{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
-.td-vote button{font:inherit;font-size:14px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--rule-strong);border-radius:8px;padding:8px 16px;cursor:pointer}
-.td-vote button:hover{background:var(--hover)}
-.td-vote button:disabled{opacity:.45;cursor:not-allowed;background:var(--panel)}
-.td-vote button:focus-visible,.td-controls select:focus-visible,.td-controls input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.td-vote button.primary{border-color:var(--ink)}
-.td-vote button.quiet{border-color:transparent;color:var(--muted)}
-.td-vote kbd{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:6px}
+
+/* "← left wins [Left] [Tie ↓] [Right] right wins →  N votes" */
+.td-vote{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;font:13px var(--mono);color:var(--muted)}
+.td-vote button{font:13px var(--mono);color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:6px;padding:6px 12px;cursor:pointer}
+.td-vote button:hover{border-color:var(--faint)}
+.td-vote button:disabled{opacity:.45;cursor:not-allowed;border-color:var(--rule)}
+.td-vote button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.td-count{font-variant-numeric:tabular-nums}
+.td-vote-more{margin-top:-12px;gap:4px 14px}
+.td-vote button.quiet{font-size:12px;border-color:transparent;color:var(--faint);padding:2px 4px}
+.td-vote button.quiet:hover{color:var(--ink)}
+.td-vote kbd,.td-why kbd{font:11px var(--mono);color:var(--faint);margin-left:6px}
+
 /* The note box. Quiet by design: it sits under the vote row so it never moves the
    buttons, and it is the last thing on the page to ask for attention. */
-.td-why{display:flex;gap:8px;justify-content:center;align-items:center}
-.td-why-input{font:inherit;font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:7px 11px;width:min(420px,100%)}
+.td-why{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:-8px}
+.td-why-input{font:inherit;font-size:13px;color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:6px;padding:6px 10px;width:min(420px,100%)}
 .td-why-input::placeholder{color:var(--faint)}
 .td-why-input:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-color:var(--rule-strong)}
-.td-why button{font:inherit;font-size:13px;color:var(--muted);background:none;border:1px solid transparent;border-radius:8px;padding:7px 10px;cursor:pointer}
-.td-why button:hover{color:var(--ink);background:var(--hover)}
+.td-why button{font:12px var(--mono);color:var(--muted);background:none;border:1px solid transparent;border-radius:6px;padding:6px 8px;cursor:pointer}
+.td-why button:hover{color:var(--ink)}
 .td-why button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.td-why kbd{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:6px}
-.td-why-on{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}
-/* Notes under a gallery card. The rule on the left is what makes a stack of them read
-   as quotation rather than as more of the card's own copy. */
-.td-whys{display:grid;gap:7px;margin:12px 0 0;padding:0;list-style:none}
-.td-whys li{font-size:12.5px;line-height:1.45;color:var(--muted);border-left:2px solid var(--rule);padding-left:9px}
-.td-why-text{color:var(--ink);display:block}
-.td-why-vs{font-family:var(--mono);font-size:11px;color:var(--faint)}
-.td-feed-why{font-style:italic;display:block}
-.td-status{font-size:12.5px;color:var(--muted);text-align:center;min-height:1.5em}
-.td-two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:start}
-.td-table-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--rule);border-radius:12px}
-.td-table-wrap table{border-collapse:collapse;width:100%;font-size:13.5px}
-.td-table-wrap th,.td-table-wrap td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap}
-.td-table-wrap tr:last-child td{border-bottom:0}
-.td-table-wrap th{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.td-table-wrap td.num,.td-table-wrap th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
-.td-table-wrap td.rank{font-family:var(--mono);color:var(--faint);width:1%}
-.td-swatch{display:inline-block;width:34px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:8px}
+.td-why-on{font:11px var(--mono);color:var(--faint);white-space:nowrap}
+.td-status{font-size:12.5px;color:var(--muted);text-align:center;min-height:1.5em;margin-top:-10px}
+
+/* ---- tables: the boards on the vote view and the standings on the results view ---- */
+.td-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px}
+.td-board{display:grid;gap:6px;align-content:start;min-width:0}
+.td-board table,.td-table-wrap table{width:100%;border-collapse:collapse;font:13px var(--mono);font-variant-numeric:tabular-nums}
+.td-board th,.td-board td,.td-table-wrap th,.td-table-wrap td{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:left;white-space:nowrap}
+.td-board th,.td-table-wrap th{color:var(--muted);font-weight:400;text-transform:lowercase}
+.td-board .num,.td-table-wrap .num{text-align:right}
+.td-table-wrap{overflow-x:auto}
+.td-table-wrap td.rank{color:var(--faint);width:1%}
+.td-swatch{display:inline-block;width:28px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:8px}
 /* The interval rides along with the rating rather than taking a column of its own: it is
    a qualifier on that number, and a column would let the eye scan the spreads on their
-   own as if they were a second ranking. Quieter and smaller so the rating still reads
-   first, but not so quiet it looks like a footnote you can skip.
-   A fixed slot, so a table holding a +/-9 next to a +/-107 keeps its ratings in a column
-   instead of sliding each one left by however wide its own spread happens to be. */
-.td-ci{display:inline-block;min-width:3.2em;margin-left:7px;text-align:right;color:var(--faint);font-size:11.5px}
+   own as if they were a second ranking. A fixed slot, so a table holding a ±9 next to a
+   ±107 keeps its ratings in a column. */
+.td-ci{display:inline-block;min-width:3.4em;margin-left:6px;text-align:right;color:var(--faint);font-size:11.5px}
 /* The sentence the table is evidence for, so it is not muted into a caption. */
 .td-callout{margin:0;font-size:13px;color:var(--ink)}
-.td-lead{color:var(--win);font-weight:600}
+.td-lead{color:var(--win);font-weight:700}
+
+/* The results as JSON, for pasting into the thread that asked. */
+.td-export{width:100%;min-height:70px;font:11px/1.5 var(--mono);background:transparent;color:var(--muted);border:1px solid var(--rule);border-radius:6px;padding:8px;resize:vertical}
+.td-export:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* Notes under a gallery card. The rule on the left is what makes a stack of them read
+   as quotation rather than as more of the card's own copy. */
+.td-whys{display:grid;gap:7px;margin:4px 0 0;padding:0;list-style:none}
+.td-whys li{font-size:12.5px;line-height:1.45;color:var(--muted);border-left:2px solid var(--rule);padding-left:9px}
+.td-why-text{color:var(--ink);display:block}
+.td-why-vs{font:11px var(--mono);color:var(--faint)}
+.td-feed-why{font-style:italic;display:block}
+
+/* ---- results view ---- */
+.td-two{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:start}
 .td-feed{display:grid;gap:6px;font-size:13px;color:var(--muted);margin:0;padding:0;list-style:none}
-.td-feed li{display:grid;gap:3px}
+.td-feed li{display:grid;gap:3px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
 .td-feed-line{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
 .td-feed b{color:var(--ink);font-weight:500}
-.td-feed .when{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-left:auto}
-.td-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:12px}
-.td-gallery .td-card{padding:12px;gap:8px}
-.td-empty{color:var(--faint);font-size:13px;padding:12px}
+.td-feed .when{font:11.5px var(--mono);color:var(--faint);margin-left:auto}
+.td-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px}
+/* #galleryN: four across, for a screenshot of the whole field. */
+.td-gallery.td-gallery-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.td-gallery .td-card{padding:0;gap:6px;border:0}
+.td-gallery .td-card-name{color:var(--muted)}
+.td-empty{color:var(--faint);font-size:13px;padding:6px 0;border-bottom:0!important}
+@media (max-width:900px){.td-gallery.td-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:760px){
   .td-duel,.td-two{grid-template-columns:1fr}
-  .td-arena-tag{margin-left:0}
-  /* One column, so "left" is the card on top and the arrow points at nothing. */
-  .td-side-arrow{display:none}
+  .td-head-side{justify-items:start;margin-left:0}
+  .td-arena-label{text-align:left}
+  /* One column, so "left" is the card on top and the arrows point at nothing. */
+  .td-side-arrow{visibility:hidden}
+  .td-vote-hint{display:none}
 }
+@media (max-width:480px){.td-gallery.td-gallery-grid{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 /* ---- examples/cmux-selection/config.css ---- */
@@ -683,7 +712,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     });
     const C = {
       k: 24, recent: 8, collection: "votes", contenderLabel: "Contender",
-      galleryTitle: "Everyone in this arena", media: {}, interactiveCards: false,
+      galleryTitle: "Everyone in this arena", media: {}, interactiveCards: false, blind: true,
       ...cfg,
       contenders, dims,
       localKey: cfg.localKey || `thunderdome:${cfg.id}:local`,
@@ -727,8 +756,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
   // What a question may set for itself. Everything else it inherits from the dome, and
   // anything in DOME_ONLY is rejected rather than quietly ignored, so the boundary is
   // something the config author is told about instead of something they discover.
-  const Q_KEYS = ["lede", "galleryTitle", "contenderLabel", "media", "render", "swatch", "interactiveCards"];
-  const DOME_ONLY = ["arena", "dimensions", "split", "k", "recent", "collection", "localKey", "mount", "shuffle", "questions", "confidence", "comments"];
+  const Q_KEYS = ["lede", "galleryTitle", "contenderLabel", "media", "render", "swatch", "interactiveCards", "blind"];
+  const DOME_ONLY = ["arena", "dimensions", "split", "k", "recent", "collection", "localKey", "mount", "shuffle", "questions", "confidence", "comments", "demo"];
 
   // One dome, several decisions. A question brings its own contenders and its own words
   // and inherits everything else, so the arena, the media defaults and the render
@@ -757,7 +786,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       const id = list ? String(q.id == null ? "" : q.id).toLowerCase() : null;
       if (list) {
         if (!id) throw new Error(`Thunderdome: every question needs an id (question ${i + 1} has none)`);
-        if (VIEWS.has(id)) throw new Error(`Thunderdome: "${id}" is a view name, so it cannot be a question id`);
+        if (VIEWS.has(id) || MODE_WORD.test(id)) throw new Error(`Thunderdome: "${id}" is a view name, so it cannot be a question id`);
         if (seen.has(id)) throw new Error(`Thunderdome: question ids must be unique (${id})`);
         seen.add(id);
         for (const k of DOME_ONLY) {
@@ -816,6 +845,58 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     return { q, view: view || "vote" };
   }
 
+  // The screenshot modes ride in the same hash as the view, and parseHash ignores them:
+  //   #gallery3        every contender, drawn in the fourth arena of arenas()
+  //   #demo            the config's `demo` bout and boards, with voting switched off
+  //   #light, #dark    the page's own theme, whatever the system says
+  // They combine with each other and with a question: #wording/gallery1/dark.
+  const MODE_WORD = /^(gallery\d*|demo|light|dark)$/;
+  function parseMode(hash) {
+    let gallery = null, demo = false, theme = null;
+    for (const raw of String(hash || "").replace(/^#/, "").split("/")) {
+      const p = raw.toLowerCase(), g = /^gallery(\d*)$/.exec(p);
+      if (g) { if (gallery == null) gallery = g[1] ? Number(g[1]) : 0; }
+      else if (p === "demo") demo = true;
+      else if ((p === "light" || p === "dark") && !theme) theme = p;
+    }
+    return { gallery, demo, theme };
+  }
+
+  // Every arena the dimensions can make, first dimension slowest, toggles off before on.
+  // This is the list #galleryN counts through, so the numbering only changes when the
+  // dimensions do.
+  function arenas(C) {
+    let out = [{}];
+    for (const d of C.dims) {
+      const vals = d.type === "select" ? d.options.map(o => o.id) : [false, true];
+      out = out.flatMap(ids => vals.map(v => ({ ...ids, [d.id]: v })));
+    }
+    return out;
+  }
+
+  // The per-split boards the vote view draws and the results box exports: one ranked list
+  // per split value, keyed by its id, or one called "all" for a dome with no split. The
+  // point estimate only. The interval is the results view's job and costs a few hundred
+  // fits; this is one fit per split and runs on every vote.
+  // The shape is also what `demo.results` takes, so a pasted export redraws as it was.
+  function boards(D, Q, votes) {
+    const ids = Q.contenders.map(c => c.id);
+    const mine = votesFor(D, Q, votes).slice().sort((a, b) => a.t - b.t);
+    const prior = D.confidence ? D.confidence.prior : 200;
+    const groups = D.split
+      ? D.split.values.map(s => [s.id, mine.filter(v => splitOf(D, resolveArena(D, v, true)) === s.id)])
+      : [["all", mine]];
+    const out = {};
+    if (D.multi) out.question = Q.id;
+    for (const [key, list] of groups) {
+      const r = fit(ids, list, { prior }), rec = records(ids, list);
+      out[key] = ids.map(id => ({ id, elo: Math.round(r[id]), ...rec[id] }))
+        .sort((x, y) => y.elo - x.elo);
+    }
+    out.votes = mine.length;
+    return out;
+  }
+
   function hashFor(q, view) {
     return "#" + (q ? encodeURIComponent(q) + "/" : "") + (view === "results" ? "results" : "vote");
   }
@@ -834,6 +915,14 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     }
     for (const kid of kids) if (kid != null) el.append(kid);
     return el;
+  }
+
+  // "Selection Thunderdome" is set as "selection // thunderdome": the name of the dome, then
+  // what kind of page it is. CSS lowercases it. A title that does not end in the word is
+  // left as written, since it is usually the question itself.
+  function heading(title) {
+    const t = String(title).trim(), m = /^(.*?)\s*(?:\/\/)?\s*thunderdome$/i.exec(t);
+    return m && m[1] ? `${m[1]} // thunderdome` : t;
   }
 
   function toNode(x) {
@@ -914,7 +1003,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     // in question one drops out on its own rather than landing in the wrong table.
     // Always a fresh array: callers sort it in place.
     const first = () => Q === C.questions[0];
-    const qVotes = () => C.multi ? votes.filter(v => v.q === Q.id || (v.q == null && first())) : votes.slice();
+    const inQ = v => !C.multi || v.q === Q.id || (v.q == null && first());
+    const qVotes = () => votes.filter(inQ);
+    // The screenshot modes (#galleryN, #demo, #light, #dark). Read off the hash on every
+    // change, beside the question and the view rather than inside them.
+    let mode = parseMode(location.hash), demoWas = false;
+    const demoOn = () => !!(mode.demo && C.demo && (C.demo.question == null ? first() : C.demo.question === Q.id));
 
     let arenaIds = {};
     for (const d of C.dims) arenaIds[d.id] = d.type === "select" ? (d.default ?? d.options[0].id) : !!d.default;
@@ -961,7 +1055,6 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       controls.append(h("label", { for: "td-shuffle" }, $.shuffle, " New arena each duel"));
     }
     $.tag = h("span", { class: "td-arena-tag" });
-    controls.append($.tag);
 
     $.duel = h("section", { class: "td-duel", "aria-live": "polite" });
     // Media that fails to load does so long after render(), so it reports back.
@@ -976,12 +1069,16 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     // `detail` is 0 when the click came from Enter or space on a focused button, so a
     // keyboard user keeps their place in the tab order and only the mouse gives up focus.
     const click = w => e => { if (e.detail && e.currentTarget.blur) e.currentTarget.blur(); vote(w); };
-    $.voteA = h("button", { class: "primary", title: "Left wins (← or 1)", onclick: click("a") }, "Left wins", h("kbd", { text: "←" }));
-    $.voteTie = h("button", { title: "Tie (↓, 3 or space)", onclick: click("tie") }, "Tie", h("kbd", { text: "↓" }));
-    $.voteB = h("button", { class: "primary", title: "Right wins (→ or 2)", onclick: click("b") }, "Right wins", h("kbd", { text: "→" }));
-    $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "Skip", h("kbd", { text: "S" }));
-    $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "Undo my last vote", h("kbd", { text: "U" }));
-    $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos(true) }, "Replay both", h("kbd", { text: "R" }));
+    // The row reads as a sentence with the keys in it: "← left wins [Left] [Tie ↓]
+    // [Right] right wins →". The arrows outside the buttons are the keyboard legend, so
+    // the buttons themselves stay one word each.
+    $.voteA = h("button", { title: "Left wins (← or 1)", onclick: click("a") }, "Left");
+    $.voteTie = h("button", { title: "Tie (↓, 3 or space)", onclick: click("tie") }, "Tie ↓");
+    $.voteB = h("button", { title: "Right wins (→ or 2)", onclick: click("b") }, "Right");
+    $.count = h("span", { class: "td-count" });
+    $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "skip", h("kbd", { text: "S" }));
+    $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "undo my last vote", h("kbd", { text: "U" }));
+    $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos(true) }, "replay both", h("kbd", { text: "R" }));
     // One line about the pick you just made, offered and never demanded. It appears
     // after a vote and it does not take focus: the click-click-click path through a
     // dome is the one that gets used, and a box that grabs the caret would end it at
@@ -1007,7 +1104,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       $.whyOn = h("span", { class: "td-why-on", hidden: true });
       $.whyBox = h("form", { class: "td-why", hidden: true });
       $.whyBox.addEventListener("submit", e => { e.preventDefault(); saveWhy(); });
-      $.whyBox.append($.why, $.whyOn, h("button", { class: "quiet", type: "submit" }, "Add note", h("kbd", { text: "↵" })));
+      $.whyBox.append($.why, $.whyOn, h("button", { class: "quiet", type: "submit" }, "add note", h("kbd", { text: "↵" })));
     }
     $.status = h("div", { class: "td-status", role: "status" });
 
@@ -1045,21 +1142,44 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     $.qTitle = C.multi ? h("h2", { class: "td-qtitle", tabindex: "-1" }) : null;
     $.qLede = h("p", { class: "td-lede" });
 
-    // The arena bar is context, not a control you touch every duel: collapsed to its
-    // tag line, one click from open. <details> so the keyboard and AT get it for free.
-    $.arenaBox = h("details", { class: "td-arena" },
-      h("summary", {}, h("span", { class: "td-arena-label", text: "Arena" }), $.tag), controls);
+    // The arena is named top right, "arena: tokyo night (dark)", which is all most duels
+    // need from it. The label is also the button that opens the controls, so pinning an
+    // arena is one click from the thing that tells you which one you are in.
+    $.arenaBtn = h("button", {
+      class: "td-arena-label", type: "button", "aria-expanded": "false", "aria-controls": "td-arena-controls",
+      title: "Choose the arena",
+      onclick: () => {
+        const open = $.arenaBox.hidden;
+        $.arenaBox.hidden = !open;
+        $.arenaBtn.setAttribute("aria-expanded", String(open));
+      },
+    }, "arena: ", $.tag);
+    $.arenaBox = h("div", { class: "td-arena", id: "td-arena-controls", hidden: true }, controls);
 
+    // Under the duel, the boards: one per split, point estimates and records, redrawn on
+    // every vote so you can watch your vote land. The results view has the same numbers
+    // with an interval and a verdict; these are the quick read.
+    $.boards = h("section", { class: "td-boards", "aria-label": "Standings by arena" });
+    // The boards as JSON, for pasting into the thread that asked. Same shape `demo.results`
+    // takes, so a pasted export can be drawn again exactly as it was.
+    $.export = h("textarea", { class: "td-export", readonly: "", rows: "3", spellcheck: "false", "aria-label": "Results as JSON" });
+    $.copyJson = h("button", { class: "td-copy", type: "button", onclick: () => copyText($.export.value, $.copyJson, "Copy results", "Copied the results as JSON.") }, "Copy results");
+    $.reset = h("button", { class: "td-copy", type: "button", hidden: true, onclick: () => resetMine() }, "Reset my votes");
+
+    $.voteRow = h("div", { class: "td-vote" },
+      h("span", { class: "td-vote-hint", text: "← left wins" }), $.voteA, $.voteTie, $.voteB,
+      h("span", { class: "td-vote-hint", text: "right wins →" }), $.count);
+    $.voteMore = h("div", { class: "td-vote td-vote-more" }, $.skip, $.replay, $.undo);
     $.viewVote = h("section", { class: "td-view" },
-      C.dims.length ? $.arenaBox : null,
-      $.duel,
-      h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.replay, $.undo),
-      $.whyBox || null);
+      $.duel, $.voteRow, $.voteMore, $.whyBox || null, $.boards,
+      h("section", { class: "td-section td-export-box" },
+        h("h2", { text: "Results JSON (paste into the issue)" }), $.export,
+        h("div", { class: "td-row" }, $.copyJson, $.reset)));
 
     // The table is usually wanted somewhere else: the issue that asked, a message, a
     // commit. One button, the same markdown the command line prints, so the answer gets
     // back to the question without anyone retyping four ratings.
-    $.copy = h("button", { class: "td-copy", type: "button", onclick: () => copyMarkdown() },
+    $.copy = h("button", { class: "td-copy", type: "button", onclick: () => copyText(markdownNow(), $.copy, "Copy as markdown", "Copied the table as markdown.") },
       "Copy as markdown");
 
     $.viewResults = h("section", { class: "td-view", hidden: true },
@@ -1070,17 +1190,25 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         h("section", { class: "td-section" }, h("h2", { text: "Recent bouts" }), $.feed)),
       h("section", { class: "td-section" }, $.galleryHead = h("h2"), $.gallery));
 
+    // #galleryN: every contender in one arena, four across, for a screenshot. Not a tab:
+    // it is a link you make on purpose.
+    $.galleryModeHead = h("h2");
+    $.galleryMode = h("div", { class: "td-gallery td-gallery-grid" });
+    $.viewGallery = h("section", { class: "td-view", hidden: true },
+      h("section", { class: "td-section" }, $.galleryModeHead, $.galleryMode));
+
+    $.title = h("h1", { class: "td-title", text: heading(C.title || C.id) });
     const wrap = h("div", { class: "td-wrap" },
       h("header", { class: "td-head" },
-        h("h1", { text: C.title || C.id }),
-        h("nav", { class: "td-tabs", "aria-label": "View" }, $.tabVote, $.tabResults)),
-      $.qNav, $.qTitle, $.qLede,
-      // Outside both views. It used to live at the foot of the vote view, which was fine
-      // while only voting had anything to say; then the copy button started saying
-      // "Copied the table as markdown" into a subtree the results view keeps hidden, so
-      // there was no confirmation on screen and nothing for a screen reader to announce,
-      // and a copy that failed looked exactly like one that worked.
-      $.viewVote, $.viewResults, $.status);
+        h("div", { class: "td-head-main" }, $.title, C.multi ? null : $.qLede),
+        h("div", { class: "td-head-side" },
+          C.dims.length ? $.arenaBtn : null,
+          h("nav", { class: "td-tabs", "aria-label": "View" }, $.tabVote, $.tabResults))),
+      C.dims.length ? $.arenaBox : null,
+      $.qNav, $.qTitle, C.multi ? $.qLede : null,
+      // The status line moves into whichever view is showing (see goto), so a copy on the
+      // results view says "Copied" where the reader is and not into a hidden subtree.
+      $.viewVote, $.viewResults, $.viewGallery);
     mount.append(wrap);
 
     // Everything on the page that names the question rather than the dome. The lede is
@@ -1135,8 +1263,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         galleryDirty = true; standingsDirty = true;
       }
       view = v === "results" ? "results" : "vote";
-      $.viewVote.hidden = view !== "vote";
-      $.viewResults.hidden = view !== "results";
+      const gallery = mode.gallery != null;
+      $.viewVote.hidden = gallery || view !== "vote";
+      $.viewResults.hidden = gallery || view !== "results";
+      $.viewGallery.hidden = !gallery;
+      if (view === "vote") ($.whyBox || $.voteMore).after($.status); else $.viewResults.prepend($.status);
       $.tabVote.setAttribute("aria-current", view === "vote" ? "page" : "false");
       $.tabResults.setAttribute("aria-current", view === "results" ? "page" : "false");
       $.tabVote.href = hashFor(Q.id, "vote");
@@ -1146,7 +1277,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       // A question you just arrived at has no duel yet, and nextDuel renders one. Keep the
       // arena across the move: re-rolling it would mean you cannot put two questions side
       // by side in the same context, and Back would land somewhere you have never been.
+      const demo = demoOn(), demoFlip = demo !== demoWas;
+      demoWas = demo;
       if (moved || booting) { renderQuestion(); nextDuel(moved); renderStandings(); }
+      else if (demoFlip) { nextDuel(true); renderStandings(); }
+      if (gallery) renderGalleryMode();
+      applyTheme();
       // Arriving at the results view is what pays for the table, so votes cast on the
       // vote view show up the moment you go looking for them and not before.
       flushStandings();
@@ -1158,7 +1294,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       if (moved && !booting && $.qTitle) $.qTitle.focus({ preventScroll: true });
     }
     const fromHash = () => parseHash(location.hash, qids);
-    window.addEventListener("hashchange", () => { const r = fromHash(); goto(r.q, r.view); });
+    window.addEventListener("hashchange", () => { mode = parseMode(location.hash); const r = fromHash(); goto(r.q, r.view); });
 
     // ---- rendering ----
     function arena() { return resolveArena(C, arenaIds, false); }
@@ -1221,14 +1357,17 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     }
 
     function card(c, a, side, notes) {
-      const head = h("div", { class: "td-card-head" },
-        h("div", {}, h("div", { class: "td-card-name", text: c.name }), c.note ? h("div", { class: "td-card-note", text: c.note }) : null),
-        // The arrow is a separate span because it stops being true below 760px, where the
-        // duel stacks and "left" is the card on top. CSS drops it at that width.
-        side ? h("span", { class: "td-side-key" },
-          side === "a" ? h("span", { class: "td-side-arrow", text: "\u2190 " }) : null,
-          side === "a" ? "Left" : "Right",
-          side === "b" ? h("span", { class: "td-side-arrow", text: " \u2192" }) : null) : null);
+      // Above each side of the duel: its key on the left edge and its letter on the right.
+      // The arrow is a separate span because it stops being true below 760px, where the
+      // duel stacks and "left" is the card on top. CSS drops it at that width.
+      const key = side ? h("div", { class: "td-card-key" },
+        h("span", { class: "td-side-arrow", "aria-hidden": "true", text: side === "a" ? "\u2190" : "\u2192" }),
+        h("span", { text: side === "a" ? "A" : "B" })) : null;
+      // Blind by default: during the vote a name is a thumb on the scale, and "Today" or
+      // "Proposed" on a card is the heaviest one there is. The boards, the gallery and
+      // the note box after the vote all name them.
+      const head = side && Q.blind ? null : h("div", { class: "td-card-head" },
+        h("div", { class: "td-card-name", text: c.name }), c.note ? h("div", { class: "td-card-note", text: c.note }) : null);
       let body, broken = false;
       try { body = renderBody(c, a); } catch (e) {
         broken = true;
@@ -1236,7 +1375,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         body = failNode("Couldn't draw this one.", String((e && e.message) || e));
       }
       const el = h("article", { class: "td-card", "data-contender": c.id },
-        head, h("div", { class: "td-card-body" }, body), side ? null : whyList(notes));
+        key, head, h("div", { class: "td-card-body" }, body), side ? null : whyList(notes));
       if (broken) el.dataset.tdBroken = "1";
       // The whole card is the button. Reaching for a button under the thing you are
       // judging is the difference between twenty votes and five.
@@ -1393,6 +1532,17 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     // judged inside, and re-rolling it as you move between questions means you can never
     // put two of them side by side in the same one.
     function nextDuel(keepArena) {
+      // The demo bout is fixed: the same pair in the same arena every time it is opened,
+      // so a screenshot of it can be taken again.
+      if (demoOn()) {
+        Object.assign(arenaIds, C.demo.arena || {});
+        if ($.shuffle) $.shuffle.checked = false;
+        const pair = (C.demo.duel || []).filter(id => byId[id]);
+        const a = pair[0] || ids[0], b = pair[1] && pair[1] !== a ? pair[1] : ids.find(id => id !== a);
+        lastKey = pairKey(a, b); duel = { a, b };
+        render();
+        return;
+      }
       if (!keepArena && $.shuffle && $.shuffle.checked) {
         for (const d of C.dims) if (d.shuffle) {
           arenaIds[d.id] = d.type === "select" ? d.options[Math.floor(Math.random() * d.options.length)].id : Math.random() < .5;
@@ -1412,6 +1562,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     // that sees a note arrive, whether it was written here or by somebody else.
     function renderStandings() {
       standingsDirty = true;
+      renderBoards();
       if (C.comments) {
         const gk = galleryStamp();
         if (gk !== galleryKey) { galleryKey = gk; galleryDirty = true; }
@@ -1439,15 +1590,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     // a reader looking at the button does not see: on the results view the table and the
     // gallery are between them. So the button says it too, where the eye already is.
     let copyTimer = null;
-    function copySaid(label) {
-      if (!$.copy) return;
-      $.copy.textContent = label;
+    function copySaid(btn, label, rest) {
+      btn.textContent = label;
       clearTimeout(copyTimer);
-      copyTimer = setTimeout(() => { $.copy.textContent = "Copy as markdown"; }, 2000);
+      copyTimer = setTimeout(() => { btn.textContent = rest; }, 2000);
     }
 
-    function copyMarkdown() {
-      const text = markdownNow();
+    function copyText(text, btn, rest, okMsg) {
       const fallback = () => {
         // Whatever the reader had highlighted in the standings goes back afterwards, and
         // so does the caret: a button that silently eats your selection and drops you at
@@ -1464,14 +1613,96 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
         ta.remove();
         if (sel) { sel.removeAllRanges(); for (const r of had) sel.addRange(r); }
-        if ($.copy) $.copy.focus();
-        copySaid(ok ? "Copied" : "Copy failed");
-        say(ok ? "Copied the table as markdown." : "Could not reach the clipboard. Press copy again with the console open to see why.", !ok);
+        btn.focus();
+        copySaid(btn, ok ? "Copied" : "Copy failed", rest);
+        say(ok ? okMsg : "Could not reach the clipboard. Press copy again with the console open to see why.", !ok);
       };
-      const done = () => { copySaid("Copied"); say("Copied the table as markdown."); };
+      const done = () => { copySaid(btn, "Copied", rest); say(okMsg); };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(done, fallback);
       } else fallback();
+    }
+
+    // Takes back the votes this browser holds for the question on screen. Votes in a
+    // shared table are not "mine" in any way the page can prove, so they stay, and the
+    // button only shows while there is something local to remove. Two clicks, because
+    // the first one is too easy to land on the way to Copy.
+    let resetArmed = false, resetTimer = 0;
+    function disarmReset() { resetArmed = false; clearTimeout(resetTimer); $.reset.textContent = "Reset my votes"; }
+    function resetMine() {
+      if (!resetArmed) {
+        resetArmed = true; $.reset.textContent = "Click again to reset";
+        resetTimer = setTimeout(disarmReset, 4000);
+        return;
+      }
+      disarmReset();
+      const mine = v => String(v.id).startsWith("local-") && inQ(v);
+      const n = votes.filter(mine).length;
+      votes = votes.filter(v => !mine(v));
+      saveLocal();
+      if (myLast && myLast.local) { myLast = null; $.undo.hidden = true; }
+      clearWhy();
+      renderStandings();
+      say(`Removed ${n} vote${n === 1 ? "" : "s"} from this browser.`);
+    }
+
+    // The swatch, then the name. Shared by the boards and the standings.
+    function nameCell(c) {
+      const td = h("td");
+      if (Q.swatch) {
+        const sw = Q.swatch(c, { h });
+        if (sw != null) td.append(sw instanceof Node ? sw : h("span", { class: "td-swatch", style: `background:${sw}` }));
+      }
+      td.append(document.createTextNode(c.name));
+      return td;
+    }
+
+    // One board per split, drawn from boards() or, on #demo, from the numbers the config
+    // brought. Rows for contenders the question no longer has are dropped, so an old
+    // export still draws after a contender is retired.
+    function renderBoards() {
+      const data = demoOn() && C.demo.results ? C.demo.results : boards(C, Q, votes);
+      const groups = C.split ? C.split.values.map(s => [s.label, data[s.id]]) : [["Standings", data.all]];
+      $.boards.replaceChildren(...groups.map(([label, rows]) => h("div", { class: "td-board" },
+        h("h2", { text: label }),
+        h("table", {},
+          h("thead", {}, h("tr", {}, h("th", { text: Q.contenderLabel }), h("th", { class: "num", text: "Elo" }), h("th", { class: "num", text: "W–L–T" }))),
+          h("tbody", {}, ...(rows || []).filter(r => byId[r.id]).map(r => h("tr", {},
+            nameCell(byId[r.id]),
+            h("td", { class: "num", text: String(r.elo) }),
+            h("td", { class: "num", text: `${r.w}–${r.l}–${r.t}` }))))))));
+      const n = data.votes || 0;
+      $.count.textContent = `${n} vote${n === 1 ? "" : "s"}`;
+      $.export.value = JSON.stringify(data);
+      $.reset.hidden = demoOn() || !votes.some(v => String(v.id).startsWith("local-") && inQ(v));
+    }
+
+    // #galleryN puts the page in that arena and draws everyone in it. The page follows
+    // the arena's own brightness when an option says `dark`, so a light theme is not
+    // photographed on a black ground; #light or #dark in the hash overrides that.
+    function renderGalleryMode() {
+      const list = arenas(C);
+      if (list.length) Object.assign(arenaIds, list[mode.gallery % list.length]);
+      const a = arena();
+      if (C.dims.length) syncControls(a);
+      const notes = C.comments ? comments(ids, qVotes()) : null;
+      $.galleryModeHead.textContent = Q.galleryTitle;
+      $.galleryMode.replaceChildren(...Q.contenders.map(c => card(c, a, null, notes && notes[c.id])));
+      for (const v of $.galleryMode.querySelectorAll("video")) {
+        if (v.dataset.tdAuto) { const q = v.play(); if (q && q.catch) q.catch(() => {}); }
+      }
+    }
+
+    function applyTheme() {
+      let t = mode.theme;
+      if (!t && mode.gallery != null) {
+        const a = arena();
+        for (const d of C.dims) {
+          if (d.type === "select" && a[d.id] && typeof a[d.id].dark === "boolean") { t = a[d.id].dark ? "dark" : "light"; break; }
+        }
+      }
+      const el = document.documentElement;
+      if (t) el.setAttribute("data-theme", t); else el.removeAttribute("data-theme");
     }
 
     function flushStandings() {
@@ -1490,12 +1721,6 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       const order = ids.slice().sort((x, y) => all[y] - all[x]);
       const rows = order.map((id, i) => {
         const c = byId[id];
-        const nameCell = h("td");
-        if (Q.swatch) {
-          const sw = Q.swatch(c, { h });
-          if (sw != null) nameCell.append(sw instanceof Node ? sw : h("span", { class: "td-swatch", style: `background:${sw}` }));
-        }
-        nameCell.append(document.createTextNode(c.name));
         // The percentile range is not symmetric, so the cell shows its half-width and
         // carries the range itself for anyone who wants the two ends.
         const eloCell = h("td", { class: "num", text: String(Math.round(all[id])) });
@@ -1512,7 +1737,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
         }
         return h("tr", {},
           h("td", { class: "rank", text: String(i + 1) }),
-          nameCell,
+          nameCell(c),
           eloCell,
           ...perSplit.map(s => h("td", { class: "num" + (s.best === id ? " td-lead" : ""), text: String(Math.round(s.r[id])) })),
           h("td", { class: "num", text: `${rec[id].w}–${rec[id].l}–${rec[id].t}` }));
@@ -1699,6 +1924,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     }
     async function vote(w) {
       if (!duel || lockNote) return;
+      if (demoOn()) { say("This is the demo bout, so votes are not recorded. Drop #demo from the link to vote."); return; }
       // `q` only on a dome that has questions, so a single-question dome's votes keep the
       // exact shape they had before questions existed and an old shared table still reads.
       const v = { a: duel.a, b: duel.b, w, ...arena().ids, t: Date.now() };
@@ -1751,7 +1977,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       // The duel is hidden on the results view, and a vote on a pair you cannot see is
       // bad data. It also means space is the page's own scroll key there, which is what
       // anyone reading a table of standings expects it to be.
-      if (view !== "vote") return;
+      if (view !== "vote" || mode.gallery != null) return;
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
       const near = sel => e.target.closest && e.target.closest(sel);
       if (near("select,input,textarea,[contenteditable]")) return;   // typing always beats voting
@@ -1787,7 +2013,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       // replaceState, not a hash assignment: the entry state should not become a step
       // that Back has to walk through.
       const want = hashFor(Q.id, view);
-      if (C.multi && location.hash !== want && history.replaceState) {
+      const modal = mode.gallery != null || mode.demo || mode.theme;
+      if (C.multi && !modal && location.hash !== want && history.replaceState) {
         try { history.replaceState(null, "", want); } catch (e) { /* file:// with no history */ }
       }
     }
@@ -1817,7 +2044,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     };
   }
 
-  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, comments, records, votesFor, tableFor, tablesFor, tablesForDome, markdown, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
+  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, comments, records, votesFor, tableFor, tablesFor, tablesForDome, markdown, boards, arenas, parseMode, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

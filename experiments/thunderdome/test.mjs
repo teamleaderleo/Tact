@@ -355,6 +355,59 @@ test("the hash carries a question and a view, in either order", () => {
   assert.deepEqual(T.parseHash("#td-shuffle", ids), { q: null, view: "vote" });
 });
 
+test("the screenshot modes ride in the hash without moving the question or the view", () => {
+  const ids = ["density", "copy"];
+  assert.deepEqual(T.parseMode(""), { gallery: null, demo: false, theme: null });
+  assert.deepEqual(T.parseMode("#gallery"), { gallery: 0, demo: false, theme: null });
+  assert.deepEqual(T.parseMode("#density/gallery3/dark"), { gallery: 3, demo: false, theme: "dark" });
+  assert.deepEqual(T.parseMode("#demo/light"), { gallery: null, demo: true, theme: "light" });
+  // The question and view parse the same with or without a mode beside them.
+  assert.deepEqual(T.parseHash("#density/gallery3/dark", ids), { q: "density", view: "vote" });
+  assert.deepEqual(T.parseHash("#results/light", ids), { q: null, view: "results" });
+  // And a question cannot be named after one, or its link would open a mode instead.
+  const two = [{ id: "a" }, { id: "b" }];
+  for (const id of ["demo", "gallery", "gallery2", "light", "dark"]) {
+    assert.throws(() => T.normalizeDome({ id: "d", questions: [{ id, contenders: two }] }), /view name/, id);
+  }
+});
+
+test("arenas counts every combination, first dimension slowest", () => {
+  const C = T.normalize({ id: "d", contenders: [{ id: "a" }, { id: "b" }], arena: { dimensions: [
+    { id: "theme", options: [{ id: "light" }, { id: "dark" }] },
+    { id: "ic", label: "Increase Contrast" },
+  ] } });
+  assert.deepEqual(T.arenas(C), [
+    { theme: "light", ic: false }, { theme: "light", ic: true },
+    { theme: "dark", ic: false }, { theme: "dark", ic: true },
+  ]);
+  assert.deepEqual(T.arenas(T.normalize({ id: "d", contenders: [{ id: "a" }, { id: "b" }] })), [{}]);
+});
+
+test("boards rank each split on its own votes, in the shape demo.results takes", () => {
+  const cfg = {
+    id: "d", contenders: [{ id: "x" }, { id: "y" }, { id: "z" }],
+    arena: { dimensions: [{ id: "theme", options: [{ id: "paper", dark: false }, { id: "slate", dark: true }] }] },
+    split: { values: [{ id: "dark", label: "Dark" }, { id: "light", label: "Light" }], of: a => a.theme && (a.theme.dark ? "dark" : "light") },
+  };
+  const D = T.normalizeDome(cfg);
+  const votes = [];
+  for (let i = 0; i < 6; i++) votes.push({ a: "x", b: "y", w: "a", theme: "slate", t: i });
+  for (let i = 0; i < 6; i++) votes.push({ a: "z", b: "x", w: "a", theme: "paper", t: 10 + i });
+  votes.push({ a: "y", b: "z", w: "tie", theme: "paper", t: 20 });
+  const b = T.boards(D, D.questions[0], votes);
+  assert.deepEqual(Object.keys(b), ["dark", "light", "votes"]);
+  assert.equal(b.votes, 13);
+  assert.equal(b.dark[0].id, "x");
+  assert.deepEqual(b.dark.find(r => r.id === "x"), { id: "x", elo: b.dark[0].elo, w: 6, l: 0, t: 0 });
+  assert.equal(b.light[0].id, "z");
+  assert.deepEqual(b.light.find(r => r.id === "y"), { id: "y", elo: b.light.find(r => r.id === "y").elo, w: 0, l: 0, t: 1 });
+  // No split: one board called "all". A dome with questions says which one it is.
+  const flat = T.normalizeDome({ id: "d", questions: [{ id: "q1", contenders: [{ id: "x" }, { id: "y" }] }] });
+  const fb = T.boards(flat, flat.questions[0], [{ a: "x", b: "y", w: "b", t: 1, q: "q1" }]);
+  assert.deepEqual(Object.keys(fb), ["question", "all", "votes"]);
+  assert.equal(fb.all[0].id, "y");
+});
+
 test("hashFor round-trips through parseHash", () => {
   const ids = ["a b", "c"];
   for (const q of [null, "a b", "c"]) for (const v of ["vote", "results"]) {
