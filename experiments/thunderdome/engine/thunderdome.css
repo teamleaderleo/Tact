@@ -57,6 +57,16 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-wrap h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .td-wrap h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
 .td-section{display:grid;gap:10px}
+/* The heading and the copy button share a row so the button sits over the table it
+   copies, and the heading keeps its baseline whether or not a button is next to it. */
+.td-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+/* min-width so the heading row does not jump when the label becomes "Copied". */
+.td-copy{flex:none;min-width:15ch;font-size:12px;padding:3px 8px;border:1px solid var(--rule);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
+.td-copy:hover{color:var(--ink);border-color:var(--faint)}
+.td-copy:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+/* Offscreen, not display:none: a textarea that is not rendered cannot be selected,
+   and selecting it is the entire point of the fallback. */
+.td-copy-sink{position:fixed;left:-9999px;top:0;opacity:0}
 .td-lede{color:var(--muted);max-width:68ch;margin:0;font-size:14px}
 .td-lede code{font-family:var(--mono);font-size:13px}
 .td-arena{border:1px solid var(--rule);border-radius:10px;background:var(--panel)}

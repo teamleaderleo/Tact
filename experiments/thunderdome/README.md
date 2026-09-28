@@ -143,6 +143,56 @@ calls, with the dome's own `confidence` settings, so the two cannot drift apart.
 thing the terminal leaves out is the per-[`split`](#author-a-config) columns: open the
 page for those.
 
+### Posting it back
+
+A dome usually starts as a question in an issue or a PR, and the answer belongs under the
+question rather than in the terminal of whoever ran it. `--post` writes the table there as
+a comment.
+
+```bash
+node cli.mjs results red-button --votes votes.json --post
+node cli.mjs results red-button --votes votes.json --post manaflow-ai/cmux#1234
+node cli.mjs results red-button --votes votes.json --post --dry-run
+```
+
+With no argument it posts where the dome came from: `--from-pr` records that as `askedBy`,
+and a hand-written config can set it. Note that `askedBy` does double duty, so a dome built
+with `--asked-by "Leo"` has attribution but nowhere to post, and `--post` on its own will
+say so. With an argument it takes `owner/repo#123` or the URL of an issue or a PR.
+`--dry-run` prints the exact body to stdout and sends nothing, which is the one to run
+first. Both forms print the target before the write, because `askedBy` may have been baked
+in months ago by somebody else in another repo.
+
+A second run edits the comment the first one wrote instead of adding another, so the thread
+carries one table that keeps up rather than six that disagree. It finds the old comment by
+an invisible marker carrying the dome id, and only ever edits comments posted by the
+account `gh` is logged in as, so two domes reporting into the same thread keep their own
+comment and neither touches anybody else's.
+
+Because a second run *edits*, an empty table is refused: one mistyped `--votes` would
+otherwise replace a 240-bout table with "no bouts yet, so the table is the prior and
+nothing else" and exit 0. `--post-empty` is there for the one case where that is the
+message, which is announcing a dome before anybody has voted in it.
+
+Posting uses `gh`, so it runs wherever `gh auth status` is happy, including from an agent
+with its own account. Inside GitHub Actions, the default `GITHUB_TOKEN` cannot read
+`/user`, so the run cannot tell which comment is its own and posts a new one each time;
+give the step a user token if you want the edit-in-place behaviour there.
+
+On the page itself, **Copy as markdown** on the Results tab puts the same bytes on the
+clipboard, through the same two engine functions the command line calls. A test pulls the
+engine out of the built `examples/starter/index.html`, runs that copy, and compares its
+markdown byte for byte against the CLI's. One difference worth knowing: the page copies the
+votes it has, which includes any of your own that have not synced to a shared table yet, so
+a copied table can hold a bout nobody else can reproduce from the export.
+
+Names come out of the table with their markup defused: a contender called `@someone` would
+otherwise subscribe a stranger to the thread and mail them, from your account, on every
+post, and a name beginning with `#` would be an H1 in somebody's issue with text you did
+not choose in it. Mentions get an invisible word joiner after the `@` and bare URLs lose
+their `://` to an entity, both of which GitHub's renderer respects and neither of which
+changes what the name reads as.
+
 ## Voting
 
 The page opens on the duel. Click either card to vote for it, or use the keys:
