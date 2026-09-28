@@ -1,0 +1,586 @@
+[
+  {
+    "file": "evidence/cohort.json.gz",
+    "sha256": "6ccc086ca60bebbef2bdc5f7d7082bd6c5c2c114f625ab8936ff9a385f82bcf3",
+    "uncompressed_sha256": "0c18708ade5ee562e3a7b515d1b165845006275ad8a898fe1c051261677d7e5d",
+    "capture_started_at": "2026-09-20T16:51:25.176946Z",
+    "observed_at": "2026-09-20T16:54:09.477946Z",
+    "prs": [
+      {
+        "number": 13114,
+        "head": "6a187428d77748c3be6d1baabd61ce4afa746059",
+        "base": "d11d23b47930460ac7b067811b6810a602d4b867",
+        "updated_at": "2026-09-20T05:30:27Z",
+        "observed_at": "2026-09-20T16:51:49.322655Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13117,
+        "head": "3a9790dc0d9f6e622f9558449d0eb961c3fca574",
+        "base": "02cd0320ddde88d982f9303c2c3d0db3e1880332",
+        "updated_at": "2026-09-20T09:01:14Z",
+        "observed_at": "2026-09-20T16:51:39.091911Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13128,
+        "head": "c8f34358e0d3f7ff6c724b913fac38a8bfb285dc",
+        "base": "51173c6cebeaab301138ab9f556b07293e51a69f",
+        "updated_at": "2026-09-20T05:11:42Z",
+        "observed_at": "2026-09-20T16:51:38.890870Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13201,
+        "head": "f8aee14c354bd085551d3cf3f5db736ebcbdb55f",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T15:05:56Z",
+        "observed_at": "2026-09-20T16:52:50.305010Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13235,
+        "head": "41e075fcbdc10473f42143ab6fac06bdafd6309d",
+        "base": "6d43ea699a69747cf3fbf65d45eac5be09d49da6",
+        "updated_at": "2026-09-20T12:48:01Z",
+        "observed_at": "2026-09-20T16:52:26.714054Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13240,
+        "head": "959dcea6585895f6f0a36b68c3214bc9f3299d53",
+        "base": "ad34966d0641efcacc436ecd264fda9105285c49",
+        "updated_at": "2026-09-20T14:43:19Z",
+        "observed_at": "2026-09-20T16:52:28.921623Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13042,
+        "head": "74df8c6379369356195bd6aa0ca917dd54b54bed",
+        "base": "4c67b4d8c59bc395ba2b75dc66bd688e5b846a6d",
+        "updated_at": "2026-09-20T11:56:51Z",
+        "observed_at": "2026-09-20T16:53:08.969704Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13210,
+        "head": "c0fd0357b54114f3eb34727cf28cb1f59120fc3d",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T12:13:28Z",
+        "observed_at": "2026-09-20T16:53:02.654197Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 12981,
+        "head": "4f99eabbd7e8ad3dd36cb8380bf688ece9d43754",
+        "base": "4c67b4d8c59bc395ba2b75dc66bd688e5b846a6d",
+        "updated_at": "2026-09-20T11:49:37Z",
+        "observed_at": "2026-09-20T16:53:06.624781Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13211,
+        "head": "0bb6c746b5a7bf93990a17fc0d247b856d938073",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T12:12:45Z",
+        "observed_at": "2026-09-20T16:53:13.965987Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13053,
+        "head": "4989bd6bd6665a81f2b14fd78bc9a018f7ec3eaa",
+        "base": "4c67b4d8c59bc395ba2b75dc66bd688e5b846a6d",
+        "updated_at": "2026-09-20T12:09:09Z",
+        "observed_at": "2026-09-20T16:53:56.040248Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": [
+          "jobs:35469462231:1"
+        ]
+      },
+      {
+        "number": 13216,
+        "head": "d9cc41d5977cddb39ab9a3754847092499d6b799",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T12:13:30Z",
+        "observed_at": "2026-09-20T16:53:51.403583Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": [
+          "jobs:35509906359:1"
+        ]
+      },
+      {
+        "number": 12994,
+        "head": "a3998ecb6ff6f06d08e48c25b087198ea169ebdb",
+        "base": "4c67b4d8c59bc395ba2b75dc66bd688e5b846a6d",
+        "updated_at": "2026-09-20T11:58:40Z",
+        "observed_at": "2026-09-20T16:54:01.394804Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": [
+          "timeline"
+        ]
+      },
+      {
+        "number": 13229,
+        "head": "b9627e923a3108b78f2c2fecbc2096da03856866",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T15:08:12Z",
+        "observed_at": "2026-09-20T16:54:09.477705Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      }
+    ],
+    "lines": 10,
+    "decisions": 14,
+    "events": 274,
+    "relationships": [
+      {
+        "kind": "replaces",
+        "source": 13210,
+        "target": 13042,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13210",
+        "source_at": "2026-09-20T12:13:28Z",
+        "basis": "explicit public PR body; author assertion"
+      },
+      {
+        "kind": "replaces",
+        "source": 13211,
+        "target": 12981,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13211",
+        "source_at": "2026-09-20T12:12:45Z",
+        "basis": "explicit public PR body; author assertion"
+      },
+      {
+        "kind": "replaces",
+        "source": 13216,
+        "target": 13053,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13216",
+        "source_at": "2026-09-20T12:13:30Z",
+        "basis": "explicit public PR body; author assertion"
+      },
+      {
+        "kind": "replaces",
+        "source": 13229,
+        "target": 12994,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13229",
+        "source_at": "2026-09-20T15:08:12Z",
+        "basis": "explicit public PR body; author assertion"
+      },
+      {
+        "kind": "depends_on",
+        "source": 13117,
+        "target": 13114,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13117",
+        "source_at": "2026-09-20T09:01:14Z",
+        "basis": "explicit rollout prerequisite in PR body"
+      }
+    ],
+    "audit": [
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Check app-host unit test routing",
+          "jobs": 8,
+          "prs": 8
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Check routed CI jobs",
+          "jobs": 8,
+          "prs": 8
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Compile app-host test product",
+          "jobs": 3,
+          "prs": 3
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Run trusted CLA regression matrix and validate policy as data",
+          "jobs": 9,
+          "prs": 4
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Run unit tests",
+          "jobs": 6,
+          "prs": 1
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Setup Bun",
+          "jobs": 5,
+          "prs": 2
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "queue_waste_candidate",
+        "measured": {
+          "cancelled_runner_wall_seconds": 10733.0,
+          "observed_job_wall_seconds": 75161.0,
+          "jobs": 19
+        },
+        "threshold": ">= 600 measured cancelled job wall seconds; descriptive, not a savings claim"
+      },
+      {
+        "kind": "provider_unavailable",
+        "measured": {
+          "provider": "coderabbitai[bot]",
+          "prs": 6
+        },
+        "threshold": ">= 2 PRs with explicit bot limit notices"
+      },
+      {
+        "kind": "provider_unavailable",
+        "measured": {
+          "provider": "cursor[bot]",
+          "prs": 9
+        },
+        "threshold": ">= 2 PRs with explicit bot limit notices"
+      }
+    ],
+    "evaluation": {
+      "reference_reviewer": "Codex local source review (same implementation agent; not independent human adjudication)",
+      "expected": 14,
+      "actual": 14,
+      "consequential_omissions": [],
+      "weighted_omission_cost": 0,
+      "total_reference_weight": 47,
+      "false_obligations": [],
+      "stale_obligations": [],
+      "duplicate_ids": 0,
+      "human_trials": 0,
+      "human_usability": "deferred by user; not measured",
+      "scope": "Same frozen observation only; self-reviewed technical reference, not independent human validation"
+    }
+  },
+  {
+    "file": "evidence/live.json.gz",
+    "sha256": "b437b8ec1bc0e4a717af945fc178fa890badbd78cec74144769359ad8a0a031f",
+    "uncompressed_sha256": "24774ce72c895a54a4da3f5317db949b7fb2ae1e398330371a377f0819712f57",
+    "capture_started_at": "2026-09-20T16:58:44.903146Z",
+    "observed_at": "2026-09-20T17:00:25.844910Z",
+    "prs": [
+      {
+        "number": 13114,
+        "head": "6a187428d77748c3be6d1baabd61ce4afa746059",
+        "base": "d11d23b47930460ac7b067811b6810a602d4b867",
+        "updated_at": "2026-09-20T05:30:27Z",
+        "observed_at": "2026-09-20T16:59:21.440054Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13117,
+        "head": "3a9790dc0d9f6e622f9558449d0eb961c3fca574",
+        "base": "02cd0320ddde88d982f9303c2c3d0db3e1880332",
+        "updated_at": "2026-09-20T09:01:14Z",
+        "observed_at": "2026-09-20T16:59:15.260485Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13128,
+        "head": "c8f34358e0d3f7ff6c724b913fac38a8bfb285dc",
+        "base": "51173c6cebeaab301138ab9f556b07293e51a69f",
+        "updated_at": "2026-09-20T05:11:42Z",
+        "observed_at": "2026-09-20T16:59:16.119037Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13201,
+        "head": "f8aee14c354bd085551d3cf3f5db736ebcbdb55f",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T15:05:56Z",
+        "observed_at": "2026-09-20T16:59:39.778888Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13235,
+        "head": "41e075fcbdc10473f42143ab6fac06bdafd6309d",
+        "base": "6d43ea699a69747cf3fbf65d45eac5be09d49da6",
+        "updated_at": "2026-09-20T12:48:01Z",
+        "observed_at": "2026-09-20T16:59:34.799011Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13240,
+        "head": "959dcea6585895f6f0a36b68c3214bc9f3299d53",
+        "base": "ad34966d0641efcacc436ecd264fda9105285c49",
+        "updated_at": "2026-09-20T14:43:19Z",
+        "observed_at": "2026-09-20T16:59:39.110141Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13042,
+        "head": "74df8c6379369356195bd6aa0ca917dd54b54bed",
+        "base": "4c67b4d8c59bc395ba2b75dc66bd688e5b846a6d",
+        "updated_at": "2026-09-20T11:56:51Z",
+        "observed_at": "2026-09-20T16:59:57.309837Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13210,
+        "head": "c0fd0357b54114f3eb34727cf28cb1f59120fc3d",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T12:13:28Z",
+        "observed_at": "2026-09-20T16:59:54.419437Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 12981,
+        "head": "4f99eabbd7e8ad3dd36cb8380bf688ece9d43754",
+        "base": "4c67b4d8c59bc395ba2b75dc66bd688e5b846a6d",
+        "updated_at": "2026-09-20T11:49:37Z",
+        "observed_at": "2026-09-20T16:59:57.785468Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13211,
+        "head": "0bb6c746b5a7bf93990a17fc0d247b856d938073",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T12:12:45Z",
+        "observed_at": "2026-09-20T17:00:06.435026Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13053,
+        "head": "4989bd6bd6665a81f2b14fd78bc9a018f7ec3eaa",
+        "base": "4c67b4d8c59bc395ba2b75dc66bd688e5b846a6d",
+        "updated_at": "2026-09-20T12:09:09Z",
+        "observed_at": "2026-09-20T17:00:16.826823Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13216,
+        "head": "d9cc41d5977cddb39ab9a3754847092499d6b799",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T12:13:30Z",
+        "observed_at": "2026-09-20T17:00:11.021392Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 12994,
+        "head": "a3998ecb6ff6f06d08e48c25b087198ea169ebdb",
+        "base": "4c67b4d8c59bc395ba2b75dc66bd688e5b846a6d",
+        "updated_at": "2026-09-20T11:58:40Z",
+        "observed_at": "2026-09-20T17:00:22.351851Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      },
+      {
+        "number": 13229,
+        "head": "b9627e923a3108b78f2c2fecbc2096da03856866",
+        "base": "9da9a7170d2053a897ee5b6cf96bb9bd73ec9341",
+        "updated_at": "2026-09-20T15:08:12Z",
+        "observed_at": "2026-09-20T17:00:25.844495Z",
+        "head_stable": true,
+        "metadata_stable": true,
+        "missing": []
+      }
+    ],
+    "lines": 10,
+    "decisions": 14,
+    "events": 291,
+    "relationships": [
+      {
+        "kind": "replaces",
+        "source": 13210,
+        "target": 13042,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13210",
+        "source_at": "2026-09-20T12:13:28Z",
+        "basis": "explicit public PR body; author assertion"
+      },
+      {
+        "kind": "replaces",
+        "source": 13211,
+        "target": 12981,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13211",
+        "source_at": "2026-09-20T12:12:45Z",
+        "basis": "explicit public PR body; author assertion"
+      },
+      {
+        "kind": "replaces",
+        "source": 13216,
+        "target": 13053,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13216",
+        "source_at": "2026-09-20T12:13:30Z",
+        "basis": "explicit public PR body; author assertion"
+      },
+      {
+        "kind": "replaces",
+        "source": 13229,
+        "target": 12994,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13229",
+        "source_at": "2026-09-20T15:08:12Z",
+        "basis": "explicit public PR body; author assertion"
+      },
+      {
+        "kind": "depends_on",
+        "source": 13117,
+        "target": 13114,
+        "evidence": "https://github.com/manaflow-ai/cmux/pull/13117",
+        "source_at": "2026-09-20T09:01:14Z",
+        "basis": "explicit rollout prerequisite in PR body"
+      }
+    ],
+    "audit": [
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Check app-host unit test routing",
+          "jobs": 8,
+          "prs": 8
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Check routed CI jobs",
+          "jobs": 8,
+          "prs": 8
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Compile app-host test product",
+          "jobs": 3,
+          "prs": 3
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Run trusted CLA regression matrix and validate policy as data",
+          "jobs": 10,
+          "prs": 4
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Run unit tests",
+          "jobs": 6,
+          "prs": 1
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "clustered_failures",
+        "measured": {
+          "step": "Setup Bun",
+          "jobs": 5,
+          "prs": 2
+        },
+        "threshold": ">= 3 failed jobs with the exact same provider step name"
+      },
+      {
+        "kind": "queue_waste_candidate",
+        "measured": {
+          "cancelled_runner_wall_seconds": 10733.0,
+          "observed_job_wall_seconds": 75183.0,
+          "jobs": 19
+        },
+        "threshold": ">= 600 measured cancelled job wall seconds; descriptive, not a savings claim"
+      },
+      {
+        "kind": "provider_unavailable",
+        "measured": {
+          "provider": "coderabbitai[bot]",
+          "prs": 6
+        },
+        "threshold": ">= 2 PRs with explicit bot limit notices"
+      },
+      {
+        "kind": "provider_unavailable",
+        "measured": {
+          "provider": "cursor[bot]",
+          "prs": 9
+        },
+        "threshold": ">= 2 PRs with explicit bot limit notices"
+      }
+    ],
+    "evaluation": {
+      "reference_reviewer": "Codex local source review (same implementation agent; not independent human adjudication)",
+      "expected": 14,
+      "actual": 14,
+      "consequential_omissions": [],
+      "weighted_omission_cost": 0,
+      "total_reference_weight": 47,
+      "false_obligations": [],
+      "stale_obligations": [],
+      "duplicate_ids": 0,
+      "human_trials": 0,
+      "human_usability": "deferred by user; not measured",
+      "scope": "Same frozen observation only; self-reviewed technical reference, not independent human validation"
+    }
+  }
+]

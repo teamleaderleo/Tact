@@ -1,0 +1,47 @@
+{
+  "repository": "manaflow-ai/cmux",
+  "windows": {
+    "before": [
+      "2026-09-20T07:00:00Z",
+      "2026-09-20T08:00:00Z"
+    ],
+    "after": [
+      "2026-09-20T13:00:00Z",
+      "2026-09-20T14:00:00Z"
+    ]
+  },
+  "supplementary_runs": {
+    "cold": 35500307901,
+    "warm": 35501759139,
+    "seed": 35501760164
+  },
+  "rollout_prs": [
+    13083,
+    13117,
+    13118,
+    13160,
+    13168,
+    13139,
+    13122,
+    13175,
+    13111,
+    13166,
+    13165,
+    13123,
+    13172,
+    13201,
+    13199,
+    13204,
+    13235,
+    13170,
+    13171,
+    13176,
+    13178
+  ],
+  "log_sampling": "First and last executed CI admission/app-host/package/release or nightly job in each cohort \u00d7 conclusion stratum, plus all executed supplementary-run jobs. Job IDs sorted numerically. No hit-rate extrapolation.",
+  "pricing": {
+    "currency": "USD",
+    "rates_per_runner_minute": {},
+    "basis": "No verified contract/invoice or billable rounding evidence. Monetary estimates withheld; runner wall seconds are not billed seconds."
+  }
+}

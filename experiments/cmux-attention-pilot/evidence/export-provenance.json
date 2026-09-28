@@ -1,0 +1,16 @@
+{
+  "schema": "tact-attention-export-provenance/v1",
+  "verification_83": {
+    "source_url": "https://github.com/teamleaderleo/Tact/blob/10bd22ea43deee076e4f54d2801d65e88fc6b08b/experiments/cmux-verification/examples/ci.json",
+    "sha256": "4f68ac01c49d55f2debcbf7767ed356f7c2d5f22ff1b6db58c72590254c14d86",
+    "join": "unjoined: neither current cohort head nor job matches; do not add test counts to this cohort"
+  },
+  "ci_82": {
+    "source_url": "https://github.com/teamleaderleo/Tact/tree/4d123a87ecf3957bcc287bd80bb09ae7dc5cafaf/experiments/cmux-ci-receipts",
+    "files": {
+      "ci-metrics-82.json": "478c87f759060b8db770accd621be85ac56cf5bf3a460a4e44cedc25e641e401",
+      "ci-cohort-82.json": "70ba94c530a9d097647d09f54f3aefc968d2a0014a252bd0fb26e3180692cb12"
+    },
+    "join": "different fixed-window cohort; context only, never combined with PR-cohort totals"
+  }
+}
