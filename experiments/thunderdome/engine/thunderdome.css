@@ -1,93 +1,100 @@
-/* Thunderdome engine styles. Page chrome only; contender styles belong in the config's config.css. */
+/* Thunderdome engine styles. Page chrome only; contender styles belong in the config's config.css.
+   The look is a terminal notebook: JetBrains Mono for everything the page says about itself
+   (title, arena, keys, buttons, tables), IBM Plex Sans for prose (the lede, notes, the
+   feed), hairline rules instead of boxes, and a near-black ground in dark mode. */
 :root{
   color-scheme:light;
-  --bg:#F3F4F6; --panel:#FFFFFF; --ink:#15171C; --muted:#5A6170; --faint:#8A909C;
-  --rule:#DCDFE5; --rule-strong:#C3C8D1; --hover:#EBEDF1; --win:#1F7A4D; --win-bg:#E3F3EA;
-  --focus:#2F6FEB;
+  --bg:#EEF0F3; --panel:#F7F8FA; --ink:#1B1F27; --muted:#5D6573; --faint:#8A919E;
+  --rule:#CFD4DC; --rule-strong:#B4BBC6; --hover:#E4E7EC; --win:#1F7A4D; --win-bg:#DCEFE4;
+  --focus:#2F6FDE;
   --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --mono:"JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --bg:#101216; --panel:#181B21; --ink:#E6E8ED; --muted:#9AA1AE; --faint:#6F7684;
-    --rule:#2A2F38; --rule-strong:#3A404B; --hover:#20242B; --win:#6FD39F; --win-bg:#16291F;
-    --focus:#7AA7FF;
+    --bg:#111318; --panel:#171A20; --ink:#E4E7EE; --muted:#8B93A3; --faint:#646C7A;
+    --rule:#2A2F39; --rule-strong:#3A404B; --hover:#1B1F26; --win:#6FD39F; --win-bg:#16291F;
+    --focus:#6EA0FF;
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --bg:#101216; --panel:#181B21; --ink:#E6E8ED; --muted:#9AA1AE; --faint:#6F7684;
-  --rule:#2A2F38; --rule-strong:#3A404B; --hover:#20242B; --win:#6FD39F; --win-bg:#16291F;
-  --focus:#7AA7FF;
+  --bg:#111318; --panel:#171A20; --ink:#E4E7EE; --muted:#8B93A3; --faint:#646C7A;
+  --rule:#2A2F39; --rule-strong:#3A404B; --hover:#1B1F26; --win:#6FD39F; --win-bg:#16291F;
+  --focus:#6EA0FF;
 }
 *{box-sizing:border-box}
 /* A class selector outranks the UA's [hidden] rule, so anything the engine hides by
-   property (the views, Undo, Replay) needs this or it stays on screen. Scoped to the two
-   places the engine does it, so a config's own [hidden] handling is left alone. */
-.td-view[hidden],.td-vote button[hidden],.td-why[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:20px 64px}
-.td-wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
-.td-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-.td-view{display:grid;gap:18px}
-.td-tabs{display:flex;gap:4px;flex:none}
-.td-tab{font-size:13px;color:var(--muted);text-decoration:none;padding:5px 13px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
-.td-tab:hover{color:var(--ink);background:var(--hover)}
+   property (the views, Undo, Replay, Reset, the arena controls) needs this or it stays on
+   screen. Scoped to the places the engine does it, so a config's own [hidden] handling is
+   left alone. */
+.td-view[hidden],.td-vote button[hidden],.td-why[hidden],.td-row button[hidden],.td-arena[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:20px 48px}
+.td-wrap{max-width:1040px;margin:0 auto;display:grid;gap:20px}
+.td-view{display:grid;gap:20px;min-width:0}
+
+/* ---- header: title and lede on the left, arena and views on the right ---- */
+.td-head{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:flex-start;justify-content:space-between}
+.td-head-main{display:grid;gap:4px;min-width:0;flex:1 1 420px}
+.td-head-side{display:grid;gap:8px;justify-items:end;flex:none;margin-left:auto}
+.td-wrap h1{font:700 20px/1.2 var(--mono);letter-spacing:-.01em;text-transform:lowercase;margin:0;text-wrap:balance}
+.td-lede{color:var(--muted);max-width:62ch;margin:0;font-size:13px}
+.td-lede code{font-family:var(--mono);font-size:12px}
+.td-arena-label{font:12px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:none;border:0;padding:2px 0;cursor:pointer;text-align:right}
+.td-arena-label:hover,.td-arena-label[aria-expanded=true]{color:var(--ink)}
+.td-arena-label:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.td-tabs{display:flex;gap:14px;flex:none}
+.td-tab{font:12px var(--mono);color:var(--faint);text-decoration:none;text-transform:lowercase;padding:1px 0;border-bottom:1px solid transparent;white-space:nowrap}
+.td-tab:hover{color:var(--ink)}
 .td-tab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.td-tab[aria-current=page]{color:var(--ink);background:var(--panel);border-color:var(--rule-strong)}
+.td-tab[aria-current=page]{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* The arena controls, opened from the label top right. */
+.td-arena{border-block:1px solid var(--rule)}
+.td-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 0}
+.td-controls label{display:flex;gap:8px;align-items:center;font:12px var(--mono);color:var(--muted)}
+.td-controls select{font:12px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--rule-strong);border-radius:6px;padding:4px 8px}
+.td-controls input[type=checkbox]{accent-color:var(--ink)}
+.td-controls select:focus-visible,.td-controls input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
 /* One dome, several decisions. Reads as a row of questions rather than a second set of
-   pill tabs, so it does not compete with Vote/Results for the same glance.
+   tabs, so it does not compete with vote/results for the same glance.
    Scrolls rather than wraps: the underline is pulled 1px onto the nav's own rule, and a
-   wrapped row would drag that pull through the row above it. A long list or a narrow
-   phone slides sideways instead. */
+   wrapped row would drag that pull through the row above it. */
 .td-qnav{display:flex;gap:0 18px;border-bottom:1px solid var(--rule);overflow-x:auto;scrollbar-width:none}
 .td-qnav::-webkit-scrollbar{display:none}
-.td-qtab{font-size:13.5px;color:var(--muted);text-decoration:none;padding:9px 2px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none}
+.td-qtab{font:13px var(--mono);color:var(--muted);text-decoration:none;padding:8px 2px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none}
 .td-qtab:hover{color:var(--ink)}
 .td-qtab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 /* Colour and the underline mark the current tab. Bolding it too would change the label's
    width on selection and shuffle every tab to its right as you click along the row. */
 .td-qtab[aria-current=page]{color:var(--ink);border-bottom-color:var(--ink)}
-/* The question in words. h2 elsewhere in the page is a small uppercase section label,
-   which this is not: it is the sentence the two cards below it are answering. */
-.td-wrap h2.td-qtitle{font-size:17px;font-weight:600;letter-spacing:-.005em;text-transform:none;color:var(--ink);margin:2px 0 -4px;text-wrap:balance}
-/* It is a focus target so a screen reader is told which question it landed on, not a
-   control. A ring around a full-width heading nobody can act on reads as a text field. */
+/* The question in words: the sentence the two cards below it are answering. */
+.td-wrap h2.td-qtitle{font:600 17px/1.35 var(--sans);letter-spacing:-.005em;text-transform:none;color:var(--ink);margin:0 0 -8px;text-wrap:balance}
 .td-qtitle:focus,.td-qtitle:focus-visible{outline:none}
-.td-wrap h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
-.td-wrap h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
-.td-section{display:grid;gap:10px}
-/* The heading and the copy button share a row so the button sits over the table it
-   copies, and the heading keeps its baseline whether or not a button is next to it. */
+
+/* Section labels: uppercase, letter-spaced mono. */
+.td-wrap h2{font:700 13px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink);margin:0}
+.td-section{display:grid;gap:8px;min-width:0}
 .td-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.td-row{display:flex;flex-wrap:wrap;gap:8px}
 /* min-width so the heading row does not jump when the label becomes "Copied". */
-.td-copy{flex:none;min-width:15ch;font-size:12px;padding:3px 8px;border:1px solid var(--rule);border-radius:7px;background:var(--panel);color:var(--muted);cursor:pointer}
-.td-copy:hover{color:var(--ink);border-color:var(--faint)}
+.td-copy{flex:none;min-width:15ch;font:12px var(--mono);padding:5px 10px;border:1px solid var(--rule);border-radius:6px;background:transparent;color:var(--ink);cursor:pointer}
+.td-copy:hover{border-color:var(--faint)}
 .td-copy:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 /* Offscreen, not display:none: a textarea that is not rendered cannot be selected,
    and selecting it is the entire point of the fallback. */
 .td-copy-sink{position:fixed;left:-9999px;top:0;opacity:0}
-.td-lede{color:var(--muted);max-width:68ch;margin:0;font-size:14px}
-.td-lede code{font-family:var(--mono);font-size:13px}
-.td-arena{border:1px solid var(--rule);border-radius:10px;background:var(--panel)}
-.td-arena>summary{display:flex;gap:9px;align-items:center;padding:8px 14px;cursor:pointer;font-size:13px;list-style:none}
-.td-arena>summary::-webkit-details-marker{display:none}
-.td-arena>summary::before{content:"";flex:none;width:0;height:0;border:4px solid transparent;border-left-color:var(--faint);transition:transform .15s}
-.td-arena[open]>summary::before{transform:rotate(90deg)}
-.td-arena>summary:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:10px}
-.td-arena-label{color:var(--muted)}
-.td-arena[open]>summary{border-bottom:1px solid var(--rule)}
-.td-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px 14px}
-.td-controls label{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
-.td-controls select{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--rule-strong);border-radius:6px;padding:4px 8px}
-.td-controls input[type=checkbox]{accent-color:var(--ink)}
-.td-arena-tag{font-family:var(--mono);font-size:12px;color:var(--faint);margin-left:auto}
+
+/* ---- the duel ---- */
 .td-duel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
-.td-card{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px;display:grid;gap:12px;align-content:start;min-width:0}
-.td-card.picked{border-color:var(--win);box-shadow:0 0 0 2px var(--win-bg)}
+.td-card{border:2px solid transparent;border-radius:10px;padding:6px;display:grid;gap:8px;align-content:start;min-width:0}
+.td-card-key{display:flex;justify-content:space-between;font:12px var(--mono);color:var(--muted)}
+.td-card.picked{border-color:var(--win)}
 .td-card.td-live{cursor:pointer}
-.td-card.td-live:hover{border-color:var(--rule-strong);background:var(--hover)}
-.td-card.td-live:hover .td-side-key{color:var(--ink);border-color:var(--rule-strong)}
+.td-card.td-live:hover{border-color:var(--focus)}
+.td-card.td-live:hover .td-card-key{color:var(--ink)}
 /* Clicks land on the card, not on whatever the mock happens to contain. Configs whose
    contenders are meant to be poked at set interactiveCards and keep their own events. */
 .td-card.td-live .td-card-body{pointer-events:none}
@@ -95,78 +102,100 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
    these are the only way to watch a clip at all, so swallowing the play button would
    leave the duel unwatchable and turn the attempt into a vote. */
 .td-card.td-live .td-card-body video[controls],.td-card.td-live .td-card-body audio[controls]{pointer-events:auto}
-.td-card-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
-.td-card-name{font-weight:600;font-size:15px}
-.td-card-note{font-size:12.5px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){
+  .td-card .td-card-body{transition:transform .12s}
+  .td-card.td-live:hover .td-card-body{transform:translateY(-2px)}
+}
+.td-card-head{display:grid;gap:1px}
+.td-card-name{font:12px var(--mono);color:var(--ink)}
+.td-card-note{font-size:12px;color:var(--muted)}
 .td-card-body{min-width:0}
 .td-media{display:grid;place-items:center;min-width:0;min-height:72px;border-radius:8px;overflow:hidden}
-.td-media.td-framed{background:var(--bg);border:1px solid var(--rule)}
+.td-media.td-framed{background:var(--panel);border:1px solid var(--rule)}
 .td-media>img,.td-media>video{display:block;width:100%;height:auto;max-height:min(52vh,440px);background:transparent}
 .td-media>video[controls]{max-height:min(48vh,400px)}
 .td-gallery .td-media>img,.td-gallery .td-media>video{max-height:220px}
-.td-media.td-media-broken{background:var(--bg);border:1px dashed var(--rule-strong)}
+.td-media.td-media-broken{background:var(--panel);border:1px dashed var(--rule-strong)}
 .td-media-fail{display:grid;gap:4px;justify-items:center;text-align:center;padding:20px 14px;font-size:12.5px;color:var(--muted)}
 .td-media-fail b{color:var(--ink);font-weight:500}
 .td-media-fail code{font-family:var(--mono);font-size:11px;color:var(--faint);word-break:break-all}
-.td-side-key{font-family:var(--mono);font-size:11px;color:var(--faint);border:1px solid var(--rule);border-radius:4px;padding:0 5px}
-.td-vote{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
-.td-vote button{font:inherit;font-size:14px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--rule-strong);border-radius:8px;padding:8px 16px;cursor:pointer}
-.td-vote button:hover{background:var(--hover)}
-.td-vote button:disabled{opacity:.45;cursor:not-allowed;background:var(--panel)}
-.td-vote button:focus-visible,.td-controls select:focus-visible,.td-controls input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.td-vote button.primary{border-color:var(--ink)}
-.td-vote button.quiet{border-color:transparent;color:var(--muted)}
-.td-vote kbd{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:6px}
+
+/* "← left wins [Left] [Tie ↓] [Right] right wins →  N votes" */
+.td-vote{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;font:13px var(--mono);color:var(--muted)}
+.td-vote button{font:13px var(--mono);color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:6px;padding:6px 12px;cursor:pointer}
+.td-vote button:hover{border-color:var(--faint)}
+.td-vote button:disabled{opacity:.45;cursor:not-allowed;border-color:var(--rule)}
+.td-vote button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.td-count{font-variant-numeric:tabular-nums}
+.td-vote-more{margin-top:-12px;gap:4px 14px}
+.td-vote button.quiet{font-size:12px;border-color:transparent;color:var(--faint);padding:2px 4px}
+.td-vote button.quiet:hover{color:var(--ink)}
+.td-vote kbd,.td-why kbd{font:11px var(--mono);color:var(--faint);margin-left:6px}
+
 /* The note box. Quiet by design: it sits under the vote row so it never moves the
    buttons, and it is the last thing on the page to ask for attention. */
-.td-why{display:flex;gap:8px;justify-content:center;align-items:center}
-.td-why-input{font:inherit;font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:7px 11px;width:min(420px,100%)}
+.td-why{display:flex;gap:8px;justify-content:center;align-items:center;margin-top:-8px}
+.td-why-input{font:inherit;font-size:13px;color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:6px;padding:6px 10px;width:min(420px,100%)}
 .td-why-input::placeholder{color:var(--faint)}
 .td-why-input:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-color:var(--rule-strong)}
-.td-why button{font:inherit;font-size:13px;color:var(--muted);background:none;border:1px solid transparent;border-radius:8px;padding:7px 10px;cursor:pointer}
-.td-why button:hover{color:var(--ink);background:var(--hover)}
+.td-why button{font:12px var(--mono);color:var(--muted);background:none;border:1px solid transparent;border-radius:6px;padding:6px 8px;cursor:pointer}
+.td-why button:hover{color:var(--ink)}
 .td-why button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
-.td-why kbd{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:6px}
-.td-why-on{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap}
-/* Notes under a gallery card. The rule on the left is what makes a stack of them read
-   as quotation rather than as more of the card's own copy. */
-.td-whys{display:grid;gap:7px;margin:12px 0 0;padding:0;list-style:none}
-.td-whys li{font-size:12.5px;line-height:1.45;color:var(--muted);border-left:2px solid var(--rule);padding-left:9px}
-.td-why-text{color:var(--ink);display:block}
-.td-why-vs{font-family:var(--mono);font-size:11px;color:var(--faint)}
-.td-feed-why{font-style:italic;display:block}
-.td-status{font-size:12.5px;color:var(--muted);text-align:center;min-height:1.5em}
-.td-two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:start}
-.td-table-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--rule);border-radius:12px}
-.td-table-wrap table{border-collapse:collapse;width:100%;font-size:13.5px}
-.td-table-wrap th,.td-table-wrap td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap}
-.td-table-wrap tr:last-child td{border-bottom:0}
-.td-table-wrap th{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.td-table-wrap td.num,.td-table-wrap th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
-.td-table-wrap td.rank{font-family:var(--mono);color:var(--faint);width:1%}
-.td-swatch{display:inline-block;width:34px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:8px}
+.td-why-on{font:11px var(--mono);color:var(--faint);white-space:nowrap}
+.td-status{font-size:12.5px;color:var(--muted);text-align:center;min-height:1.5em;margin-top:-10px}
+
+/* ---- tables: the boards on the vote view and the standings on the results view ---- */
+.td-boards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:24px}
+.td-board{display:grid;gap:6px;align-content:start;min-width:0}
+.td-board table,.td-table-wrap table{width:100%;border-collapse:collapse;font:13px var(--mono);font-variant-numeric:tabular-nums}
+.td-board th,.td-board td,.td-table-wrap th,.td-table-wrap td{padding:6px 8px;border-bottom:1px solid var(--rule);text-align:left;white-space:nowrap}
+.td-board th,.td-table-wrap th{color:var(--muted);font-weight:400;text-transform:lowercase}
+.td-board .num,.td-table-wrap .num{text-align:right}
+.td-table-wrap{overflow-x:auto}
+.td-table-wrap td.rank{color:var(--faint);width:1%}
+.td-swatch{display:inline-block;width:28px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:8px}
 /* The interval rides along with the rating rather than taking a column of its own: it is
    a qualifier on that number, and a column would let the eye scan the spreads on their
-   own as if they were a second ranking. Quieter and smaller so the rating still reads
-   first, but not so quiet it looks like a footnote you can skip.
-   A fixed slot, so a table holding a +/-9 next to a +/-107 keeps its ratings in a column
-   instead of sliding each one left by however wide its own spread happens to be. */
-.td-ci{display:inline-block;min-width:3.2em;margin-left:7px;text-align:right;color:var(--faint);font-size:11.5px}
+   own as if they were a second ranking. A fixed slot, so a table holding a ±9 next to a
+   ±107 keeps its ratings in a column. */
+.td-ci{display:inline-block;min-width:3.4em;margin-left:6px;text-align:right;color:var(--faint);font-size:11.5px}
 /* The sentence the table is evidence for, so it is not muted into a caption. */
 .td-callout{margin:0;font-size:13px;color:var(--ink)}
-.td-lead{color:var(--win);font-weight:600}
+.td-lead{color:var(--win);font-weight:700}
+
+/* The results as JSON, for pasting into the thread that asked. */
+.td-export{width:100%;min-height:70px;font:11px/1.5 var(--mono);background:transparent;color:var(--muted);border:1px solid var(--rule);border-radius:6px;padding:8px;resize:vertical}
+.td-export:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* Notes under a gallery card. The rule on the left is what makes a stack of them read
+   as quotation rather than as more of the card's own copy. */
+.td-whys{display:grid;gap:7px;margin:4px 0 0;padding:0;list-style:none}
+.td-whys li{font-size:12.5px;line-height:1.45;color:var(--muted);border-left:2px solid var(--rule);padding-left:9px}
+.td-why-text{color:var(--ink);display:block}
+.td-why-vs{font:11px var(--mono);color:var(--faint)}
+.td-feed-why{font-style:italic;display:block}
+
+/* ---- results view ---- */
+.td-two{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:start}
 .td-feed{display:grid;gap:6px;font-size:13px;color:var(--muted);margin:0;padding:0;list-style:none}
-.td-feed li{display:grid;gap:3px}
+.td-feed li{display:grid;gap:3px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
 .td-feed-line{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
 .td-feed b{color:var(--ink);font-weight:500}
-.td-feed .when{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-left:auto}
-.td-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:12px}
-.td-gallery .td-card{padding:12px;gap:8px}
-.td-empty{color:var(--faint);font-size:13px;padding:12px}
+.td-feed .when{font:11.5px var(--mono);color:var(--faint);margin-left:auto}
+.td-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:14px}
+/* #galleryN: four across, for a screenshot of the whole field. */
+.td-gallery.td-gallery-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.td-gallery .td-card{padding:0;gap:6px;border:0}
+.td-gallery .td-card-name{color:var(--muted)}
+.td-empty{color:var(--faint);font-size:13px;padding:6px 0;border-bottom:0!important}
+@media (max-width:900px){.td-gallery.td-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:760px){
   .td-duel,.td-two{grid-template-columns:1fr}
-  .td-arena-tag{margin-left:0}
-  /* One column, so "left" is the card on top and the arrow points at nothing. */
-  .td-side-arrow{display:none}
+  .td-head-side{justify-items:start;margin-left:0}
+  .td-arena-label{text-align:left}
+  /* One column, so "left" is the card on top and the arrows point at nothing. */
+  .td-side-arrow{visibility:hidden}
+  .td-vote-hint{display:none}
 }
+@media (max-width:480px){.td-gallery.td-gallery-grid{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}

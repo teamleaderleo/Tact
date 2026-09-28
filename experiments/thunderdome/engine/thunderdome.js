@@ -479,7 +479,7 @@
     });
     const C = {
       k: 24, recent: 8, collection: "votes", contenderLabel: "Contender",
-      galleryTitle: "Everyone in this arena", media: {}, interactiveCards: false,
+      galleryTitle: "Everyone in this arena", media: {}, interactiveCards: false, blind: true,
       ...cfg,
       contenders, dims,
       localKey: cfg.localKey || `thunderdome:${cfg.id}:local`,
@@ -523,8 +523,8 @@
   // What a question may set for itself. Everything else it inherits from the dome, and
   // anything in DOME_ONLY is rejected rather than quietly ignored, so the boundary is
   // something the config author is told about instead of something they discover.
-  const Q_KEYS = ["lede", "galleryTitle", "contenderLabel", "media", "render", "swatch", "interactiveCards"];
-  const DOME_ONLY = ["arena", "dimensions", "split", "k", "recent", "collection", "localKey", "mount", "shuffle", "questions", "confidence", "comments"];
+  const Q_KEYS = ["lede", "galleryTitle", "contenderLabel", "media", "render", "swatch", "interactiveCards", "blind"];
+  const DOME_ONLY = ["arena", "dimensions", "split", "k", "recent", "collection", "localKey", "mount", "shuffle", "questions", "confidence", "comments", "demo"];
 
   // One dome, several decisions. A question brings its own contenders and its own words
   // and inherits everything else, so the arena, the media defaults and the render
@@ -553,7 +553,7 @@
       const id = list ? String(q.id == null ? "" : q.id).toLowerCase() : null;
       if (list) {
         if (!id) throw new Error(`Thunderdome: every question needs an id (question ${i + 1} has none)`);
-        if (VIEWS.has(id)) throw new Error(`Thunderdome: "${id}" is a view name, so it cannot be a question id`);
+        if (VIEWS.has(id) || MODE_WORD.test(id)) throw new Error(`Thunderdome: "${id}" is a view name, so it cannot be a question id`);
         if (seen.has(id)) throw new Error(`Thunderdome: question ids must be unique (${id})`);
         seen.add(id);
         for (const k of DOME_ONLY) {
@@ -612,6 +612,58 @@
     return { q, view: view || "vote" };
   }
 
+  // The screenshot modes ride in the same hash as the view, and parseHash ignores them:
+  //   #gallery3        every contender, drawn in the fourth arena of arenas()
+  //   #demo            the config's `demo` bout and boards, with voting switched off
+  //   #light, #dark    the page's own theme, whatever the system says
+  // They combine with each other and with a question: #wording/gallery1/dark.
+  const MODE_WORD = /^(gallery\d*|demo|light|dark)$/;
+  function parseMode(hash) {
+    let gallery = null, demo = false, theme = null;
+    for (const raw of String(hash || "").replace(/^#/, "").split("/")) {
+      const p = raw.toLowerCase(), g = /^gallery(\d*)$/.exec(p);
+      if (g) { if (gallery == null) gallery = g[1] ? Number(g[1]) : 0; }
+      else if (p === "demo") demo = true;
+      else if ((p === "light" || p === "dark") && !theme) theme = p;
+    }
+    return { gallery, demo, theme };
+  }
+
+  // Every arena the dimensions can make, first dimension slowest, toggles off before on.
+  // This is the list #galleryN counts through, so the numbering only changes when the
+  // dimensions do.
+  function arenas(C) {
+    let out = [{}];
+    for (const d of C.dims) {
+      const vals = d.type === "select" ? d.options.map(o => o.id) : [false, true];
+      out = out.flatMap(ids => vals.map(v => ({ ...ids, [d.id]: v })));
+    }
+    return out;
+  }
+
+  // The per-split boards the vote view draws and the results box exports: one ranked list
+  // per split value, keyed by its id, or one called "all" for a dome with no split. The
+  // point estimate only. The interval is the results view's job and costs a few hundred
+  // fits; this is one fit per split and runs on every vote.
+  // The shape is also what `demo.results` takes, so a pasted export redraws as it was.
+  function boards(D, Q, votes) {
+    const ids = Q.contenders.map(c => c.id);
+    const mine = votesFor(D, Q, votes).slice().sort((a, b) => a.t - b.t);
+    const prior = D.confidence ? D.confidence.prior : 200;
+    const groups = D.split
+      ? D.split.values.map(s => [s.id, mine.filter(v => splitOf(D, resolveArena(D, v, true)) === s.id)])
+      : [["all", mine]];
+    const out = {};
+    if (D.multi) out.question = Q.id;
+    for (const [key, list] of groups) {
+      const r = fit(ids, list, { prior }), rec = records(ids, list);
+      out[key] = ids.map(id => ({ id, elo: Math.round(r[id]), ...rec[id] }))
+        .sort((x, y) => y.elo - x.elo);
+    }
+    out.votes = mine.length;
+    return out;
+  }
+
   function hashFor(q, view) {
     return "#" + (q ? encodeURIComponent(q) + "/" : "") + (view === "results" ? "results" : "vote");
   }
@@ -630,6 +682,14 @@
     }
     for (const kid of kids) if (kid != null) el.append(kid);
     return el;
+  }
+
+  // "Selection Thunderdome" is set as "selection // thunderdome": the name of the dome, then
+  // what kind of page it is. CSS lowercases it. A title that does not end in the word is
+  // left as written, since it is usually the question itself.
+  function heading(title) {
+    const t = String(title).trim(), m = /^(.*?)\s*(?:\/\/)?\s*thunderdome$/i.exec(t);
+    return m && m[1] ? `${m[1]} // thunderdome` : t;
   }
 
   function toNode(x) {
@@ -710,7 +770,12 @@
     // in question one drops out on its own rather than landing in the wrong table.
     // Always a fresh array: callers sort it in place.
     const first = () => Q === C.questions[0];
-    const qVotes = () => C.multi ? votes.filter(v => v.q === Q.id || (v.q == null && first())) : votes.slice();
+    const inQ = v => !C.multi || v.q === Q.id || (v.q == null && first());
+    const qVotes = () => votes.filter(inQ);
+    // The screenshot modes (#galleryN, #demo, #light, #dark). Read off the hash on every
+    // change, beside the question and the view rather than inside them.
+    let mode = parseMode(location.hash), demoWas = false;
+    const demoOn = () => !!(mode.demo && C.demo && (C.demo.question == null ? first() : C.demo.question === Q.id));
 
     let arenaIds = {};
     for (const d of C.dims) arenaIds[d.id] = d.type === "select" ? (d.default ?? d.options[0].id) : !!d.default;
@@ -757,7 +822,6 @@
       controls.append(h("label", { for: "td-shuffle" }, $.shuffle, " New arena each duel"));
     }
     $.tag = h("span", { class: "td-arena-tag" });
-    controls.append($.tag);
 
     $.duel = h("section", { class: "td-duel", "aria-live": "polite" });
     // Media that fails to load does so long after render(), so it reports back.
@@ -772,12 +836,16 @@
     // `detail` is 0 when the click came from Enter or space on a focused button, so a
     // keyboard user keeps their place in the tab order and only the mouse gives up focus.
     const click = w => e => { if (e.detail && e.currentTarget.blur) e.currentTarget.blur(); vote(w); };
-    $.voteA = h("button", { class: "primary", title: "Left wins (← or 1)", onclick: click("a") }, "Left wins", h("kbd", { text: "←" }));
-    $.voteTie = h("button", { title: "Tie (↓, 3 or space)", onclick: click("tie") }, "Tie", h("kbd", { text: "↓" }));
-    $.voteB = h("button", { class: "primary", title: "Right wins (→ or 2)", onclick: click("b") }, "Right wins", h("kbd", { text: "→" }));
-    $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "Skip", h("kbd", { text: "S" }));
-    $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "Undo my last vote", h("kbd", { text: "U" }));
-    $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos(true) }, "Replay both", h("kbd", { text: "R" }));
+    // The row reads as a sentence with the keys in it: "← left wins [Left] [Tie ↓]
+    // [Right] right wins →". The arrows outside the buttons are the keyboard legend, so
+    // the buttons themselves stay one word each.
+    $.voteA = h("button", { title: "Left wins (← or 1)", onclick: click("a") }, "Left");
+    $.voteTie = h("button", { title: "Tie (↓, 3 or space)", onclick: click("tie") }, "Tie ↓");
+    $.voteB = h("button", { title: "Right wins (→ or 2)", onclick: click("b") }, "Right");
+    $.count = h("span", { class: "td-count" });
+    $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "skip", h("kbd", { text: "S" }));
+    $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "undo my last vote", h("kbd", { text: "U" }));
+    $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos(true) }, "replay both", h("kbd", { text: "R" }));
     // One line about the pick you just made, offered and never demanded. It appears
     // after a vote and it does not take focus: the click-click-click path through a
     // dome is the one that gets used, and a box that grabs the caret would end it at
@@ -803,7 +871,7 @@
       $.whyOn = h("span", { class: "td-why-on", hidden: true });
       $.whyBox = h("form", { class: "td-why", hidden: true });
       $.whyBox.addEventListener("submit", e => { e.preventDefault(); saveWhy(); });
-      $.whyBox.append($.why, $.whyOn, h("button", { class: "quiet", type: "submit" }, "Add note", h("kbd", { text: "↵" })));
+      $.whyBox.append($.why, $.whyOn, h("button", { class: "quiet", type: "submit" }, "add note", h("kbd", { text: "↵" })));
     }
     $.status = h("div", { class: "td-status", role: "status" });
 
@@ -841,21 +909,44 @@
     $.qTitle = C.multi ? h("h2", { class: "td-qtitle", tabindex: "-1" }) : null;
     $.qLede = h("p", { class: "td-lede" });
 
-    // The arena bar is context, not a control you touch every duel: collapsed to its
-    // tag line, one click from open. <details> so the keyboard and AT get it for free.
-    $.arenaBox = h("details", { class: "td-arena" },
-      h("summary", {}, h("span", { class: "td-arena-label", text: "Arena" }), $.tag), controls);
+    // The arena is named top right, "arena: tokyo night (dark)", which is all most duels
+    // need from it. The label is also the button that opens the controls, so pinning an
+    // arena is one click from the thing that tells you which one you are in.
+    $.arenaBtn = h("button", {
+      class: "td-arena-label", type: "button", "aria-expanded": "false", "aria-controls": "td-arena-controls",
+      title: "Choose the arena",
+      onclick: () => {
+        const open = $.arenaBox.hidden;
+        $.arenaBox.hidden = !open;
+        $.arenaBtn.setAttribute("aria-expanded", String(open));
+      },
+    }, "arena: ", $.tag);
+    $.arenaBox = h("div", { class: "td-arena", id: "td-arena-controls", hidden: true }, controls);
 
+    // Under the duel, the boards: one per split, point estimates and records, redrawn on
+    // every vote so you can watch your vote land. The results view has the same numbers
+    // with an interval and a verdict; these are the quick read.
+    $.boards = h("section", { class: "td-boards", "aria-label": "Standings by arena" });
+    // The boards as JSON, for pasting into the thread that asked. Same shape `demo.results`
+    // takes, so a pasted export can be drawn again exactly as it was.
+    $.export = h("textarea", { class: "td-export", readonly: "", rows: "3", spellcheck: "false", "aria-label": "Results as JSON" });
+    $.copyJson = h("button", { class: "td-copy", type: "button", onclick: () => copyText($.export.value, $.copyJson, "Copy results", "Copied the results as JSON.") }, "Copy results");
+    $.reset = h("button", { class: "td-copy", type: "button", hidden: true, onclick: () => resetMine() }, "Reset my votes");
+
+    $.voteRow = h("div", { class: "td-vote" },
+      h("span", { class: "td-vote-hint", text: "← left wins" }), $.voteA, $.voteTie, $.voteB,
+      h("span", { class: "td-vote-hint", text: "right wins →" }), $.count);
+    $.voteMore = h("div", { class: "td-vote td-vote-more" }, $.skip, $.replay, $.undo);
     $.viewVote = h("section", { class: "td-view" },
-      C.dims.length ? $.arenaBox : null,
-      $.duel,
-      h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.replay, $.undo),
-      $.whyBox || null);
+      $.duel, $.voteRow, $.voteMore, $.whyBox || null, $.boards,
+      h("section", { class: "td-section td-export-box" },
+        h("h2", { text: "Results JSON (paste into the issue)" }), $.export,
+        h("div", { class: "td-row" }, $.copyJson, $.reset)));
 
     // The table is usually wanted somewhere else: the issue that asked, a message, a
     // commit. One button, the same markdown the command line prints, so the answer gets
     // back to the question without anyone retyping four ratings.
-    $.copy = h("button", { class: "td-copy", type: "button", onclick: () => copyMarkdown() },
+    $.copy = h("button", { class: "td-copy", type: "button", onclick: () => copyText(markdownNow(), $.copy, "Copy as markdown", "Copied the table as markdown.") },
       "Copy as markdown");
 
     $.viewResults = h("section", { class: "td-view", hidden: true },
@@ -866,17 +957,25 @@
         h("section", { class: "td-section" }, h("h2", { text: "Recent bouts" }), $.feed)),
       h("section", { class: "td-section" }, $.galleryHead = h("h2"), $.gallery));
 
+    // #galleryN: every contender in one arena, four across, for a screenshot. Not a tab:
+    // it is a link you make on purpose.
+    $.galleryModeHead = h("h2");
+    $.galleryMode = h("div", { class: "td-gallery td-gallery-grid" });
+    $.viewGallery = h("section", { class: "td-view", hidden: true },
+      h("section", { class: "td-section" }, $.galleryModeHead, $.galleryMode));
+
+    $.title = h("h1", { class: "td-title", text: heading(C.title || C.id) });
     const wrap = h("div", { class: "td-wrap" },
       h("header", { class: "td-head" },
-        h("h1", { text: C.title || C.id }),
-        h("nav", { class: "td-tabs", "aria-label": "View" }, $.tabVote, $.tabResults)),
-      $.qNav, $.qTitle, $.qLede,
-      // Outside both views. It used to live at the foot of the vote view, which was fine
-      // while only voting had anything to say; then the copy button started saying
-      // "Copied the table as markdown" into a subtree the results view keeps hidden, so
-      // there was no confirmation on screen and nothing for a screen reader to announce,
-      // and a copy that failed looked exactly like one that worked.
-      $.viewVote, $.viewResults, $.status);
+        h("div", { class: "td-head-main" }, $.title, C.multi ? null : $.qLede),
+        h("div", { class: "td-head-side" },
+          C.dims.length ? $.arenaBtn : null,
+          h("nav", { class: "td-tabs", "aria-label": "View" }, $.tabVote, $.tabResults))),
+      C.dims.length ? $.arenaBox : null,
+      $.qNav, $.qTitle, C.multi ? $.qLede : null,
+      // The status line moves into whichever view is showing (see goto), so a copy on the
+      // results view says "Copied" where the reader is and not into a hidden subtree.
+      $.viewVote, $.viewResults, $.viewGallery);
     mount.append(wrap);
 
     // Everything on the page that names the question rather than the dome. The lede is
@@ -931,8 +1030,11 @@
         galleryDirty = true; standingsDirty = true;
       }
       view = v === "results" ? "results" : "vote";
-      $.viewVote.hidden = view !== "vote";
-      $.viewResults.hidden = view !== "results";
+      const gallery = mode.gallery != null;
+      $.viewVote.hidden = gallery || view !== "vote";
+      $.viewResults.hidden = gallery || view !== "results";
+      $.viewGallery.hidden = !gallery;
+      if (view === "vote") ($.whyBox || $.voteMore).after($.status); else $.viewResults.prepend($.status);
       $.tabVote.setAttribute("aria-current", view === "vote" ? "page" : "false");
       $.tabResults.setAttribute("aria-current", view === "results" ? "page" : "false");
       $.tabVote.href = hashFor(Q.id, "vote");
@@ -942,7 +1044,12 @@
       // A question you just arrived at has no duel yet, and nextDuel renders one. Keep the
       // arena across the move: re-rolling it would mean you cannot put two questions side
       // by side in the same context, and Back would land somewhere you have never been.
+      const demo = demoOn(), demoFlip = demo !== demoWas;
+      demoWas = demo;
       if (moved || booting) { renderQuestion(); nextDuel(moved); renderStandings(); }
+      else if (demoFlip) { nextDuel(true); renderStandings(); }
+      if (gallery) renderGalleryMode();
+      applyTheme();
       // Arriving at the results view is what pays for the table, so votes cast on the
       // vote view show up the moment you go looking for them and not before.
       flushStandings();
@@ -954,7 +1061,7 @@
       if (moved && !booting && $.qTitle) $.qTitle.focus({ preventScroll: true });
     }
     const fromHash = () => parseHash(location.hash, qids);
-    window.addEventListener("hashchange", () => { const r = fromHash(); goto(r.q, r.view); });
+    window.addEventListener("hashchange", () => { mode = parseMode(location.hash); const r = fromHash(); goto(r.q, r.view); });
 
     // ---- rendering ----
     function arena() { return resolveArena(C, arenaIds, false); }
@@ -1017,14 +1124,17 @@
     }
 
     function card(c, a, side, notes) {
-      const head = h("div", { class: "td-card-head" },
-        h("div", {}, h("div", { class: "td-card-name", text: c.name }), c.note ? h("div", { class: "td-card-note", text: c.note }) : null),
-        // The arrow is a separate span because it stops being true below 760px, where the
-        // duel stacks and "left" is the card on top. CSS drops it at that width.
-        side ? h("span", { class: "td-side-key" },
-          side === "a" ? h("span", { class: "td-side-arrow", text: "\u2190 " }) : null,
-          side === "a" ? "Left" : "Right",
-          side === "b" ? h("span", { class: "td-side-arrow", text: " \u2192" }) : null) : null);
+      // Above each side of the duel: its key on the left edge and its letter on the right.
+      // The arrow is a separate span because it stops being true below 760px, where the
+      // duel stacks and "left" is the card on top. CSS drops it at that width.
+      const key = side ? h("div", { class: "td-card-key" },
+        h("span", { class: "td-side-arrow", "aria-hidden": "true", text: side === "a" ? "\u2190" : "\u2192" }),
+        h("span", { text: side === "a" ? "A" : "B" })) : null;
+      // Blind by default: during the vote a name is a thumb on the scale, and "Today" or
+      // "Proposed" on a card is the heaviest one there is. The boards, the gallery and
+      // the note box after the vote all name them.
+      const head = side && Q.blind ? null : h("div", { class: "td-card-head" },
+        h("div", { class: "td-card-name", text: c.name }), c.note ? h("div", { class: "td-card-note", text: c.note }) : null);
       let body, broken = false;
       try { body = renderBody(c, a); } catch (e) {
         broken = true;
@@ -1032,7 +1142,7 @@
         body = failNode("Couldn't draw this one.", String((e && e.message) || e));
       }
       const el = h("article", { class: "td-card", "data-contender": c.id },
-        head, h("div", { class: "td-card-body" }, body), side ? null : whyList(notes));
+        key, head, h("div", { class: "td-card-body" }, body), side ? null : whyList(notes));
       if (broken) el.dataset.tdBroken = "1";
       // The whole card is the button. Reaching for a button under the thing you are
       // judging is the difference between twenty votes and five.
@@ -1189,6 +1299,17 @@
     // judged inside, and re-rolling it as you move between questions means you can never
     // put two of them side by side in the same one.
     function nextDuel(keepArena) {
+      // The demo bout is fixed: the same pair in the same arena every time it is opened,
+      // so a screenshot of it can be taken again.
+      if (demoOn()) {
+        Object.assign(arenaIds, C.demo.arena || {});
+        if ($.shuffle) $.shuffle.checked = false;
+        const pair = (C.demo.duel || []).filter(id => byId[id]);
+        const a = pair[0] || ids[0], b = pair[1] && pair[1] !== a ? pair[1] : ids.find(id => id !== a);
+        lastKey = pairKey(a, b); duel = { a, b };
+        render();
+        return;
+      }
       if (!keepArena && $.shuffle && $.shuffle.checked) {
         for (const d of C.dims) if (d.shuffle) {
           arenaIds[d.id] = d.type === "select" ? d.options[Math.floor(Math.random() * d.options.length)].id : Math.random() < .5;
@@ -1208,6 +1329,7 @@
     // that sees a note arrive, whether it was written here or by somebody else.
     function renderStandings() {
       standingsDirty = true;
+      renderBoards();
       if (C.comments) {
         const gk = galleryStamp();
         if (gk !== galleryKey) { galleryKey = gk; galleryDirty = true; }
@@ -1235,15 +1357,13 @@
     // a reader looking at the button does not see: on the results view the table and the
     // gallery are between them. So the button says it too, where the eye already is.
     let copyTimer = null;
-    function copySaid(label) {
-      if (!$.copy) return;
-      $.copy.textContent = label;
+    function copySaid(btn, label, rest) {
+      btn.textContent = label;
       clearTimeout(copyTimer);
-      copyTimer = setTimeout(() => { $.copy.textContent = "Copy as markdown"; }, 2000);
+      copyTimer = setTimeout(() => { btn.textContent = rest; }, 2000);
     }
 
-    function copyMarkdown() {
-      const text = markdownNow();
+    function copyText(text, btn, rest, okMsg) {
       const fallback = () => {
         // Whatever the reader had highlighted in the standings goes back afterwards, and
         // so does the caret: a button that silently eats your selection and drops you at
@@ -1260,14 +1380,96 @@
         try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
         ta.remove();
         if (sel) { sel.removeAllRanges(); for (const r of had) sel.addRange(r); }
-        if ($.copy) $.copy.focus();
-        copySaid(ok ? "Copied" : "Copy failed");
-        say(ok ? "Copied the table as markdown." : "Could not reach the clipboard. Press copy again with the console open to see why.", !ok);
+        btn.focus();
+        copySaid(btn, ok ? "Copied" : "Copy failed", rest);
+        say(ok ? okMsg : "Could not reach the clipboard. Press copy again with the console open to see why.", !ok);
       };
-      const done = () => { copySaid("Copied"); say("Copied the table as markdown."); };
+      const done = () => { copySaid(btn, "Copied", rest); say(okMsg); };
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(done, fallback);
       } else fallback();
+    }
+
+    // Takes back the votes this browser holds for the question on screen. Votes in a
+    // shared table are not "mine" in any way the page can prove, so they stay, and the
+    // button only shows while there is something local to remove. Two clicks, because
+    // the first one is too easy to land on the way to Copy.
+    let resetArmed = false, resetTimer = 0;
+    function disarmReset() { resetArmed = false; clearTimeout(resetTimer); $.reset.textContent = "Reset my votes"; }
+    function resetMine() {
+      if (!resetArmed) {
+        resetArmed = true; $.reset.textContent = "Click again to reset";
+        resetTimer = setTimeout(disarmReset, 4000);
+        return;
+      }
+      disarmReset();
+      const mine = v => String(v.id).startsWith("local-") && inQ(v);
+      const n = votes.filter(mine).length;
+      votes = votes.filter(v => !mine(v));
+      saveLocal();
+      if (myLast && myLast.local) { myLast = null; $.undo.hidden = true; }
+      clearWhy();
+      renderStandings();
+      say(`Removed ${n} vote${n === 1 ? "" : "s"} from this browser.`);
+    }
+
+    // The swatch, then the name. Shared by the boards and the standings.
+    function nameCell(c) {
+      const td = h("td");
+      if (Q.swatch) {
+        const sw = Q.swatch(c, { h });
+        if (sw != null) td.append(sw instanceof Node ? sw : h("span", { class: "td-swatch", style: `background:${sw}` }));
+      }
+      td.append(document.createTextNode(c.name));
+      return td;
+    }
+
+    // One board per split, drawn from boards() or, on #demo, from the numbers the config
+    // brought. Rows for contenders the question no longer has are dropped, so an old
+    // export still draws after a contender is retired.
+    function renderBoards() {
+      const data = demoOn() && C.demo.results ? C.demo.results : boards(C, Q, votes);
+      const groups = C.split ? C.split.values.map(s => [s.label, data[s.id]]) : [["Standings", data.all]];
+      $.boards.replaceChildren(...groups.map(([label, rows]) => h("div", { class: "td-board" },
+        h("h2", { text: label }),
+        h("table", {},
+          h("thead", {}, h("tr", {}, h("th", { text: Q.contenderLabel }), h("th", { class: "num", text: "Elo" }), h("th", { class: "num", text: "W–L–T" }))),
+          h("tbody", {}, ...(rows || []).filter(r => byId[r.id]).map(r => h("tr", {},
+            nameCell(byId[r.id]),
+            h("td", { class: "num", text: String(r.elo) }),
+            h("td", { class: "num", text: `${r.w}–${r.l}–${r.t}` }))))))));
+      const n = data.votes || 0;
+      $.count.textContent = `${n} vote${n === 1 ? "" : "s"}`;
+      $.export.value = JSON.stringify(data);
+      $.reset.hidden = demoOn() || !votes.some(v => String(v.id).startsWith("local-") && inQ(v));
+    }
+
+    // #galleryN puts the page in that arena and draws everyone in it. The page follows
+    // the arena's own brightness when an option says `dark`, so a light theme is not
+    // photographed on a black ground; #light or #dark in the hash overrides that.
+    function renderGalleryMode() {
+      const list = arenas(C);
+      if (list.length) Object.assign(arenaIds, list[mode.gallery % list.length]);
+      const a = arena();
+      if (C.dims.length) syncControls(a);
+      const notes = C.comments ? comments(ids, qVotes()) : null;
+      $.galleryModeHead.textContent = Q.galleryTitle;
+      $.galleryMode.replaceChildren(...Q.contenders.map(c => card(c, a, null, notes && notes[c.id])));
+      for (const v of $.galleryMode.querySelectorAll("video")) {
+        if (v.dataset.tdAuto) { const q = v.play(); if (q && q.catch) q.catch(() => {}); }
+      }
+    }
+
+    function applyTheme() {
+      let t = mode.theme;
+      if (!t && mode.gallery != null) {
+        const a = arena();
+        for (const d of C.dims) {
+          if (d.type === "select" && a[d.id] && typeof a[d.id].dark === "boolean") { t = a[d.id].dark ? "dark" : "light"; break; }
+        }
+      }
+      const el = document.documentElement;
+      if (t) el.setAttribute("data-theme", t); else el.removeAttribute("data-theme");
     }
 
     function flushStandings() {
@@ -1286,12 +1488,6 @@
       const order = ids.slice().sort((x, y) => all[y] - all[x]);
       const rows = order.map((id, i) => {
         const c = byId[id];
-        const nameCell = h("td");
-        if (Q.swatch) {
-          const sw = Q.swatch(c, { h });
-          if (sw != null) nameCell.append(sw instanceof Node ? sw : h("span", { class: "td-swatch", style: `background:${sw}` }));
-        }
-        nameCell.append(document.createTextNode(c.name));
         // The percentile range is not symmetric, so the cell shows its half-width and
         // carries the range itself for anyone who wants the two ends.
         const eloCell = h("td", { class: "num", text: String(Math.round(all[id])) });
@@ -1308,7 +1504,7 @@
         }
         return h("tr", {},
           h("td", { class: "rank", text: String(i + 1) }),
-          nameCell,
+          nameCell(c),
           eloCell,
           ...perSplit.map(s => h("td", { class: "num" + (s.best === id ? " td-lead" : ""), text: String(Math.round(s.r[id])) })),
           h("td", { class: "num", text: `${rec[id].w}–${rec[id].l}–${rec[id].t}` }));
@@ -1495,6 +1691,7 @@
     }
     async function vote(w) {
       if (!duel || lockNote) return;
+      if (demoOn()) { say("This is the demo bout, so votes are not recorded. Drop #demo from the link to vote."); return; }
       // `q` only on a dome that has questions, so a single-question dome's votes keep the
       // exact shape they had before questions existed and an old shared table still reads.
       const v = { a: duel.a, b: duel.b, w, ...arena().ids, t: Date.now() };
@@ -1547,7 +1744,7 @@
       // The duel is hidden on the results view, and a vote on a pair you cannot see is
       // bad data. It also means space is the page's own scroll key there, which is what
       // anyone reading a table of standings expects it to be.
-      if (view !== "vote") return;
+      if (view !== "vote" || mode.gallery != null) return;
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
       const near = sel => e.target.closest && e.target.closest(sel);
       if (near("select,input,textarea,[contenteditable]")) return;   // typing always beats voting
@@ -1583,7 +1780,8 @@
       // replaceState, not a hash assignment: the entry state should not become a step
       // that Back has to walk through.
       const want = hashFor(Q.id, view);
-      if (C.multi && location.hash !== want && history.replaceState) {
+      const modal = mode.gallery != null || mode.demo || mode.theme;
+      if (C.multi && !modal && location.hash !== want && history.replaceState) {
         try { history.replaceState(null, "", want); } catch (e) { /* file:// with no history */ }
       }
     }
@@ -1613,7 +1811,7 @@
     };
   }
 
-  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, comments, records, votesFor, tableFor, tablesFor, tablesForDome, markdown, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
+  const api = { start, elo, fit, confidence, confidenceOpts, resampleCount, verdictFor, comments, records, votesFor, tableFor, tablesFor, tablesForDome, markdown, boards, arenas, parseMode, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -29,14 +29,15 @@ For a single blind A/B with a written diagnosis, use [`../microcraft/`](../micro
 ```text
 experiments/thunderdome/
   engine/thunderdome.js   engine: pairing, voting, ratings, feed, gallery, storage
-  engine/thunderdome.css  page chrome, light and dark
+  engine/thunderdome.css  page chrome, light and dark (see "The page" below)
   build.mjs               inlines engine + one config into a single index.html
   cli.mjs                 make a dome from screenshots or a GitHub thread; read results
   test.mjs                node --test for the DOM-free core
   examples/
     starter/              smallest config: four HTML-snippet buttons
-    cmux-selection/       cmux sidebar selection, eight treatments (see RESULTS.md)
+    cmux-selection/       cmux sidebar selection, eight treatments (see RESULTS.md; vote-*.png show the page)
     cmux-sidebar-groups/  cmux sidebar organization: six layouts of the same 24 workspaces (overview-*.png show all six)
+    cmux-empty-pane/      what a new, empty cmux pane shows: eight candidates in seven terminal themes (see RESULTS.md)
     motion/               four busy indicators as video, one clip per theme
     dialog/               one destructive dialog, three questions about it
 ```
@@ -195,7 +196,7 @@ changes what the name reads as.
 
 ## Voting
 
-The page opens on the duel. Click either card to vote for it, or use the keys:
+The page opens on the duel. Click either pane to vote for it, or use the keys:
 
 | key | does |
 | --- | --- |
@@ -208,7 +209,44 @@ The page opens on the duel. Click either card to vote for it, or use the keys:
 
 The whole card is the button, so your cursor never leaves the thing you are judging. Dragging to select a contender's name is not a vote, and a clip's own controls play it rather than voting for it. Clicking a vote button hands focus back, so every key in the table keeps meaning what the table says it means.
 
-Two views, `#vote` and `#results`, switched by the tabs in the header. No hash opens the duel, with only the title and the lede above it, and the Results tab carries the vote count. `#results` in a link opens the table directly. A dome with several [questions](#several-questions-in-one-dome) puts the question id in front: `#wording/results`. The keys above are the vote view's; on the results view they are the browser's, so space scrolls the standings. The arena controls are folded into a summary line that shows the current context; open it to pin a specific one. Changing a select turns off "New arena each duel".
+### The page
+
+![The empty-pane dome in its demo bout, dark](examples/cmux-empty-pane/demo-dark.png)
+
+It looks like a terminal notebook. The title is set in JetBrains Mono, lowercased, with the kind of page after it: "Empty Pane Thunderdome" reads `empty pane // thunderdome`. A title that does not end in "Thunderdome" is left as written, lowercased. The lede underneath is IBM Plex Sans, which is the face for anything you read as prose (the lede, notes, the recent-bouts feed). The ground is near-black (`#111318`) in dark mode and a pale grey in light mode, and the page follows the system unless the link says otherwise (see [screenshot modes](#screenshot-modes)).
+
+Top right is the arena, `ARENA: TOKYO NIGHT (DARK)`, in uppercase letter-spaced mono. It is the config's `tag` (or the option names, when there is no `tag`), and it is also the button that opens the arena controls, so pinning an arena is one click from the label that tells you which one you are in. The vote and results links sit under it.
+
+Below that, top to bottom:
+
+- **The two panes,** side by side, each with its key above it: `←` and `A` over the left one, `→` and `B` over the right. Names are hidden during the vote (see `blind` under [Author a config](#author-a-config)), because a name like "Today" is a thumb on the scale. The pane under the pointer gets an accent outline.
+- **The control row,** `← left wins [Left] [Tie ↓] [Right] right wins →` and the vote count. Skip, Undo and Replay sit under it in small type, with the note box and the status line after them.
+- **The boards,** one small table per [`split`](#author-a-config) value (DARK THEMES and LIGHT THEMES in the empty-pane dome), columns candidate, elo, w-l-t, in tabular mono with hairline rows. They are redrawn on every vote so you can watch yours land. A dome with no split gets one board. These are the point estimates; the interval and the verdict are on the results view.
+- **Results JSON,** the boards as one line of JSON to paste into the issue that asked, with **Copy results** and **Reset my votes**. Reset takes back the votes this browser holds for the question on screen, on a second click. Votes in a shared table stay, and the button only shows while there is something local to remove.
+
+Below 760px the panes stack, so the arrows and the "left wins" words are dropped; the letters stay.
+
+The results view has the full standings (Elo with its interval, one column per split, W–L–T, the verdict under it, and **Copy as markdown**), the recent bouts, and every contender drawn in the current arena with its name, note and the notes people left.
+
+### Screenshot modes
+
+Three words in the hash put the page in a fixed state for a picture. They combine with each other and with a question id, in any order (`#wording/gallery1/dark`).
+
+| hash | shows |
+| --- | --- |
+| `#gallery`, `#gallery3` | every contender in one arena, four across with its name above it. The number counts through every arena the dimensions can make, first dimension slowest, so in the empty-pane dome `#gallery0` to `#gallery6` are the seven themes. The page takes the arena's brightness when an option says `dark: true` or `false`. |
+| `#demo` | the config's `demo` bout: a fixed pair in a fixed arena, with `demo.results` on the boards. Voting is off. |
+| `#light`, `#dark` | the page theme, whatever the system says. |
+
+`demo` takes `{ arena, duel, results, question }`: `arena` is ids like `{ theme: "tokyo-night" }`, `duel` is two contender ids, `results` is the Results JSON the page exports (the same shape, so an export pasted into a config draws the boards as they were), and `question` picks the question it applies to (the first one by default).
+
+```bash
+chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+"$chrome" --headless=new --hide-scrollbars --window-size=1100,1140 --virtual-time-budget=4000 \
+  --screenshot=demo-dark.png "file://$PWD/examples/cmux-empty-pane/index.html#demo/dark"
+```
+
+Two views, `#vote` and `#results`, switched by the tabs in the header. No hash opens the duel, with only the title and the lede above it, and the results link carries the vote count. `#results` in a link opens the table directly. A dome with several [questions](#several-questions-in-one-dome) puts the question id in front: `#wording/results`. The keys above are the vote view's; on the results view they are the browser's, so space scrolls the standings. The arena controls are behind the arena label top right; click it to pin a specific one. Changing a select turns off "New arena each duel".
 
 Under the cards a line names the current leader once there are three votes in, so you can see your vote land without switching views.
 
@@ -269,8 +307,10 @@ What the engine hands you:
 - **`arena`** has one entry per dimension: the chosen option object for a select (with every field you gave it), a boolean for a toggle, plus `arena.ids` with the raw ids.
 - **Card body** comes from the first of: `contender.render(arena, ctx)`, config `render(contender, arena, ctx)`, `contender.media`, `contender.html` (string, or function of arena). A returned string is parsed as HTML. `ctx.h(tag, attrs, ...children)` is a small element helper (`class`, `text`, `html`, `style`, `on<event>`). A config-wide `render` sits above `media` so it can place the frame itself; call `ctx.media()` to get the element.
 - **Dimensions**: selects are re-rolled every duel while "New arena each duel" is on; toggles are not, unless you set `shuffle: true`. Set `default` to choose the starting option. Ids `id`, `a`, `b`, `w`, `t` and `q` are reserved.
-- **Styles** for contender markup go in `config.css`. The engine's own classes all start with `td-`, and the theme tokens (`--ink`, `--muted`, `--faint`, `--rule`, `--panel`, `--sans`, `--mono`) are available.
-- Other knobs: `comments` (`false` to drop the note box, or `{max: 140}` for a different length), `confidence` (`false` for a bare rating, or `{prior: 200, minBouts: 8, level: .9}`), `k` (still accepted, no longer read by anything; `Thunderdome.elo()` takes its K-factor as an argument), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click.
+- **Styles** for contender markup go in `config.css`. The engine's own classes all start with `td-`, and the theme tokens (`--ink`, `--muted`, `--faint`, `--rule`, `--panel`, `--sans`, `--mono`) are available. `--mono` is JetBrains Mono and `--sans` is IBM Plex Sans. The engine draws no box around a card any more, so a contender that wants a surface brings its own.
+- **Split labels** title the boards on the vote view as well as the columns on the results view, so `label: "Dark themes"` reads better than `"Dark"` when the split is about themes.
+- **`blind`** (default `true`) hides contender names and notes on the two panes during the vote. Set `blind: false` when the name is part of what is being judged, or when the contenders are hard to tell apart without it.
+- Other knobs: `comments` (`false` to drop the note box, or `{max: 140}` for a different length), `confidence` (`false` for a bare rating, or `{prior: 200, minBouts: 8, level: .9}`), `k` (still accepted, no longer read by anything; `Thunderdome.elo()` takes its K-factor as an argument), `recent` (feed length, default 8), `collection` (db collection, default `votes`), `localKey`, `galleryTitle`, `shuffle: false` to start with a fixed arena, `interactiveCards: true` when the cards have their own controls to click, `demo` for the [`#demo` screenshot](#screenshot-modes).
 
 ## Several questions in one dome
 
@@ -293,8 +333,8 @@ Thunderdome.start({
 ```
 
 - **Each question brings its own `contenders`.** That is the one thing it cannot inherit: borrowing the dome's list would put one set of contenders under two question tags, so a question without its own is an error rather than a second table of the same four things.
-- **It may also set** `lede`, `contenderLabel`, `galleryTitle`, `media`, `render`, `swatch` and `interactiveCards`, and inherits the dome's for any it does not name. Those are all per-question because how a card is drawn is part of the question: one dome can ask about HTML mocks and about clips.
-- **`id` is the link.** Lowercased, unique, and not `vote` or `results` because those are the views. `title` is the question itself, shown above the cards. `short` is the tab label, falling back to `title` and then to the id.
+- **It may also set** `lede`, `contenderLabel`, `galleryTitle`, `media`, `render`, `swatch`, `interactiveCards` and `blind`, and inherits the dome's for any it does not name. Those are all per-question because how a card is drawn is part of the question: one dome can ask about HTML mocks and about clips.
+- **`id` is the link.** Lowercased, unique, and not `vote`, `results`, `demo`, `light`, `dark` or `gallery` (with or without a number), because those are the views and the [screenshot modes](#screenshot-modes). `title` is the question itself, shown above the cards. `short` is the tab label, falling back to `title` and then to the id.
 - **Dome-level, on purpose:** the arena, the split, `k`, `confidence`, `recent`, `collection`, `localKey`, `shuffle`. A question that sets one of those is an error, not a silent no-op. A question asked against a different arena is a different dome, not a tab on this one, and the arena is held steady as you move between questions so you can put two of them side by side in the same context.
 - **The hash** is `#<question>/<view>`, either order, case-insensitive: `#wording`, `#wording/results`, `#results/wording`. Both segments are optional. A missing question means the first one, and the page writes it back into the address bar on load, so the URL you copy always says which question it opens. A question that has since been renamed opens the dome rather than a blank page. The tabs are plain `<a href>`s, so back and forward walk your questions.
 
@@ -349,6 +389,7 @@ Republishing to the same artifact URL keeps the collection, so you can add a con
 - **Elo** is a Bradley-Terry fit over all the votes at once, on the usual Elo scale (400 points is 10:1), with an L2 prior of 200 points pulling toward 1500. It does not depend on the order the votes arrived in, and the prior is what keeps a contender that has never lost at a finite number instead of an impressive one.
 - **± is the spread**, the middle 90% of 300 refits, reported as a half-width. Hover the number for the two ends. Each refit takes two draws: the votes are resampled with replacement, and the prior's centre is drawn from the prior. Under 8 bouts there is no ± at all, because a handful of votes still returns a number and the reader has no way to tell it from an earned one.
 - **The line under the table** is the claim the ranking is making: "Solid red is ahead of Outlined red in 99% of resamples", or "too close to call: 91% of resamples put Right, danger last ahead". The bar is the one-sided form of the interval's own level, so 95% at the default `level: .9`. The rank column always reads 1, 2, 3, 4; this is the sentence that tells you whether to believe it.
+- **The boards on the vote view** are the same fit, run per split, with no interval. They are there so a vote visibly lands; read the results view before you quote a number.
 - **The vote view names a leader** once the top two are further apart than `1000 / sqrt(bouts)` Elo, which is roughly where the spread sits. It is the cheap version of the same call, so you are not made to switch views to find out whether anything is happening; it agrees with the line under the table 95% of the time or better.
 - **Split columns** refit over only that split's votes. The leader of each split is highlighted. A treatment that wins light and loses dark is a finding, not noise. No ± there: four spreads in a row is a table nobody reads, and the split columns are the place to look for a pattern rather than a verdict.
 - **[Notes](#saying-why)** are the part the numbers cannot give you. Two candidates a point apart with one of them carrying "reads at a glance, the other made me stop" is a decision; the same two points with no notes is a coin flip you have dressed up.
