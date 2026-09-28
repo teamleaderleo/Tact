@@ -34,15 +34,52 @@
   --focus:#7AA7FF;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:28px 64px}
-.td-wrap{max-width:1080px;margin:0 auto;display:grid;gap:28px}
-.td-wrap header{display:grid;gap:6px}
+/* A class selector outranks the UA's [hidden] rule, so anything the engine hides by
+   property (the views, Undo, Replay) needs this or it stays on screen. Scoped to the two
+   places the engine does it, so a config's own [hidden] handling is left alone. */
+.td-view[hidden],.td-vote button[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding-inline:16px;padding-block:20px 64px}
+.td-wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.td-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.td-view{display:grid;gap:18px}
+.td-tabs{display:flex;gap:4px;flex:none}
+.td-tab{font-size:13px;color:var(--muted);text-decoration:none;padding:5px 13px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+.td-tab:hover{color:var(--ink);background:var(--hover)}
+.td-tab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.td-tab[aria-current=page]{color:var(--ink);background:var(--panel);border-color:var(--rule-strong)}
+/* One dome, several decisions. Reads as a row of questions rather than a second set of
+   pill tabs, so it does not compete with Vote/Results for the same glance.
+   Scrolls rather than wraps: the underline is pulled 1px onto the nav's own rule, and a
+   wrapped row would drag that pull through the row above it. A long list or a narrow
+   phone slides sideways instead. */
+.td-qnav{display:flex;gap:0 18px;border-bottom:1px solid var(--rule);overflow-x:auto;scrollbar-width:none}
+.td-qnav::-webkit-scrollbar{display:none}
+.td-qtab{font-size:13.5px;color:var(--muted);text-decoration:none;padding:9px 2px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none}
+.td-qtab:hover{color:var(--ink)}
+.td-qtab:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+/* Colour and the underline mark the current tab. Bolding it too would change the label's
+   width on selection and shuffle every tab to its right as you click along the row. */
+.td-qtab[aria-current=page]{color:var(--ink);border-bottom-color:var(--ink)}
+/* The question in words. h2 elsewhere in the page is a small uppercase section label,
+   which this is not: it is the sentence the two cards below it are answering. */
+.td-wrap h2.td-qtitle{font-size:17px;font-weight:600;letter-spacing:-.005em;text-transform:none;color:var(--ink);margin:2px 0 -4px;text-wrap:balance}
+/* It is a focus target so a screen reader is told which question it landed on, not a
+   control. A ring around a full-width heading nobody can act on reads as a text field. */
+.td-qtitle:focus,.td-qtitle:focus-visible{outline:none}
 .td-wrap h1{font-size:26px;font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
 .td-wrap h2{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0}
 .td-section{display:grid;gap:10px}
-.td-lede{color:var(--muted);max-width:68ch;margin:0}
+.td-lede{color:var(--muted);max-width:68ch;margin:0;font-size:14px}
 .td-lede code{font-family:var(--mono);font-size:13px}
-.td-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px 14px;border:1px solid var(--rule);border-radius:10px;background:var(--panel)}
+.td-arena{border:1px solid var(--rule);border-radius:10px;background:var(--panel)}
+.td-arena>summary{display:flex;gap:9px;align-items:center;padding:8px 14px;cursor:pointer;font-size:13px;list-style:none}
+.td-arena>summary::-webkit-details-marker{display:none}
+.td-arena>summary::before{content:"";flex:none;width:0;height:0;border:4px solid transparent;border-left-color:var(--faint);transition:transform .15s}
+.td-arena[open]>summary::before{transform:rotate(90deg)}
+.td-arena>summary:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:10px}
+.td-arena-label{color:var(--muted)}
+.td-arena[open]>summary{border-bottom:1px solid var(--rule)}
+.td-controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px 14px}
 .td-controls label{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
 .td-controls select{font:inherit;font-size:13px;color:var(--ink);background:var(--bg);border:1px solid var(--rule-strong);border-radius:6px;padding:4px 8px}
 .td-controls input[type=checkbox]{accent-color:var(--ink)}
@@ -50,6 +87,16 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-duel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
 .td-card{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px;display:grid;gap:12px;align-content:start;min-width:0}
 .td-card.picked{border-color:var(--win);box-shadow:0 0 0 2px var(--win-bg)}
+.td-card.td-live{cursor:pointer}
+.td-card.td-live:hover{border-color:var(--rule-strong);background:var(--hover)}
+.td-card.td-live:hover .td-side-key{color:var(--ink);border-color:var(--rule-strong)}
+/* Clicks land on the card, not on whatever the mock happens to contain. Configs whose
+   contenders are meant to be poked at set interactiveCards and keep their own events. */
+.td-card.td-live .td-card-body{pointer-events:none}
+/* Except the player's own controls. Under prefers-reduced-motion nothing autoplays and
+   these are the only way to watch a clip at all, so swallowing the play button would
+   leave the duel unwatchable and turn the attempt into a vote. */
+.td-card.td-live .td-card-body video[controls],.td-card.td-live .td-card-body audio[controls]{pointer-events:auto}
 .td-card-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .td-card-name{font-weight:600;font-size:15px}
 .td-card-note{font-size:12.5px;color:var(--muted)}
@@ -82,6 +129,15 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-table-wrap td.num,.td-table-wrap th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 .td-table-wrap td.rank{font-family:var(--mono);color:var(--faint);width:1%}
 .td-swatch{display:inline-block;width:34px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:8px}
+/* The interval rides along with the rating rather than taking a column of its own: it is
+   a qualifier on that number, and a column would let the eye scan the spreads on their
+   own as if they were a second ranking. Quieter and smaller so the rating still reads
+   first, but not so quiet it looks like a footnote you can skip.
+   A fixed slot, so a table holding a +/-9 next to a +/-107 keeps its ratings in a column
+   instead of sliding each one left by however wide its own spread happens to be. */
+.td-ci{display:inline-block;min-width:3.2em;margin-left:7px;text-align:right;color:var(--faint);font-size:11.5px}
+/* The sentence the table is evidence for, so it is not muted into a caption. */
+.td-callout{margin:0;font-size:13px;color:var(--ink)}
 .td-lead{color:var(--win);font-weight:600}
 .td-feed{display:grid;gap:6px;font-size:13px;color:var(--muted);margin:0;padding:0;list-style:none}
 .td-feed li{display:flex;gap:8px;flex-wrap:wrap}
@@ -93,6 +149,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 @media (max-width:760px){
   .td-duel,.td-two{grid-template-columns:1fr}
   .td-arena-tag{margin-left:0}
+  /* One column, so "left" is the card on top and the arrow points at nothing. */
+  .td-side-arrow{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
@@ -135,8 +193,9 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
  *
  * A config calls Thunderdome.start({...}) with contenders, arena dimensions,
  * an optional split, and a render function. The engine supplies pairing,
- * voting UI, keyboard shortcuts, Elo (overall and per split), W-L-T, recent
- * bouts, the gallery, undo, and shared (claude.ai db) or local storage.
+ * voting UI, keyboard shortcuts, fitted ratings on the Elo scale with a
+ * bootstrap interval (overall and per split), W-L-T, recent bouts, the
+ * gallery, undo, and shared (claude.ai db) or local storage.
  * A contender can be an image, a GIF or a video instead of markup; the two
  * clips in a duel are restarted together so the comparison stays honest.
  * See ../README.md for the config reference.
@@ -144,7 +203,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 (function (root) {
   "use strict";
 
-  const RESERVED = new Set(["id", "a", "b", "w", "t"]);
+  const RESERVED = new Set(["id", "a", "b", "w", "t", "q"]);
+  const VIEWS = new Set(["vote", "results"]);
+  // Elo points between the top two under which the vote view will not name a leader.
+  // Roughly where a well-fed dome's interval half-width lands, so the crude call on the
+  // vote view and the resample call on the results view agree most of the time.
+  const TOO_CLOSE = 40;
 
   // ---------- pure core (no DOM; exercised by test.mjs) ----------
 
@@ -183,6 +247,126 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       r[v.a] += k * (sa - ea); r[v.b] += k * ((1 - sa) - (1 - ea));
     }
     return r;
+  }
+
+  // Elo points per unit of natural log-odds. A 400-point gap is 10:1, which is the
+  // definition of the scale, so the whole fit can work in log-odds and convert once.
+  const SCALE = 400 / Math.log(10);
+
+  // Bradley-Terry fitted by maximum likelihood, with an L2 prior of `prior` Elo points
+  // pulling every contender toward `start`. Coordinate Newton: the objective is concave,
+  // so it walks straight downhill and converges in a handful of sweeps.
+  //
+  // This is what the table shows, rather than the sequential elo() above, for two
+  // reasons. It does not depend on the order the votes arrived in, which a table read at
+  // the end of a run should not. And it is a model you can resample, which is what makes
+  // the interval next to it mean something; an interval bootstrapped from one model and
+  // printed beside a point estimate from another is a decoration, not a measurement.
+  //
+  // The prior is also what keeps an undefeated contender finite. Plain Bradley-Terry
+  // sends it to infinity, and "Elo 4180" after three bouts is not a useful thing to read.
+  function fit(ids, votes, opts) {
+    const o = opts || {}, prior = o.prior || 200, start = o.start == null ? 1500 : o.start;
+    const n = ids.length, idx = {};
+    ids.forEach((id, i) => { idx[id] = i; });
+    const r = new Float64Array(n), A = [], B = [], S = [];
+    for (const v of votes) {
+      const i = idx[v.a], j = idx[v.b];
+      if (i === undefined || j === undefined || i === j) continue;
+      A.push(i); B.push(j); S.push(v.w === "a" ? 1 : v.w === "b" ? 0 : .5);
+    }
+    const pv = Math.pow(prior / SCALE, 2);  // the prior's variance in log-odds
+    for (let sweep = 0; sweep < 60; sweep++) {
+      const g = new Float64Array(n), hess = new Float64Array(n);
+      for (let m = 0; m < A.length; m++) {
+        const i = A[m], j = B[m];
+        const p = 1 / (1 + Math.exp(-(r[i] - r[j]))), d = S[m] - p, w = p * (1 - p);
+        g[i] += d; g[j] -= d; hess[i] += w; hess[j] += w;
+      }
+      let move = 0;
+      for (let i = 0; i < n; i++) {
+        g[i] -= r[i] / pv; hess[i] += 1 / pv;
+        const step = g[i] / hess[i];
+        r[i] += step;
+        move = Math.max(move, Math.abs(step));
+      }
+      if (move < 1e-9) break;
+    }
+    const out = {};
+    for (let i = 0; i < n; i++) out[ids[i]] = start + r[i] * SCALE;
+    return out;
+  }
+
+  // Seeded so the same votes always produce the same interval. An interval that shifts a
+  // few points every time the table redraws reads as measurement noise on top of the
+  // measurement, and invites the reader to redraw until they like the answer.
+  function lcg(seed) {
+    let s = (seed >>> 0) || 1;
+    return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+  }
+
+  // Ratings with an interval. The point estimate is fit(); the interval is the percentile
+  // range of fit() over `resamples` bootstrap resamples of the votes.
+  //
+  // Each resample is centered on its own mean before the percentiles are taken. Bradley-
+  // Terry is identified only up to an additive constant, so an uncentered resample
+  // carries a whole-field shift that says nothing about any one contender, and a 25-point
+  // shift swallows a 26-point interval whole: coverage of a nominal 90% interval measured
+  // 60% uncentered and 91% centered. The table is read as an ordering, so the quantity
+  // the interval has to cover is each rating relative to the field.
+  //
+  // Under `minBouts` votes it reports no interval at all. The bootstrap of a handful of
+  // votes still returns a number, and the bootstrap of none returns a confident +/-0,
+  // which is the most misleading thing this could print.
+  function confidence(ids, votes, opts) {
+    const o = opts || {};
+    const prior = o.prior || 200;
+    const minBouts = o.minBouts == null ? 8 : o.minBouts;
+    const level = o.level == null ? .9 : o.level;
+    const resamples = o.resamples == null ? 300 : o.resamples;
+    const known = {};
+    ids.forEach(id => { known[id] = true; });
+    const usable = votes.filter(v => known[v.a] && known[v.b] && v.a !== v.b);
+    const center = r => {
+      let sum = 0;
+      for (const id of ids) sum += r[id];
+      const shift = 1500 - sum / ids.length;
+      const out = {};
+      for (const id of ids) out[id] = r[id] + shift;
+      return out;
+    };
+    const rating = center(fit(ids, usable, { prior }));
+    const bouts = usable.length;
+    if (bouts < minBouts || resamples < 2) {
+      return { rating, bouts, level, resamples: 0, lo: null, hi: null, ahead: null };
+    }
+    const cols = {}, ahead = {};
+    for (const id of ids) {
+      cols[id] = new Float64Array(resamples);
+      ahead[id] = {};
+      for (const other of ids) ahead[id][other] = 0;
+    }
+    const rand = lcg(bouts * 2654435761 + ids.length);
+    const draw = new Array(bouts);
+    for (let b = 0; b < resamples; b++) {
+      for (let i = 0; i < bouts; i++) draw[i] = usable[(rand() * bouts) | 0];
+      const f = center(fit(ids, draw, { prior }));
+      for (const id of ids) cols[id][b] = f[id];
+      for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+        const x = ids[i], y = ids[j], d = f[x] - f[y];
+        ahead[x][y] += d > 0 ? 1 : d < 0 ? 0 : .5;
+        ahead[y][x] += d < 0 ? 1 : d > 0 ? 0 : .5;
+      }
+    }
+    const tail = (1 - level) / 2;
+    const at = (col, p) => col[Math.min(resamples - 1, Math.max(0, Math.round(p * (resamples - 1))))];
+    const lo = {}, hi = {};
+    for (const id of ids) {
+      const col = cols[id].slice().sort();
+      lo[id] = at(col, tail); hi[id] = at(col, 1 - tail);
+    }
+    for (const id of ids) for (const other of ids) ahead[id][other] /= resamples;
+    return { rating, bouts, level, resamples, lo, hi, ahead };
   }
 
   function records(ids, votes) {
@@ -245,13 +429,20 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       const type = d.type || (d.options ? "select" : "toggle");
       return { label: d.id, ...d, type, shuffle: d.shuffle ?? (type === "select") };
     });
-    return {
+    const C = {
       k: 24, recent: 8, collection: "votes", contenderLabel: "Contender",
-      galleryTitle: "Everyone in this arena", media: {},
+      galleryTitle: "Everyone in this arena", media: {}, interactiveCards: false,
       ...cfg,
       contenders, dims,
       localKey: cfg.localKey || `thunderdome:${cfg.id}:local`,
     };
+    // `confidence: false` drops the interval and the line under the table and leaves a
+    // bare rating. Anything else is the settings, with the defaults filled in.
+    C.confidence = cfg.confidence === false ? null : {
+      prior: 200, minBouts: 8, level: .9,
+      ...(cfg.confidence && typeof cfg.confidence === "object" ? cfg.confidence : {}),
+    };
+    return C;
   }
 
   // Arena ids ({theme:"x", ic:true}) to the object render() sees ({theme:{id,name,...}, ic:true, ids}).
@@ -272,6 +463,102 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
   function splitOf(C, arena) {
     if (!C.split) return null;
     try { return C.split.of(arena); } catch (e) { return null; }
+  }
+
+  // What a question may set for itself. Everything else it inherits from the dome, and
+  // anything in DOME_ONLY is rejected rather than quietly ignored, so the boundary is
+  // something the config author is told about instead of something they discover.
+  const Q_KEYS = ["lede", "galleryTitle", "contenderLabel", "media", "render", "swatch", "interactiveCards"];
+  const DOME_ONLY = ["arena", "dimensions", "split", "k", "recent", "collection", "localKey", "mount", "shuffle", "questions", "confidence"];
+
+  // One dome, several decisions. A question brings its own contenders and its own words
+  // and inherits everything else, so the arena, the media defaults and the render
+  // function are written once no matter how many questions hang off them. The arena and
+  // the K factor stay at the dome level on purpose: questions asked in different
+  // contexts are different pages, not tabs.
+  //
+  // A dome with no `questions` is a dome with one anonymous question, which is what
+  // every config written so far is. Its votes are stored exactly as before.
+  function normalizeDome(cfg) {
+    if (!cfg || !cfg.id) throw new Error("Thunderdome: config needs an id");
+    if (cfg.questions != null && !Array.isArray(cfg.questions)) {
+      throw new Error("Thunderdome: questions must be a list");
+    }
+    const list = cfg.questions || null;
+    if (list && !list.length) throw new Error("Thunderdome: questions is an empty list");
+    const { questions, ...dome } = cfg;
+    // A question that names no contenders is an error, not an invitation to borrow the
+    // dome's. Inheriting them would put one contender set under two question tags.
+    const base = list ? { ...dome, contenders: undefined } : cfg;
+    // The dome is validated against the first question's contenders so the arena, the
+    // storage keys and the split are read and checked in one place.
+    const D = normalize(list ? { ...dome, contenders: qContenders(list[0], 0) } : cfg);
+    const seen = new Set();
+    D.questions = (list || [{}]).map((q, i) => {
+      const id = list ? String(q.id == null ? "" : q.id).toLowerCase() : null;
+      if (list) {
+        if (!id) throw new Error(`Thunderdome: every question needs an id (question ${i + 1} has none)`);
+        if (VIEWS.has(id)) throw new Error(`Thunderdome: "${id}" is a view name, so it cannot be a question id`);
+        if (seen.has(id)) throw new Error(`Thunderdome: question ids must be unique (${id})`);
+        seen.add(id);
+        for (const k of DOME_ONLY) {
+          if (k in q) throw new Error(`Thunderdome: question "${id}" sets ${k}, which is a dome-level setting`);
+        }
+      }
+      // The synthetic id exists only to satisfy normalize's own id check. It is thrown
+      // away here and never reaches localKey or collection, which come off the dome.
+      let Q;
+      try {
+        Q = list
+          ? normalize({ ...base, ...q, contenders: qContenders(q, i), id: `${cfg.id}-${id}` })
+          : D;
+      } catch (e) {
+        throw new Error(id ? `${e.message} (question "${id}")` : e.message);
+      }
+      const out = {
+        id,
+        // Read off the question itself, not the merge: inheriting the dome's title would
+        // label every tab with the same words.
+        label: q.short || q.title || id,
+        title: q.title || "",
+        contenders: Q.contenders,
+      };
+      for (const k of Q_KEYS) out[k] = Q[k];
+      return out;
+    });
+    D.multi = !!list;
+    return D;
+  }
+
+  function qContenders(q, i) {
+    if (!q || typeof q !== "object") throw new Error(`Thunderdome: question ${i + 1} is not an object`);
+    if (!Array.isArray(q.contenders)) {
+      throw new Error(`Thunderdome: question "${q.id || i + 1}" needs its own contenders`);
+    }
+    return q.contenders;
+  }
+
+  // The hash carries the question and the view, in either order and both optional:
+  //   #results           the results of a one-question dome
+  //   #density           the density question, voting
+  //   #density/results   its table, which is the link you paste into the issue
+  // A segment that is neither is ignored rather than treated as a question that is not
+  // there, so an old link to a renamed question still opens the dome. First occurrence
+  // wins for both kinds, so a hash with two of either reads the same way round.
+  function parseHash(hash, qids) {
+    let q = null, view = null;
+    for (const raw of String(hash || "").replace(/^#/, "").split("/")) {
+      let p = raw;
+      try { p = decodeURIComponent(raw); } catch (e) { /* keep the raw segment */ }
+      p = p.toLowerCase();
+      if (!view && VIEWS.has(p)) view = p;
+      else if (!q && (qids || []).indexOf(p) >= 0) q = p;
+    }
+    return { q, view: view || "vote" };
+  }
+
+  function hashFor(q, view) {
+    return "#" + (q ? encodeURIComponent(q) + "/" : "") + (view === "results" ? "results" : "vote");
   }
 
   // ---------- DOM ----------
@@ -343,24 +630,54 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
   }
 
   function start(cfg) {
-    const C = normalize(cfg);
-    const ids = C.contenders.map(c => c.id);
-    const byId = Object.fromEntries(C.contenders.map(c => [c.id, c]));
+    const C = normalizeDome(cfg);
+    const qids = C.questions.map(q => q.id);
     const mount = (C.mount && document.querySelector(C.mount)) || document.body;
+
+    // The question is a fourth thing that can change, next to the arena, the duel and the
+    // view. Switching one swaps the contenders and the slice of the table they are scored
+    // against; everything else on the page is the dome's and stays where it is.
+    let Q = C.questions[0];
+    let ids = [], byId = {};
+    function setQuestionData() {
+      ids = Q.contenders.map(c => c.id);
+      byId = Object.fromEntries(Q.contenders.map(c => [c.id, c]));
+    }
+    setQuestionData();
+    // Votes are stored per dome and tagged with `q`, so one shared table serves every
+    // question and one snapshot keeps them all live. A dome with one anonymous question
+    // writes no tag at all, which is what every config written before this did.
+    //
+    // Untagged votes count toward the first question. A dome that already has history and
+    // then gains `questions` is the migration people will actually attempt, and the
+    // alternative is that every vote cast before the change silently stops existing.
+    // Elo ignores contender ids it does not know, so an old vote whose contenders are not
+    // in question one drops out on its own rather than landing in the wrong table.
+    // Always a fresh array: callers sort it in place.
+    const first = () => Q === C.questions[0];
+    const qVotes = () => C.multi ? votes.filter(v => v.q === Q.id || (v.q == null && first())) : votes.slice();
 
     let arenaIds = {};
     for (const d of C.dims) arenaIds[d.id] = d.type === "select" ? (d.default ?? d.options[0].id) : !!d.default;
     let duel = null, lastKey = "";
     let votes = [];
     let votesCol = null, shared = false, myLast = null;
-    let note = "", noteTimer = 0, lockNote = "";
-    let syncToken = 0, galleryIO = null, galleryKey = null;
+    let note = "", noteTimer = 0, stickyNote = "", lockNote = "";
+    let syncToken = 0, galleryIO = null, galleryKey = null, galleryDirty = true, view = "vote";
+    // Bumped whenever the question changes, so a vote whose write is still in flight
+    // cannot come back and hand its Undo handle to the question you moved to.
+    let voteToken = 0, nextTimer = 0, galleryBuilds = 0;
 
-    if (C.title) document.title = C.title;
+    // The tab title follows the question, so a link someone pasted into an issue says
+    // which decision it opens without them having to read the page.
+    function setDocTitle() {
+      const base = C.title || C.id;
+      document.title = C.multi ? `${base} · ${Q.label}` : base;
+    }
 
     // ---- layout ----
     const $ = {};
-    const controls = h("div", { class: "td-controls", role: "group", "aria-label": "Arena" });
+    const controls = h("div", { class: "td-controls" });
     for (const d of C.dims) {
       const idAttr = `td-dim-${d.id}`;
       if (d.type === "select") {
@@ -386,34 +703,151 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     $.duel = h("section", { class: "td-duel", "aria-live": "polite" });
     // Media that fails to load does so long after render(), so it reports back.
     $.duel.addEventListener("td-media-fail", () => refreshVoteLock());
-    $.voteA = h("button", { class: "primary", onclick: () => vote("a") }, "Left wins", h("kbd", { text: "←" }));
-    $.voteTie = h("button", { onclick: () => vote("tie") }, "Tie", h("kbd", { text: "↓" }));
-    $.voteB = h("button", { class: "primary", onclick: () => vote("b") }, "Right wins", h("kbd", { text: "→" }));
+    // The digits and space do the same job as the arrows, for a hand that never
+    // leaves the number row. Only one key per button is printed; the rest are in
+    // the title so the row of buttons stays a row of buttons.
+    // Blur on the way out. A vote button that keeps focus turns the next space into
+    // "press me again", so space would mean tie until you used the mouse and a left win
+    // afterwards, silently and in the wrong direction. Nothing in the row wants focus
+    // once it has been clicked: the keys below take over from here.
+    // `detail` is 0 when the click came from Enter or space on a focused button, so a
+    // keyboard user keeps their place in the tab order and only the mouse gives up focus.
+    const click = w => e => { if (e.detail && e.currentTarget.blur) e.currentTarget.blur(); vote(w); };
+    $.voteA = h("button", { class: "primary", title: "Left wins (← or 1)", onclick: click("a") }, "Left wins", h("kbd", { text: "←" }));
+    $.voteTie = h("button", { title: "Tie (↓, 3 or space)", onclick: click("tie") }, "Tie", h("kbd", { text: "↓" }));
+    $.voteB = h("button", { class: "primary", title: "Right wins (→ or 2)", onclick: click("b") }, "Right wins", h("kbd", { text: "→" }));
     $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "Skip", h("kbd", { text: "S" }));
     $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "Undo my last vote", h("kbd", { text: "U" }));
     $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos(true) }, "Replay both", h("kbd", { text: "R" }));
     $.status = h("div", { class: "td-status", role: "status" });
 
     const splitVals = C.split ? C.split.values : [];
-    const headRow = h("tr", {}, h("th"), h("th", { text: C.contenderLabel }), h("th", { class: "num", text: "Elo" }),
+    $.headName = h("th");
+    const headRow = h("tr", {}, h("th"), $.headName, h("th", { class: "num", text: "Elo" }),
       ...splitVals.map(s => h("th", { class: "num", text: s.label })),
       h("th", { class: "num", text: "W–L–T" }));
     $.standings = h("tbody");
+    // The claim in words, under the table. "1612 ±48" next to "1564 ±51" is a puzzle the
+    // reader has to do arithmetic on; "ahead in 96% of resamples" is the answer to the
+    // question they opened the page with.
+    $.callout = C.confidence ? h("p", { class: "td-callout" }) : null;
     $.feed = h("ul", { class: "td-feed" });
     $.gallery = h("div", { class: "td-gallery" });
 
-    const wrap = h("div", { class: "td-wrap" },
-      h("header", {}, h("h1", { text: C.title || C.id }), C.lede ? h("p", { class: "td-lede", html: C.lede }) : null),
-      C.dims.length ? controls : null,
+    // Two views, not one long page. Landing on the link should put you in front of a
+    // duel, not above the fold of a document you have to scroll past to reach the work.
+    // They are plain hash links so the results are as shareable as the dome itself.
+    $.tabVote = h("a", { class: "td-tab", href: "#vote", text: "Vote" });
+    $.tabResults = h("a", { class: "td-tab", href: "#results" });
+
+    // One tab per question, and each one is a link, so "the density one" is a URL you can
+    // paste rather than a click path you have to describe.
+    $.qTabs = C.multi
+      ? C.questions.map(q => h("a", { class: "td-qtab", href: hashFor(q.id, "vote"), text: q.label }))
+      : [];
+    $.qNav = C.multi ? h("nav", { class: "td-qnav", "aria-label": "Question" }, ...$.qTabs) : null;
+    // The question in words, and the thing focus lands on when you switch. Without it a
+    // screen reader hears two card names and nothing saying which decision they answer,
+    // and the tab label alone is too short to be the question.
+    $.qTitle = C.multi ? h("h2", { class: "td-qtitle", tabindex: "-1" }) : null;
+    $.qLede = h("p", { class: "td-lede" });
+
+    // The arena bar is context, not a control you touch every duel: collapsed to its
+    // tag line, one click from open. <details> so the keyboard and AT get it for free.
+    $.arenaBox = h("details", { class: "td-arena" },
+      h("summary", {}, h("span", { class: "td-arena-label", text: "Arena" }), $.tag), controls);
+
+    $.viewVote = h("section", { class: "td-view" },
+      C.dims.length ? $.arenaBox : null,
       $.duel,
       h("div", { class: "td-vote" }, $.voteA, $.voteTie, $.voteB, $.skip, $.replay, $.undo),
-      $.status,
+      $.status);
+
+    $.viewResults = h("section", { class: "td-view", hidden: true },
       h("div", { class: "td-two" },
         h("section", { class: "td-section" }, h("h2", { text: "Standings" }),
-          h("div", { class: "td-table-wrap" }, h("table", {}, h("thead", {}, headRow), $.standings))),
+          h("div", { class: "td-table-wrap" }, h("table", {}, h("thead", {}, headRow), $.standings)), $.callout),
         h("section", { class: "td-section" }, h("h2", { text: "Recent bouts" }), $.feed)),
-      h("section", { class: "td-section" }, h("h2", { text: C.galleryTitle }), $.gallery));
+      h("section", { class: "td-section" }, $.galleryHead = h("h2"), $.gallery));
+
+    const wrap = h("div", { class: "td-wrap" },
+      h("header", { class: "td-head" },
+        h("h1", { text: C.title || C.id }),
+        h("nav", { class: "td-tabs", "aria-label": "View" }, $.tabVote, $.tabResults)),
+      $.qNav, $.qTitle, $.qLede,
+      $.viewVote, $.viewResults);
     mount.append(wrap);
+
+    // Everything on the page that names the question rather than the dome. The lede is
+    // the question's own if it set one, and the dome's if it did not, so a dome whose
+    // questions are variations on one idea writes the explanation once.
+    function renderQuestion() {
+      const lede = Q.lede || "";
+      $.qLede.innerHTML = lede;
+      $.qLede.hidden = !lede;
+      if ($.qTitle) {
+        $.qTitle.textContent = Q.title || Q.label || "";
+        $.qTitle.hidden = !$.qTitle.textContent;
+      }
+      $.headName.textContent = Q.contenderLabel;
+      $.galleryHead.textContent = Q.galleryTitle;
+      setDocTitle();
+    }
+
+    // A question tab carries the view you are on, so moving from one table to the next
+    // does not drop you back into voting. It has to be resynced on a view change too,
+    // not just on a question change, or the tabs point at the view you just left.
+    function syncQTabs() {
+      for (let i = 0; i < $.qTabs.length; i++) {
+        const on = C.questions[i].id === Q.id;
+        $.qTabs[i].setAttribute("aria-current", on ? "page" : "false");
+        $.qTabs[i].href = hashFor(C.questions[i].id, view);
+      }
+    }
+
+    // The hash is the whole router: which question, and which of its two views. Both the
+    // question tabs and the view tabs are plain links into it, so back and forward work
+    // across questions for free and any state worth talking about has a URL.
+    function goto(qid, v, booting) {
+      // No question in the hash means the first one. Otherwise the dome root and a bare
+      // #results would leave whatever question you were on showing under a URL that says
+      // nothing about it, so Back would not come home and the URL would not be shareable.
+      const want = C.multi ? (qid == null ? C.questions[0].id : qid) : null;
+      const moved = C.multi && want !== Q.id;
+      if (moved) {
+        Q = C.questions[qids.indexOf(want)];
+        setQuestionData();
+        // Everything below is about the question you just left, including anything still
+        // in flight. A confirmation, an Undo handle or a queued duel that outlives the
+        // switch belongs to the other table.
+        voteToken++;
+        clearTimeout(nextTimer); clearTimeout(noteTimer);
+        duel = null; lastKey = ""; myLast = null; note = ""; lockNote = "";
+        $.undo.hidden = true;
+        galleryDirty = true;
+      }
+      view = v === "results" ? "results" : "vote";
+      $.viewVote.hidden = view !== "vote";
+      $.viewResults.hidden = view !== "results";
+      $.tabVote.setAttribute("aria-current", view === "vote" ? "page" : "false");
+      $.tabResults.setAttribute("aria-current", view === "results" ? "page" : "false");
+      $.tabVote.href = hashFor(Q.id, "vote");
+      $.tabResults.href = hashFor(Q.id, "results");
+      syncQTabs();
+      const builds = galleryBuilds;
+      // A question you just arrived at has no duel yet, and nextDuel renders one. Keep the
+      // arena across the move: re-rolling it would mean you cannot put two questions side
+      // by side in the same context, and Back would land somewhere you have never been.
+      if (moved || booting) { renderQuestion(); nextDuel(moved); renderStandings(); }
+      // Only tune if nothing on the way through already rebuilt the gallery and tuned it.
+      if (galleryBuilds === builds && !flushGallery()) tuneGalleryVideos();
+      tuneDuelVideos();
+      // Focus follows the question so a screen reader is told which one it landed on, and
+      // so the keys are not aimed from whichever tab the mouse left focus on.
+      if (moved && !booting && $.qTitle) $.qTitle.focus({ preventScroll: true });
+    }
+    const fromHash = () => parseHash(location.hash, qids);
+    window.addEventListener("hashchange", () => { const r = fromHash(); goto(r.q, r.view); });
 
     // ---- rendering ----
     function arena() { return resolveArena(C, arenaIds, false); }
@@ -439,7 +873,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     function mediaFor(c, a) {
       let m = c.media;
       if (typeof m === "function") m = m(a, { h });
-      const spec = mediaSpec(m, C.media);
+      const spec = mediaSpec(m, Q.media);
       return spec ? mediaNode(spec, c.note ? `${c.name}: ${c.note}` : c.name) : null;
     }
 
@@ -449,7 +883,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       // A config-wide render() wins over media so it can place the frame itself
       // (device chrome, a caption) by calling ctx.media().
       if (typeof c.render === "function") return toNode(c.render(a, ctx));
-      if (C.render) return toNode(C.render(c, a, ctx));
+      if (Q.render) return toNode(Q.render(c, a, ctx));
       const m = mediaFor(c, a);
       if (m) return m;
       if (typeof c.html === "function") return toNode(c.html(a, ctx));
@@ -457,15 +891,22 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       return toNode(c.html);
     }
 
+    // side is "a", "b", or null in the gallery.
+    //
     // A card that could not be drawn must say so and must not be votable. The usual
     // way to get here is a media resolver that is not total over the arena
     // (`media: a => clips[c.id][a.theme.id]` after a theme is added without clips):
     // without this the duel advances underneath a frozen screen and the votes land on
     // pairs nobody ever saw.
-    function card(c, a, sideKey) {
+    function card(c, a, side) {
       const head = h("div", { class: "td-card-head" },
         h("div", {}, h("div", { class: "td-card-name", text: c.name }), c.note ? h("div", { class: "td-card-note", text: c.note }) : null),
-        sideKey ? h("span", { class: "td-side-key", text: sideKey }) : null);
+        // The arrow is a separate span because it stops being true below 760px, where the
+        // duel stacks and "left" is the card on top. CSS drops it at that width.
+        side ? h("span", { class: "td-side-key" },
+          side === "a" ? h("span", { class: "td-side-arrow", text: "\u2190 " }) : null,
+          side === "a" ? "Left" : "Right",
+          side === "b" ? h("span", { class: "td-side-arrow", text: " \u2192" }) : null) : null);
       let body, broken = false;
       try { body = renderBody(c, a); } catch (e) {
         broken = true;
@@ -475,6 +916,30 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       const el = h("article", { class: "td-card", "data-contender": c.id },
         head, h("div", { class: "td-card-body" }, body));
       if (broken) el.dataset.tdBroken = "1";
+      // The whole card is the button. Reaching for a button under the thing you are
+      // judging is the difference between twenty votes and five.
+      // Mouse only on purpose: the arrow keys and the vote buttons below are the
+      // keyboard and screen reader path, and a card announcing itself as a button
+      // would read its own contents out as the label.
+      if (side && !broken && !Q.interactiveCards) {
+        el.classList.add("td-live");
+        el.addEventListener("click", e => {
+          // The card body is pointer-events:none, but the head is not: the name and the
+          // note are there to be read, and reading sometimes means dragging across them.
+          // A drag that ends with text selected was not a vote.
+          const sel = root.getSelection && root.getSelection();
+          if (sel && !sel.isCollapsed) return;
+          // Media controls are exempt from the blanket, so a click on one is a play, not a vote.
+          if (e.target.closest && e.target.closest("video,audio")) return;
+          vote(side);
+        });
+      }
+      // Gallery clips are played by the observer instead of autoplaying: a clip below
+      // the fold, or sitting in the hidden results view, should not be decoding against
+      // the duel. Reduced motion leaves autoplay off, so it never gets the marker.
+      if (!side) for (const v of el.querySelectorAll("video")) {
+        if (v.autoplay) { v.autoplay = false; v.dataset.tdAuto = "1"; }
+      }
       return el;
     }
 
@@ -520,18 +985,47 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       });
     }
 
-    // The duel is the comparison that has to stay smooth. Gallery clips below the fold
-    // decoding in the background are competing with it for nothing.
-    function watchGalleryVideos() {
-      if (galleryIO) galleryIO.disconnect();
-      if (typeof IntersectionObserver !== "function") return;
+    // The duel is the comparison that has to stay smooth. Gallery clips below the fold,
+    // or in the results view while you are voting, are competing with it for nothing.
+    // The duel's own clips are as hidden as the gallery's once you switch to the
+    // standings, and a paused <video> that nobody can see is not costing anything.
+    function tuneDuelVideos() {
+      if (view === "vote") { syncDuelVideos(); return; }
+      // Claim the ring on the way out too, or a sync already waiting on a slow load
+      // resolves after the switch and plays clips nobody is looking at.
+      syncToken++;
+      for (const v of $.duel.querySelectorAll("video")) v.pause();
+    }
+
+    // Built only when the results view needs it. With "New arena each duel" on, the
+    // arena changes every vote, so keying the gallery on the arena alone still tore down
+    // and re-preloaded every clip in it once per duel, on the same frame as the new duel.
+    function flushGallery() {
+      if (!galleryDirty || view !== "results") return false;
+      galleryDirty = false;
+      galleryBuilds++;
+      const a = arena();
+      galleryKey = JSON.stringify(a.ids);
+      $.gallery.replaceChildren(...Q.contenders.map(c => card(c, a)));
+      tuneGalleryVideos();
+      return true;
+    }
+
+    function tuneGalleryVideos() {
+      if (galleryIO) { galleryIO.disconnect(); galleryIO = null; }
+      const vids = [...$.gallery.querySelectorAll("video")];
+      if (view !== "results") { for (const v of vids) v.pause(); return; }
+      if (typeof IntersectionObserver !== "function") {
+        for (const v of vids) if (v.dataset.tdAuto) { const q = v.play(); if (q && q.catch) q.catch(() => {}); }
+        return;
+      }
       galleryIO = new IntersectionObserver(es => {
         for (const e of es) {
           if (!e.isIntersecting) e.target.pause();
-          else if (e.target.autoplay) { const q = e.target.play(); if (q && q.catch) q.catch(() => {}); }
+          else if (e.target.dataset.tdAuto) { const q = e.target.play(); if (q && q.catch) q.catch(() => {}); }
         }
       }, { rootMargin: "120px" });
-      for (const v of $.gallery.querySelectorAll("video")) galleryIO.observe(v);
+      for (const v of vids) galleryIO.observe(v);
     }
 
     // A card can fail at render (a resolver that is not total over the arena) or later
@@ -547,57 +1041,80 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     function render() {
       const a = arena();
       if (C.dims.length) syncControls(a);
-      $.duel.replaceChildren(...(duel ? [card(byId[duel.a], a, "Left"), card(byId[duel.b], a, "Right")] : []));
-      // The gallery only depends on the arena, so it is rebuilt when the arena changes
-      // and not once per vote. Tearing down N <video> elements every duel put the whole
-      // grid back at the top of its loop and spent decode time the duel needed.
+      $.duel.replaceChildren(...(duel ? [card(byId[duel.a], a, "a"), card(byId[duel.b], a, "b")] : []));
+      // The gallery only depends on the arena, so a vote that does not move the arena
+      // leaves it alone entirely, and one that does defers the rebuild to the view that
+      // can actually see it.
       const gk = JSON.stringify(a.ids);
-      if (gk !== galleryKey) {
-        galleryKey = gk;
-        $.gallery.replaceChildren(...C.contenders.map(c => card(c, a)));
-        watchGalleryVideos();
-      }
-      syncDuelVideos();
+      if (gk !== galleryKey) { galleryKey = gk; galleryDirty = true; }
+      if (view === "results") flushGallery();
+      tuneDuelVideos();
       refreshVoteLock();
     }
 
-    function nextDuel() {
-      if ($.shuffle && $.shuffle.checked) {
+    // keepArena is the question switch: the arena is the context every contender is being
+    // judged inside, and re-rolling it as you move between questions means you can never
+    // put two of them side by side in the same one.
+    function nextDuel(keepArena) {
+      if (!keepArena && $.shuffle && $.shuffle.checked) {
         for (const d of C.dims) if (d.shuffle) {
           arenaIds[d.id] = d.type === "select" ? d.options[Math.floor(Math.random() * d.options.length)].id : Math.random() < .5;
         }
       }
-      const p = pickPair(ids, votes, lastKey);
+      const p = pickPair(ids, qVotes(), lastKey);
       lastKey = p.key; duel = { a: p.a, b: p.b };
       render();
     }
 
+    // Every fit costs a pass over the votes, so the resample count comes down as the vote
+    // list grows. It is the same trade in both directions: a short list needs the
+    // resamples because its interval is wide and ragged, a long list has a narrow
+    // interval that another 240 fits would not sharpen. 8 contenders and 2000 votes is
+    // about 50ms here, against 250ms at a flat 300.
+    function resampleCount(m) {
+      return Math.max(40, Math.min(300, Math.round(120000 / Math.max(1, m))));
+    }
+
     function renderStandings() {
-      const sorted = [...votes].sort((x, y) => x.t - y.t);
-      const all = elo(ids, sorted, C.k);
+      const sorted = qVotes().sort((x, y) => x.t - y.t);
+      const conf = confidence(ids, sorted, C.confidence
+        ? { ...C.confidence, resamples: resampleCount(sorted.length) }
+        : { resamples: 0, minBouts: Infinity });
+      const all = conf.rating;
       const perSplit = splitVals.map(s => {
         const list = sorted.filter(v => splitOf(C, resolveArena(C, v, true)) === s.id);
-        const r = elo(ids, list, C.k);
+        const r = fit(ids, list, { prior: C.confidence ? C.confidence.prior : 200 });
         const best = list.length ? ids.slice().sort((x, y) => r[y] - r[x])[0] : null;
         return { r, best };
       });
       const rec = records(ids, sorted);
-      const rows = ids.slice().sort((x, y) => all[y] - all[x]).map((id, i) => {
+      const order = ids.slice().sort((x, y) => all[y] - all[x]);
+      const rows = order.map((id, i) => {
         const c = byId[id];
         const nameCell = h("td");
-        if (C.swatch) {
-          const sw = C.swatch(c, { h });
+        if (Q.swatch) {
+          const sw = Q.swatch(c, { h });
           if (sw != null) nameCell.append(sw instanceof Node ? sw : h("span", { class: "td-swatch", style: `background:${sw}` }));
         }
         nameCell.append(document.createTextNode(c.name));
+        // The percentile range is not symmetric, so the cell shows its half-width and
+        // the title carries the range itself for anyone who wants the two ends.
+        const eloCell = h("td", { class: "num", text: String(Math.round(all[id])) });
+        if (conf.lo) {
+          // The title goes on the cell rather than the three characters of the spread,
+          // so the hover target is the number you were already looking at.
+          eloCell.title = `${Math.round(conf.level * 100)}% of resamples land between ${Math.round(conf.lo[id])} and ${Math.round(conf.hi[id])}`;
+          eloCell.append(h("span", { class: "td-ci", text: `±${Math.round((conf.hi[id] - conf.lo[id]) / 2)}` }));
+        }
         return h("tr", {},
           h("td", { class: "rank", text: String(i + 1) }),
           nameCell,
-          h("td", { class: "num", text: String(Math.round(all[id])) }),
+          eloCell,
           ...perSplit.map(s => h("td", { class: "num" + (s.best === id ? " td-lead" : ""), text: String(Math.round(s.r[id])) })),
           h("td", { class: "num", text: `${rec[id].w}–${rec[id].l}–${rec[id].t}` }));
       });
       $.standings.replaceChildren(...rows);
+      if ($.callout) $.callout.textContent = calloutFor(conf, order);
 
       const recent = sorted.slice().reverse().slice(0, C.recent);
       $.feed.replaceChildren(...(recent.length ? recent.map(v => {
@@ -608,44 +1125,108 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       renderStatus();
     }
 
-    function renderStatus() {
-      if (lockNote) { $.status.textContent = lockNote; return; }
-      if (note) { $.status.textContent = note; return; }
-      if (shared) {
-        const n = votes.filter(v => !String(v.id).startsWith("local-")).length;
-        $.status.textContent = `${n} shared vote${n === 1 ? "" : "s"} so far.`;
-      } else $.status.textContent = "Votes stay in this browser until the shared table connects.";
+    // The top two, in words. A one-sided 95% is the call that matches a 90% interval:
+    // below it the two intervals still overlap and the ordering is not something the
+    // votes have established yet, however confident the rank column looks.
+    function calloutFor(conf, order) {
+      const name = id => (byId[id] ? byId[id].name : id);
+      if (!conf.ahead) {
+        return conf.bouts
+          ? `Not enough bouts to say who is ahead yet: ${conf.bouts} so far.`
+          : "No bouts yet, so the table is the prior and nothing else.";
+      }
+      const [a, b] = order, pct = Math.round(conf.ahead[a][b] * 100);
+      return pct >= 95
+        ? `${name(a)} is ahead of ${name(b)} in ${pct}% of resamples.`
+        : `${name(a)} and ${name(b)} are too close to call: ${pct}% of resamples put ${name(a)} ahead.`;
     }
+
+    // Who is winning, without making you switch views to find out. A vote you cannot
+    // see land feels like it went nowhere, and then you stop voting.
+    //
+    // The fit, not the bootstrap: this redraws on every vote, and a few hundred fits per
+    // click to sharpen a sentence that says one name is not a trade worth making. The
+    // gap is the crude version of the call the results view makes properly.
+    function leaderLine() {
+      const mine = qVotes();
+      if (mine.length < 3) return "";
+      const r = fit(ids, mine, { prior: C.confidence ? C.confidence.prior : 200 });
+      const rank = ids.slice().sort((x, y) => r[y] - r[x]);
+      return r[rank[0]] - r[rank[1]] < TOO_CLOSE ? "Too close to call so far." : `${byId[rank[0]].name} leads.`;
+    }
+
+    // Where the votes are going. Sticky, because it is a fact about the page rather
+    // than an event, and it is kept out of `note` so a page with no shared table does
+    // not spend the rest of the session saying so instead of naming the leader.
+    function storageLine() {
+      if (stickyNote) return stickyNote;
+      if (shared) {
+        const n = qVotes().filter(v => !String(v.id).startsWith("local-")).length;
+        return `${n} shared vote${n === 1 ? "" : "s"} so far.`;
+      }
+      return "Votes stay in this browser until the shared table connects.";
+    }
+    // The lock note beats everything: a row of dead buttons needs an explanation more
+    // than a vote already visible in the Results count needs a confirmation.
+    function renderStatus() {
+      const n = qVotes().length;
+      $.tabResults.textContent = n ? `Results (${n})` : "Results";
+      $.status.textContent = lockNote || note || `${storageLine()} ${leaderLine()}`.trim();
+    }
+    // A sticky message is always the correction to whatever transient is on screen: it
+    // is said when a vote was rejected, right after that vote said it was saved. Clearing
+    // the transient is the point, otherwise the page spends two seconds claiming a vote
+    // landed that did not.
     function say(msg, sticky) {
+      if (sticky) { stickyNote = msg; note = ""; clearTimeout(noteTimer); renderStatus(); return; }
       note = msg; clearTimeout(noteTimer); renderStatus();
-      if (!sticky) noteTimer = setTimeout(() => { note = ""; renderStatus(); }, 2500);
+      noteTimer = setTimeout(() => { note = ""; renderStatus(); }, 2500);
     }
 
     // ---- voting ----
     function saveLocal() {
       try { localStorage.setItem(C.localKey, JSON.stringify(votes.filter(x => String(x.id).startsWith("local-")))); } catch (e) { /* storage blocked */ }
     }
-    function localVote(v) {
-      v.id = "local-" + v.t; votes.push(v); myLast = { local: v.id }; $.undo.hidden = false;
+    // stale: the vote was cast on a question you have since left, so it is recorded but
+    // gets no Undo handle. Undo is "take back the vote you just cast on this page".
+    function localVote(v, stale) {
+      v.id = "local-" + v.t; votes.push(v);
+      if (!stale) { myLast = { local: v.id }; $.undo.hidden = false; }
       saveLocal(); renderStandings();
     }
     async function vote(w) {
       if (!duel || lockNote) return;
+      // `q` only on a dome that has questions, so a single-question dome's votes keep the
+      // exact shape they had before questions existed and an old shared table still reads.
       const v = { a: duel.a, b: duel.b, w, ...arena().ids, t: Date.now() };
+      if (C.multi) v.q = Q.id;
       const cards = $.duel.children;
       if (w === "a" && cards[0]) cards[0].classList.add("picked");
       if (w === "b" && cards[1]) cards[1].classList.add("picked");
       duel = null;
+      // The write to the shared table takes a round trip, which is exactly long enough to
+      // click another question. Everything after the await belongs to the question this
+      // vote was cast on, so if that is no longer the one on screen, none of it happens:
+      // the vote is saved either way, but its Undo handle, its confirmation and its next
+      // duel would all land on a table they have nothing to do with. Undoing here would
+      // delete a vote from a question you are not looking at and leave no trace.
+      const token = voteToken;
       if (shared && votesCol) {
         try {
-          const ref = votesCol.doc(); await ref.set(v); myLast = ref; $.undo.hidden = false;
+          const ref = votesCol.doc();
+          await ref.set(v);
+          if (token !== voteToken) return;
+          myLast = ref; $.undo.hidden = false;
           say("Vote saved to the shared table.");
         } catch (e) {
-          shared = false; localVote(v);
+          // The vote itself is still saved, correctly tagged. Only the handle and the
+          // message are withheld, because those are about a page you have left.
+          shared = false; localVote(v, token !== voteToken);
+          if (token !== voteToken) return;
           say("You can view but not vote on the shared table here, so this vote stays in your browser.", true);
         }
       } else localVote(v);
-      setTimeout(nextDuel, 260);
+      nextTimer = setTimeout(() => nextDuel(), 260);
     }
     async function undo() {
       if (!myLast) return;
@@ -655,12 +1236,24 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
     }
 
     document.addEventListener("keydown", e => {
+      // The duel is hidden on the results view, and a vote on a pair you cannot see is
+      // bad data. It also means space is the page's own scroll key there, which is what
+      // anyone reading a table of standings expects it to be.
+      if (view !== "vote") return;
       if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
-      if (e.target.closest && e.target.closest("select,input,textarea,[contenteditable]")) return;
+      const near = sel => e.target.closest && e.target.closest(sel);
+      if (near("select,input,textarea,[contenteditable]")) return;   // typing always beats voting
+      // A focused media player owns its own keys: space plays, arrows seek. Under
+      // prefers-reduced-motion the controls are the only way to watch a clip at all.
+      if (near("video,audio")) return;
       const k = e.key;
-      if (k === "ArrowLeft") vote("a");
-      else if (k === "ArrowRight") vote("b");
-      else if (k === "ArrowDown") vote("tie");
+      // Space and Enter belong to whatever is focused. The arrows and digits do not:
+      // clicking "Left wins" once leaves that button focused, and the keyboard has to
+      // keep working afterwards or the fast path dies the first time you use the mouse.
+      if ((k === " " || k === "Enter") && near("button,a,summary")) return;
+      if (k === "ArrowLeft" || k === "1") vote("a");
+      else if (k === "ArrowRight" || k === "2") vote("b");
+      else if (k === "ArrowDown" || k === "3" || k === " ") vote("tie");
       else if (k === "s" || k === "S") nextDuel();
       else if (k === "u" || k === "U") undo();
       else if (k === "r" || k === "R") syncDuelVideos(true);
@@ -670,7 +1263,19 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 
     // ---- boot ----
     try { const saved = JSON.parse(localStorage.getItem(C.localKey) || "[]"); if (Array.isArray(saved)) votes = saved; } catch (e) { /* no storage */ }
-    nextDuel(); renderStandings();
+    {
+      const r = fromHash();
+      goto(r.q, r.view, true);
+      // Write the question back into the URL if it was not there. The address bar is the
+      // thing people copy, and a dome root that shows question one under a URL that does
+      // not say so is a link that opens somewhere else for whoever you sent it to.
+      // replaceState, not a hash assignment: the entry state should not become a step
+      // that Back has to walk through.
+      const want = hashFor(Q.id, view);
+      if (C.multi && location.hash !== want && history.replaceState) {
+        try { history.replaceState(null, "", want); } catch (e) { /* file:// with no history */ }
+      }
+    }
 
     (async () => {
       let db = null;
@@ -684,10 +1289,20 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
       }, () => { shared = false; say("Lost the shared table, so votes stay in your browser for now.", true); });
     })();
 
-    return { get votes() { return votes.slice(); }, next: nextDuel, vote, undo };
+    return {
+      get votes() { return votes.slice(); },
+      get question() { return Q.id; },
+      next: nextDuel, vote, undo,
+      go: (q, v) => {
+        if (q != null && qids.indexOf(String(q).toLowerCase()) < 0) {
+          throw new Error(`Thunderdome: no question "${q}"`);
+        }
+        location.hash = hashFor(q == null ? Q.id : String(q).toLowerCase(), v || view);
+      },
+    };
   }
 
-  const api = { start, elo, records, pickPair, pairCounts, ago, normalize, resolveArena, mediaSpec };
+  const api = { start, elo, fit, confidence, records, pickPair, pairCounts, ago, normalize, normalizeDome, parseHash, hashFor, resolveArena, mediaSpec };
   root.Thunderdome = api;
   if (typeof module === "object" && module.exports) module.exports = api;
 })(typeof window !== "undefined" ? window : globalThis);
