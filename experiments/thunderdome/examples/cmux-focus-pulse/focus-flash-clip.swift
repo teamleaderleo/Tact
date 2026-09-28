@@ -65,8 +65,26 @@ struct FlashPattern {
 
 struct Palette {
     let bg, fg, dim, green, blue, yellow, magenta, cursor, accent, tabText, tabTextSecondary, separator: NSColor
+    static func hex(_ s: String) -> NSColor { let v = UInt32(s.dropFirst(), radix: 16)!; return NSColor(srgbRed: CGFloat((v >> 16) & 255) / 255, green: CGFloat((v >> 8) & 255) / 255, blue: CGFloat(v & 255) / 255, alpha: 1) }
+
+    func with(accent: NSColor) -> Palette {
+        Palette(bg: bg, fg: fg, dim: dim, green: green, blue: blue, yellow: yellow, magenta: magenta, cursor: cursor, accent: accent, tabText: tabText, tabTextSecondary: tabTextSecondary, separator: separator)
+    }
+
+    /// Catppuccin Mocha (dark) and Latte (light) terminal colors, for the color question.
+    /// The accent is filled in per contender.
+    static func catppuccin(dark: Bool) -> Palette {
+        if dark {
+            let fg = hex("#cdd6f4")
+            return Palette(bg: hex("#1e1e2e"), fg: fg, dim: hex("#7f849c"), green: hex("#a6e3a1"), blue: hex("#89b4fa"), yellow: hex("#f9e2af"), magenta: hex("#f5c2e7"), cursor: hex("#f5e0dc"),
+                           accent: .clear, tabText: fg.withAlphaComponent(0.85), tabTextSecondary: fg.withAlphaComponent(0.6), separator: fg.withAlphaComponent(0.14))
+        }
+        let fg = hex("#4c4f69")
+        return Palette(bg: hex("#eff1f5"), fg: fg, dim: hex("#8c8fa1"), green: hex("#40a02b"), blue: hex("#1e66f5"), yellow: hex("#df8e1d"), magenta: hex("#ea76cb"), cursor: hex("#dc8a78"),
+                       accent: .clear, tabText: fg.withAlphaComponent(0.9), tabTextSecondary: fg.withAlphaComponent(0.65), separator: fg.withAlphaComponent(0.14))
+    }
+
     static func make(dark: Bool) -> Palette {
-        func hex(_ s: String) -> NSColor { let v = UInt32(s.dropFirst(), radix: 16)!; return NSColor(srgbRed: CGFloat((v >> 16) & 255) / 255, green: CGFloat((v >> 8) & 255) / 255, blue: CGFloat(v & 255) / 255, alpha: 1) }
         if dark {
             return Palette(bg: hex("#1e1e1e"), fg: hex("#ffffff"), dim: hex("#98989d"), green: hex("#32d74b"), blue: hex("#0a84ff"), yellow: hex("#ffd60a"), magenta: hex("#bf5af2"), cursor: hex("#98989d"),
                            accent: NSColor(srgbRed: 0, green: 145 / 255, blue: 1, alpha: 1), tabText: NSColor.white.withAlphaComponent(0.82), tabTextSecondary: NSColor.white.withAlphaComponent(0.68), separator: NSColor.white.withAlphaComponent(0.14))
@@ -212,11 +230,28 @@ UILab.main {
     let only = env["FLASH_VARIANT"]
     let frameLimit = env["FLASH_FRAMES"].flatMap(Int.init)
     let bounds = NSRect(x: 0, y: 0, width: 600, height: 206)
-    let variants: [(String, FlashPattern)] = [("old-double-blink", .doubleBlink), ("new-pulse", .pulse), ("slow-pulse", .slowPulse), ("no-flash", .none)]
+    // FLASH_SET=color: the slow pulse on Catppuccin Mocha / Latte, ring (and focused
+    // tab indicator) in each candidate color. Otherwise the timing set on cmux's default
+    // palette.
+    typealias Variant = (name: String, pattern: FlashPattern, palette: (Bool) -> Palette)
+    let colorSet = env["FLASH_SET"] == "color"
+    let rgb = { (r: CGFloat, g: CGFloat, b: CGFloat) in NSColor(srgbRed: r / 255, green: g / 255, blue: b / 255, alpha: 1) }
+    let colors: [(String, (Bool) -> NSColor)] = [
+        ("blue", { $0 ? rgb(0, 145, 255) : rgb(0, 136, 255) }),
+        ("neutral", { $0 ? NSColor.white.withAlphaComponent(0.85) : NSColor.black.withAlphaComponent(0.8) }),
+        ("peach", { Palette.hex($0 ? "#fab387" : "#fe640b") }),
+        ("mauve", { Palette.hex($0 ? "#cba6f7" : "#8839ef") }),
+        ("lavender", { Palette.hex($0 ? "#b4befe" : "#7287fd") }),
+        ("green", { Palette.hex($0 ? "#a6e3a1" : "#40a02b") }),
+        ("teal", { Palette.hex($0 ? "#94e2d5" : "#179299") }),
+    ]
+    let variants: [Variant] = colorSet
+        ? colors.map { name, color in ("color-" + name, .slowPulse, { dark in Palette.catppuccin(dark: dark).with(accent: color(dark)) }) }
+        : [("old-double-blink", .doubleBlink, Palette.make), ("new-pulse", .pulse, Palette.make), ("slow-pulse", .slowPulse, Palette.make), ("no-flash", .none, Palette.make)]
     // A 3 s loop: focus moves right at 0.5 s, back left at 2.0 s.
     let loop = 3.0, half = 1.5, lead = 0.5
     let frameCount = frameLimit ?? Int(loop * fps)
-    for (name, pattern) in variants where only == nil || only == name {
+    for (name, pattern, palette) in variants where only == nil || only == name {
         for frame in 0..<frameCount {
             let clip = Double(frame) / fps
             let t = (clip - lead + loop).truncatingRemainder(dividingBy: loop)
@@ -224,7 +259,7 @@ UILab.main {
             let elapsed = focusedRight ? t : t - half
             let opacity = pattern.opacity(at: elapsed)
             UILab.render(name: String(format: "%@-f%04d", name, frame)) { scheme in
-                SplitMock(frame: bounds, palette: .make(dark: scheme == .dark), focusedRight: focusedRight, flashOpacity: opacity)
+                SplitMock(frame: bounds, palette: palette(scheme == .dark), focusedRight: focusedRight, flashOpacity: opacity)
             }
         }
     }
