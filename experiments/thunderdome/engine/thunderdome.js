@@ -85,12 +85,12 @@
     if (!media || !media.src) return null;
     const d = defaults || {}, src = String(media.src);
     return {
-      kind: media.kind || (VIDEO_EXT.test(src) || /^data:video\//i.test(src) ? "video" : "img"),
+      kind: media.kind || d.kind || (VIDEO_EXT.test(src) || /^data:video\//i.test(src) ? "video" : "img"),
       src,
       poster: media.poster || d.poster || null,
       alt: media.alt == null ? (d.alt || "") : media.alt,
       fit: media.fit || d.fit || "contain",
-      loop: media.loop !== false,
+      loop: (media.loop == null ? d.loop : media.loop) !== false,
       aspect: media.aspect || d.aspect || null,
       // Off by default: most media is an opaque screenshot or clip that brings its own
       // surface, and a box around it reads as a second card. Turn it on for icons and
@@ -169,6 +169,12 @@
     return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
 
+  // Said on a card that could not be drawn, and on one whose media 404s.
+  function failNode(title, detail) {
+    return h("div", { class: "td-media td-media-broken" },
+      h("div", { class: "td-media-fail" }, h("b", { text: title }), detail ? h("code", { text: detail }) : null));
+  }
+
   // One <img> or <video> in a box that holds its shape. A card whose height changes
   // between duels moves the thing you are about to click, so give media an `aspect`
   // whenever you can.
@@ -180,8 +186,14 @@
     const where = /^data:/i.test(spec.src)
       ? `${spec.src.slice(0, spec.src.indexOf(";")) || "data:"}, inlined at build time`
       : (spec.src.length > 72 ? spec.src.slice(0, 69) + "..." : spec.src);
-    const fail = () => box.replaceChildren(h("div", { class: "td-media-fail" },
-      h("b", { text: "Couldn't load this one." }), h("code", { text: where })));
+    const fail = () => {
+      box.classList.add("td-media-broken");
+      box.replaceChildren(h("div", { class: "td-media-fail" },
+        h("b", { text: "Couldn't load this one." }), h("code", { text: where })));
+      // Tells the duel to take the vote buttons off: this card is no longer a fair half
+      // of the comparison, and a vote cast on it is bad data.
+      box.dispatchEvent(new CustomEvent("td-media-fail", { bubbles: true }));
+    };
     let el;
     if (spec.kind === "video") {
       el = h("video", { src: spec.src, poster: spec.poster, loop: spec.loop, muted: true,
@@ -209,8 +221,8 @@
     let duel = null, lastKey = "";
     let votes = [];
     let votesCol = null, shared = false, myLast = null;
-    let note = "", noteTimer = 0;
-    let syncToken = 0, galleryIO = null;
+    let note = "", noteTimer = 0, lockNote = "";
+    let syncToken = 0, galleryIO = null, galleryKey = null;
 
     if (C.title) document.title = C.title;
 
@@ -240,12 +252,14 @@
     controls.append($.tag);
 
     $.duel = h("section", { class: "td-duel", "aria-live": "polite" });
+    // Media that fails to load does so long after render(), so it reports back.
+    $.duel.addEventListener("td-media-fail", () => refreshVoteLock());
     $.voteA = h("button", { class: "primary", onclick: () => vote("a") }, "Left wins", h("kbd", { text: "←" }));
     $.voteTie = h("button", { onclick: () => vote("tie") }, "Tie", h("kbd", { text: "↓" }));
     $.voteB = h("button", { class: "primary", onclick: () => vote("b") }, "Right wins", h("kbd", { text: "→" }));
     $.skip = h("button", { class: "quiet", onclick: () => nextDuel() }, "Skip", h("kbd", { text: "S" }));
     $.undo = h("button", { class: "quiet", hidden: true, onclick: () => undo() }, "Undo my last vote", h("kbd", { text: "U" }));
-    $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos() }, "Replay both", h("kbd", { text: "R" }));
+    $.replay = h("button", { class: "quiet", hidden: true, onclick: () => syncDuelVideos(true) }, "Replay both", h("kbd", { text: "R" }));
     $.status = h("div", { class: "td-status", role: "status" });
 
     const splitVals = C.split ? C.split.values : [];
@@ -307,14 +321,29 @@
       const m = mediaFor(c, a);
       if (m) return m;
       if (typeof c.html === "function") return toNode(c.html(a, ctx));
+      if (c.html == null) throw new Error("nothing to render: no render function, no media, no html");
       return toNode(c.html);
     }
 
+    // A card that could not be drawn must say so and must not be votable. The usual
+    // way to get here is a media resolver that is not total over the arena
+    // (`media: a => clips[c.id][a.theme.id]` after a theme is added without clips):
+    // without this the duel advances underneath a frozen screen and the votes land on
+    // pairs nobody ever saw.
     function card(c, a, sideKey) {
       const head = h("div", { class: "td-card-head" },
         h("div", {}, h("div", { class: "td-card-name", text: c.name }), c.note ? h("div", { class: "td-card-note", text: c.note }) : null),
         sideKey ? h("span", { class: "td-side-key", text: sideKey }) : null);
-      return h("article", { class: "td-card", "data-contender": c.id }, head, h("div", { class: "td-card-body" }, renderBody(c, a)));
+      let body, broken = false;
+      try { body = renderBody(c, a); } catch (e) {
+        broken = true;
+        console.error(`Thunderdome: ${c.id} failed to render`, e);
+        body = failNode("Couldn't draw this one.", String((e && e.message) || e));
+      }
+      const el = h("article", { class: "td-card", "data-contender": c.id },
+        head, h("div", { class: "td-card-body" }, body));
+      if (broken) el.dataset.tdBroken = "1";
+      return el;
     }
 
     function syncControls(a) {
@@ -329,13 +358,24 @@
     // drift apart within seconds, and then you are comparing a treatment at the top of
     // its loop against one halfway through it, which is not the question you asked.
     // A GIF cannot be seeked at all, which is why the docs push mp4 and webm.
-    function syncDuelVideos() {
+    // `byHand` is the R key or the Replay button. Reduced motion means nothing starts
+    // itself, not that the button someone just pressed does nothing: under that setting
+    // the clips carry controls and get played one at a time, which is exactly the case
+    // where they drift and re-aligning them by hand is the only repair.
+    function syncDuelVideos(byHand) {
       const vids = [...$.duel.querySelectorAll("video")];
       $.replay.hidden = !vids.length;
-      if (!vids.length || reducedMotion()) return;
+      if (!vids.length) return;
       const token = ++syncToken;
       const ready = v => v.readyState >= 2 ? Promise.resolve() : new Promise(res => {
-        const done = () => { v.removeEventListener("loadeddata", done); v.removeEventListener("error", done); res(); };
+        // Every one of these has to settle even if the element is thrown away first,
+        // or the promise holds both <video> elements and their listeners alive.
+        let timer = 0;
+        const done = () => {
+          clearTimeout(timer);
+          v.removeEventListener("loadeddata", done); v.removeEventListener("error", done); res();
+        };
+        timer = setTimeout(done, 1500);
         v.addEventListener("loadeddata", done); v.addEventListener("error", done);
       });
       // Don't hold the first clip back forever on a slow load for the second.
@@ -343,7 +383,7 @@
         if (token !== syncToken) return;  // a newer duel already claimed the ring
         for (const v of vids) {
           try { v.currentTime = 0; } catch (e) { /* not seekable yet */ }
-          if (!reducedMotion()) { const q = v.play(); if (q && q.catch) q.catch(() => {}); }
+          if (byHand || !reducedMotion()) { const q = v.play(); if (q && q.catch) q.catch(() => {}); }
         }
       });
     }
@@ -362,13 +402,31 @@
       for (const v of $.gallery.querySelectorAll("video")) galleryIO.observe(v);
     }
 
+    // A card can fail at render (a resolver that is not total over the arena) or later
+    // (media that 404s). Either way the duel stops being a fair comparison, so the vote
+    // buttons come off until you skip. Called again by the media error listener.
+    function refreshVoteLock() {
+      const bad = !!$.duel.querySelector("[data-td-broken], .td-media-broken");
+      for (const b of [$.voteA, $.voteTie, $.voteB]) b.disabled = bad;
+      lockNote = bad ? "One of these cards didn't render, so this duel isn't votable. Skip it, and check the console." : "";
+      renderStatus();
+    }
+
     function render() {
       const a = arena();
       if (C.dims.length) syncControls(a);
       $.duel.replaceChildren(...(duel ? [card(byId[duel.a], a, "Left"), card(byId[duel.b], a, "Right")] : []));
-      $.gallery.replaceChildren(...C.contenders.map(c => card(c, a)));
+      // The gallery only depends on the arena, so it is rebuilt when the arena changes
+      // and not once per vote. Tearing down N <video> elements every duel put the whole
+      // grid back at the top of its loop and spent decode time the duel needed.
+      const gk = JSON.stringify(a.ids);
+      if (gk !== galleryKey) {
+        galleryKey = gk;
+        $.gallery.replaceChildren(...C.contenders.map(c => card(c, a)));
+        watchGalleryVideos();
+      }
       syncDuelVideos();
-      watchGalleryVideos();
+      refreshVoteLock();
     }
 
     function nextDuel() {
@@ -419,6 +477,7 @@
     }
 
     function renderStatus() {
+      if (lockNote) { $.status.textContent = lockNote; return; }
       if (note) { $.status.textContent = note; return; }
       if (shared) {
         const n = votes.filter(v => !String(v.id).startsWith("local-")).length;
@@ -439,7 +498,7 @@
       saveLocal(); renderStandings();
     }
     async function vote(w) {
-      if (!duel) return;
+      if (!duel || lockNote) return;
       const v = { a: duel.a, b: duel.b, w, ...arena().ids, t: Date.now() };
       const cards = $.duel.children;
       if (w === "a" && cards[0]) cards[0].classList.add("picked");
@@ -472,7 +531,7 @@
       else if (k === "ArrowDown") vote("tie");
       else if (k === "s" || k === "S") nextDuel();
       else if (k === "u" || k === "U") undo();
-      else if (k === "r" || k === "R") syncDuelVideos();
+      else if (k === "r" || k === "R") syncDuelVideos(true);
       else return;
       e.preventDefault();
     });

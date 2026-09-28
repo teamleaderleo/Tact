@@ -2,6 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 
 const T = createRequire(import.meta.url)("./engine/thunderdome.js");
 const ids = ["a1", "b2", "c3"];
@@ -61,13 +62,19 @@ test("mediaSpec reads the kind off the extension", () => {
 });
 
 test("mediaSpec fills defaults and lets a contender override them", () => {
-  const d = { aspect: "16/9", fit: "cover", frame: true };
+  const d = { aspect: "16/9", fit: "cover", frame: true, loop: false, poster: "p.png", alt: "shared" };
   const a = T.mediaSpec("a.png", d);
   assert.equal(a.aspect, "16/9"); assert.equal(a.fit, "cover"); assert.equal(a.frame, true);
-  assert.equal(a.loop, true); assert.equal(a.alt, "");
-  const b = T.mediaSpec({ src: "b.mp4", aspect: "4/3", loop: false, frame: false, alt: "row" }, d);
+  assert.equal(a.poster, "p.png"); assert.equal(a.alt, "shared");
+  assert.equal(a.loop, false, "a config-level loop:false has to reach the contender");
+  const b = T.mediaSpec({ src: "b.mp4", aspect: "4/3", loop: true, frame: false, alt: "row" }, d);
   assert.equal(b.aspect, "4/3"); assert.equal(b.fit, "cover");
-  assert.equal(b.loop, false); assert.equal(b.frame, false); assert.equal(b.alt, "row");
+  assert.equal(b.loop, true); assert.equal(b.frame, false); assert.equal(b.alt, "row");
+  // kind set once for a whole set of extension-less artifact links.
+  assert.equal(T.mediaSpec("https://ci.example/artifact/9981", { kind: "video" }).kind, "video");
+  assert.equal(T.mediaSpec({ src: "a.png", kind: "img" }, { kind: "video" }).kind, "img");
+  // With no default and no extension, still an image.
+  assert.equal(T.mediaSpec("https://ci.example/artifact/9981", {}).kind, "img");
 });
 
 test("mediaSpec returns null when there is nothing to show", () => {
@@ -76,14 +83,36 @@ test("mediaSpec returns null when there is nothing to show", () => {
 
 test("build inlines relative media and leaves everything else alone", async () => {
   const { inlineMedia } = await import("./build.mjs");
-  const dir = "examples/motion";
+  // Not "examples/motion": every other test here runs from any cwd, and so should this.
+  const dir = fileURLToPath(new URL("examples/motion", import.meta.url));
   const seen = new Map();
   const out = inlineMedia(
     `a: "clips/spinner-light.webm", b: "https://x.dev/c.png", c: "clips/nope.webm", d: url(clips/pulse-dark.webm)`,
     dir, "t", seen);
   assert.match(out, /a: "data:video\/webm;base64,[A-Za-z0-9+/]/);
-  assert.match(out, /d: url\("data:video\/webm;base64,/);
+  assert.match(out, /d: url\(data:video\/webm;base64,/);
   assert.ok(out.includes(`b: "https://x.dev/c.png"`), "remote URLs stay as written");
   assert.ok(out.includes(`c: "clips/nope.webm"`), "a path that is not on disk stays visibly broken");
   assert.equal(seen.size, 2);
+});
+
+test("build keeps an inlined url() out of the quotes around it", async () => {
+  const { inlineMedia } = await import("./build.mjs");
+  const dir = fileURLToPath(new URL("examples/motion", import.meta.url));
+  // The url() sits inside a double-quoted HTML attribute. Emitting our own quotes here
+  // would end the attribute and drop the background on the floor.
+  const out = inlineMedia(`html: '<div style="background:URL(clips/bar-light.webm) repeat"></div>'`, dir, "t");
+  assert.match(out, /background:url\(data:video\/webm;base64,[A-Za-z0-9+/=]+\) repeat/);
+  assert.equal(out.split('"').length, 3, "the attribute still has exactly its own two quotes");
+});
+
+test("build inlines a cache-busted path and refuses to reach out of the tree", async () => {
+  const { inlineMedia } = await import("./build.mjs");
+  const dir = fileURLToPath(new URL("examples/motion", import.meta.url));
+  const root = fileURLToPath(new URL(".", import.meta.url));
+  const seen = new Map();
+  const out = inlineMedia(`a: "clips/bar-dark.webm?v=2", b: "../../../../etc/hosts.png"`, dir, "t", seen, root);
+  assert.match(out, /a: "data:video\/webm;base64,/, "the ?query is dropped, not left as a broken path");
+  assert.ok(out.includes(`b: "../../../../etc/hosts.png"`), "a path outside the tree stays as written");
+  assert.equal(seen.size, 1);
 });

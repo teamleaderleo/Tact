@@ -47,6 +47,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-media>img,.td-media>video{display:block;width:100%;height:auto;max-height:min(52vh,440px);background:transparent}
 .td-media>video[controls]{max-height:min(48vh,400px)}
 .td-gallery .td-media>img,.td-gallery .td-media>video{max-height:220px}
+.td-media.td-media-broken{background:var(--bg);border:1px dashed var(--rule-strong)}
 .td-media-fail{display:grid;gap:4px;justify-items:center;text-align:center;padding:20px 14px;font-size:12.5px;color:var(--muted)}
 .td-media-fail b{color:var(--ink);font-weight:500}
 .td-media-fail code{font-family:var(--mono);font-size:11px;color:var(--faint);word-break:break-all}
@@ -54,6 +55,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);pa
 .td-vote{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
 .td-vote button{font:inherit;font-size:14px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--rule-strong);border-radius:8px;padding:8px 16px;cursor:pointer}
 .td-vote button:hover{background:var(--hover)}
+.td-vote button:disabled{opacity:.45;cursor:not-allowed;background:var(--panel)}
 .td-vote button:focus-visible,.td-controls select:focus-visible,.td-controls input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 .td-vote button.primary{border-color:var(--ink)}
 .td-vote button.quiet{border-color:transparent;color:var(--muted)}

@@ -12,6 +12,11 @@
 
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const here = dirname(fileURLToPath(import.meta.url));
+const CLIPS = join(here, "clips");   // next to the config, not next to wherever you ran this
 
 const W = 480, H = 150, FPS = 24, SECONDS = 3, SS = 2;   // SS: supersample, downscaled on the way out
 const SW = W * SS, SH = H * SS;
@@ -31,12 +36,16 @@ const THEMES = {
 // ---- drawing ----
 const px = new Uint8Array(SW * SH * 3);
 
+// Rounded, not truncated. A Uint8Array store floors, so a blend whose delta is under
+// one level is a no-op and a stack of low-alpha blends drifts one way only: 101 ink
+// washes at a=.003 landed on 154 instead of 194. The shimmer is built out of exactly
+// those, and its whole job is being subtle.
 function blend(x, y, c, a) {
   if (a <= 0 || x < 0 || y < 0 || x >= SW || y >= SH) return;
   const i = (y * SW + x) * 3, k = Math.min(1, a);
-  px[i] += (c[0] - px[i]) * k;
-  px[i + 1] += (c[1] - px[i + 1]) * k;
-  px[i + 2] += (c[2] - px[i + 2]) * k;
+  px[i] = Math.round(px[i] + (c[0] - px[i]) * k);
+  px[i + 1] = Math.round(px[i + 1] + (c[1] - px[i + 1]) * k);
+  px[i + 2] = Math.round(px[i + 2] + (c[2] - px[i + 2]) * k);
 }
 
 function clear(c) { for (let i = 0; i < px.length; i += 3) { px[i] = c[0]; px[i + 1] = c[1]; px[i + 2] = c[2]; } }
@@ -96,7 +105,10 @@ const TREATMENTS = {
   shimmer(t, p) {
     dot(GLYPH.x, GLYPH.y, 5, t.accent, .9);
     const head = CARD.x - 90 + p * (CARD.w + 180), band = 64;
-    for (let x = Math.max(CARD.x, head - band); x < Math.min(CARD.x + CARD.w, head + band); x++) {
+    // Integer columns. Stepping by 1 from a fractional start makes rect()'s floor/ceil
+    // expansion overlap every other column, which ripples through the band.
+    const from = Math.max(CARD.x, Math.floor(head - band)), to = Math.min(CARD.x + CARD.w, Math.ceil(head + band));
+    for (let x = from; x < to; x++) {
       const a = Math.pow(1 - Math.abs(x - head) / band, 2) * t.sheenA;
       rect(x, CARD.y, 1, CARD.h, 0, t.sheen, a);
     }
@@ -113,7 +125,7 @@ const TREATMENTS = {
 
 // ---- encode ----
 function encode(name, theme, draw) {
-  const t = THEMES[theme], out = `clips/${name}-${theme}.webm`;
+  const t = THEMES[theme], out = join(CLIPS, `${name}-${theme}.webm`);
   const ff = spawn("ffmpeg", ["-y", "-loglevel", "error",
     "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", `${SW}x${SH}`, "-r", String(FPS), "-i", "-",
     "-vf", `scale=${W}:${H}:flags=area`,
@@ -121,6 +133,10 @@ function encode(name, theme, draw) {
   ff.stderr.pipe(process.stderr);
   return new Promise((res, rej) => {
     ff.on("error", rej);
+    // ffmpeg that rejects the command line (no libvpx-vp9, a libvpx too old for -row-mt)
+    // exits before the first frame, and the write raises EPIPE. Swallow it here so the
+    // close handler gets to report the exit code, which is the part worth reading.
+    ff.stdin.on("error", () => {});
     ff.on("close", code => code === 0 ? res(out) : rej(new Error(`ffmpeg exited ${code} for ${out}`)));
     (async () => {
       for (let f = 0; f < FPS * SECONDS; f++) {
@@ -133,7 +149,7 @@ function encode(name, theme, draw) {
   });
 }
 
-mkdirSync("clips", { recursive: true });
+mkdirSync(CLIPS, { recursive: true });
 for (const [name, draw] of Object.entries(TREATMENTS))
   for (const theme of Object.keys(THEMES))
     console.log("wrote", await encode(name, theme, draw));
