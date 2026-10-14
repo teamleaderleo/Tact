@@ -136,6 +136,27 @@ Look for:
 
 Counterpoint: personality can remain excellent when it lives in typography, material, language, sound cues, illustration, or responsive details without slowing operation.
 
+
+## cmux NEXT context ring that looks like it is loading
+
+**Raw:**
+> Is it still thinking?
+
+**Observed:**
+The composer's context-usage ring (16px, 2px round-capped arc on a 28% track, starting at 12 o'clock) at 24% used. Every judge read it as a spinner. Thinning the arc changed nothing (6 ties).
+
+**Diagnosis:**
+Shape semantics. A partial arc on a track is the platform's activity-indicator shape, so a static gauge drawn that way borrows "busy" whatever its value.
+
+**Cost:**
+A permanent false busy signal next to the model picker. Users wait, or stop trusting the indicator. Hiding the ring entirely beat it.
+
+**Correction:**
+A filled wedge inside a 1px track ring (18–0 against every alternative). See [`case-studies/cmux-agent-pane-surfaces/`](case-studies/cmux-agent-pane-surfaces/).
+
+**Boundary:**
+Arcs are fine for real progress that animates toward completion, where "busy" is the truth.
+
 ## Rule
 
 Do not put something here merely because it is unfamiliar, unfashionable, dense, ugly, or opinionated.

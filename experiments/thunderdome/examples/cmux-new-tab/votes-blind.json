@@ -1,0 +1,322 @@
+[
+{
+"a": "t-current",
+"b": "t-lifted",
+"w": "b",
+"theme": "apple-light",
+"why": "Thin crisp rim on a white composer reads as figure on ground; A's gray slab plus heavy shadow is muddy.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-current",
+"w": "b",
+"theme": "apple-dark",
+"why": "Soft drop shadow lifts the dark composer off the page; A's flat fill sinks into the background.",
+"judge": "nt"
+},
+{
+"a": "t-mark-lead",
+"b": "t-current",
+"w": "a",
+"theme": "apple-light",
+"why": "Leading harness icons give every row a scan anchor, which is the familiar list convention; trailing icons crowd the timestamps.",
+"judge": "nt"
+},
+{
+"a": "t-current",
+"b": "t-mark-lead",
+"w": "b",
+"theme": "apple-dark",
+"why": "Leading harness icons anchor each row, and the right edge holds only the time.",
+"judge": "nt"
+},
+{
+"a": "t-current",
+"b": "t-no-newchat",
+"w": "b",
+"theme": "apple-light",
+"why": "Drops the redundant New chat link because the composer already starts a chat, so the row is terser.",
+"judge": "nt"
+},
+{
+"a": "t-current",
+"b": "t-no-newchat",
+"w": "b",
+"theme": "apple-dark",
+"why": "Same win: the composer is the new chat, so dropping New chat removes noise.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-current",
+"w": "a",
+"theme": "apple-light",
+"why": "Text segmented switcher is quiet and native; the radio buttons look like a web form.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-current",
+"w": "a",
+"theme": "apple-dark",
+"why": "Text segmented switcher instead of form radios.",
+"judge": "nt"
+},
+{
+"a": "t-mark-lead",
+"b": "t-lifted",
+"w": "b",
+"theme": "apple-light",
+"why": "The rimmed white composer beats the gray slab, which outweighs A's leading icons.",
+"judge": "nt"
+},
+{
+"a": "t-mark-lead",
+"b": "t-lifted",
+"w": "a",
+"theme": "apple-dark",
+"why": "Leading harness icons anchor rows; composers otherwise match.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-no-newchat",
+"w": "a",
+"theme": "apple-light",
+"why": "The rimmed white composer has clearer figure/ground than the gray shadowed slab, which outweighs dropping New chat.",
+"judge": "nt"
+},
+{
+"a": "t-no-newchat",
+"b": "t-lifted",
+"w": "a",
+"theme": "apple-dark",
+"why": "Composer has subtle depth and no redundant New chat link.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-switch-fixed",
+"w": "a",
+"theme": "apple-light",
+"why": "The rimmed white composer outweighs B's nicer segmented switcher.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-switch-fixed",
+"w": "b",
+"theme": "apple-dark",
+"why": "Shadowed composer plus segmented switcher; A is flat with form radios.",
+"judge": "nt"
+},
+{
+"a": "t-mark-lead",
+"b": "t-no-newchat",
+"w": "a",
+"theme": "apple-light",
+"why": "Leading icons anchor the list; that matters more than trimming one link.",
+"judge": "nt"
+},
+{
+"a": "t-no-newchat",
+"b": "t-mark-lead",
+"w": "b",
+"theme": "apple-dark",
+"why": "Leading icons anchor the list, which outweighs the extra New chat link.",
+"judge": "nt"
+},
+{
+"a": "t-mark-lead",
+"b": "t-switch-fixed",
+"w": "a",
+"theme": "apple-light",
+"why": "Leading icons on every row matter more than the bottom switcher style.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-mark-lead",
+"w": "b",
+"theme": "apple-dark",
+"why": "Leading icons on every row outweigh the radio switcher at the bottom.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-no-newchat",
+"w": "a",
+"theme": "apple-light",
+"why": "Segmented text switcher instead of form radios outweighs dropping New chat.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-no-newchat",
+"w": "a",
+"theme": "apple-dark",
+"why": "Segmented text switcher instead of form radios outweighs dropping New chat.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-current",
+"w": "a",
+"theme": "latte",
+"why": "White composer reads as a live input; B's gray filled field looks disabled on the light theme.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-current",
+"w": "b",
+"theme": "mocha",
+"why": "The faint lift separates the composer from the dark page, so the input is easier to find.",
+"judge": "nt"
+},
+{
+"a": "t-mark-lead",
+"b": "t-current",
+"w": "a",
+"theme": "latte",
+"why": "Leading harness icons let you scan rows by agent at the left edge.",
+"judge": "nt"
+},
+{
+"a": "t-current",
+"b": "t-mark-lead",
+"w": "b",
+"theme": "mocha",
+"why": "Leading harness icons let you scan rows by agent at the left edge.",
+"judge": "nt"
+},
+{
+"a": "t-current",
+"b": "t-no-newchat",
+"w": "a",
+"theme": "latte",
+"why": "Keeps the New chat entry visible instead of hiding a common action.",
+"judge": "nt"
+},
+{
+"a": "t-no-newchat",
+"b": "t-current",
+"w": "b",
+"theme": "mocha",
+"why": "Keeps the New chat entry visible instead of hiding a common action.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-current",
+"w": "a",
+"theme": "latte",
+"why": "The text segmented switcher is quiet; the radio circles look like form noise.",
+"judge": "nt"
+},
+{
+"a": "t-current",
+"b": "t-switch-fixed",
+"w": "b",
+"theme": "mocha",
+"why": "The text segmented switcher is quiet; the radio circles look like form noise.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-mark-lead",
+"w": "a",
+"theme": "latte",
+"why": "White composer reads as live; the gray field looks disabled, which outweighs B's leading icons.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-mark-lead",
+"w": "b",
+"theme": "mocha",
+"why": "Leading icons scan faster, and the lifted composer stands off the dark page.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-no-newchat",
+"w": "a",
+"theme": "latte",
+"why": "White live composer plus a visible New chat beats a gray field with the action dropped.",
+"judge": "nt"
+},
+{
+"a": "t-no-newchat",
+"b": "t-lifted",
+"w": "b",
+"theme": "mocha",
+"why": "Keeps New chat visible; nothing else differs.",
+"judge": "nt"
+},
+{
+"a": "t-lifted",
+"b": "t-switch-fixed",
+"w": "a",
+"theme": "latte",
+"why": "The composer you type into 50 times a day looks live; the switcher style is a minor footer detail.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-lifted",
+"w": "a",
+"theme": "mocha",
+"why": "Lifted composer and the quiet segmented switcher beat the flat field with radio noise.",
+"judge": "nt"
+},
+{
+"a": "t-no-newchat",
+"b": "t-mark-lead",
+"w": "b",
+"theme": "latte",
+"why": "Shows New chat and puts icons first for faster scanning.",
+"judge": "nt"
+},
+{
+"a": "t-mark-lead",
+"b": "t-no-newchat",
+"w": "a",
+"theme": "mocha",
+"why": "Shows New chat and puts icons first for faster scanning.",
+"judge": "nt"
+},
+{
+"a": "t-mark-lead",
+"b": "t-switch-fixed",
+"w": "a",
+"theme": "latte",
+"why": "Leading icons in the list you scan constantly matter more than the switcher style in the footer.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-mark-lead",
+"w": "b",
+"theme": "mocha",
+"why": "Leading icons in the list you scan constantly matter more than the switcher style in the footer.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-no-newchat",
+"w": "a",
+"theme": "latte",
+"why": "Keeps New chat and uses the quiet segmented switcher instead of radios.",
+"judge": "nt"
+},
+{
+"a": "t-switch-fixed",
+"b": "t-no-newchat",
+"w": "a",
+"theme": "mocha",
+"why": "Keeps New chat and uses the quiet segmented switcher instead of radios.",
+"judge": "nt"
+}
+]

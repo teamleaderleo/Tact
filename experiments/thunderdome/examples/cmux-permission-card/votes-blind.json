@@ -1,0 +1,322 @@
+[
+{
+"a": "p-no-expand",
+"b": "p-terse",
+"w": "a",
+"theme": "apple-dark",
+"why": "States the scope of the chat-wide grant; B adds a redundant Expand details button next to the disclosure triangles.",
+"judge": "perm"
+},
+{
+"a": "p-rank",
+"b": "p-all",
+"w": "a",
+"theme": "apple-dark",
+"why": "Scope note makes the chat-wide grant read as bigger, which outweighs A's extra Expand button.",
+"judge": "perm"
+},
+{
+"a": "p-terse",
+"b": "p-all",
+"w": "b",
+"theme": "apple-light",
+"why": "Allow once is primary and Allow for this chat is secondary, so weight matches consequence; A has equal black buttons plus a redundant Expand",
+"judge": "perm"
+},
+{
+"a": "p-terse",
+"b": "p-current",
+"w": "b",
+"theme": "apple-light",
+"why": "Scope note spells out what the bigger grant means; otherwise identical.",
+"judge": "perm"
+},
+{
+"a": "p-current",
+"b": "p-no-expand",
+"w": "b",
+"theme": "apple-dark",
+"why": "No redundant Expand details button; the disclosure triangles already do that.",
+"judge": "perm"
+},
+{
+"a": "p-terse",
+"b": "p-current",
+"w": "b",
+"theme": "apple-dark",
+"why": "Scope note plus Allow once as primary make the hierarchy clear.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-rank",
+"w": "b",
+"theme": "apple-light",
+"why": "Scope note explains the bigger grant, which outweighs the Expand clutter.",
+"judge": "perm"
+},
+{
+"a": "p-terse",
+"b": "p-all",
+"w": "b",
+"theme": "apple-dark",
+"why": "Primary/secondary split with no Expand button; A has equal buttons and clutter.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-no-expand",
+"w": "b",
+"theme": "apple-dark",
+"why": "Scope note is the only thing that makes the chat-wide grant look bigger, which outweighs A's button hierarchy.",
+"judge": "perm"
+},
+{
+"a": "p-current",
+"b": "p-no-expand",
+"w": "b",
+"theme": "apple-light",
+"why": "Drops the redundant Expand details button.",
+"judge": "perm"
+},
+{
+"a": "p-terse",
+"b": "p-rank",
+"w": "b",
+"theme": "apple-dark",
+"why": "Scope note and button hierarchy beat equal buttons with no explanation.",
+"judge": "perm"
+},
+{
+"a": "p-no-expand",
+"b": "p-rank",
+"w": "b",
+"theme": "apple-dark",
+"why": "Allow once as primary gets you to the safe answer faster, which outweighs the Expand clutter.",
+"judge": "perm"
+},
+{
+"a": "p-rank",
+"b": "p-terse",
+"w": "a",
+"theme": "apple-light",
+"why": "Scope note and button hierarchy; B has equal buttons and no explanation.",
+"judge": "perm"
+},
+{
+"a": "p-terse",
+"b": "p-no-expand",
+"w": "b",
+"theme": "apple-light",
+"why": "Scope note and no redundant Expand; A has neither.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-current",
+"w": "a",
+"theme": "apple-light",
+"why": "Button hierarchy, a tight card and no Expand button, which together outweigh B's note.",
+"judge": "perm"
+},
+{
+"a": "p-rank",
+"b": "p-current",
+"w": "a",
+"theme": "apple-dark",
+"why": "Allow for this chat is set back as secondary, so weight matches consequence.",
+"judge": "perm"
+},
+{
+"a": "p-rank",
+"b": "p-no-expand",
+"w": "a",
+"theme": "apple-light",
+"why": "Button hierarchy outweighs B's lack of an Expand button.",
+"judge": "perm"
+},
+{
+"a": "p-current",
+"b": "p-all",
+"w": "b",
+"theme": "apple-dark",
+"why": "Hierarchy and no Expand button beat A's note, which comes with clutter and equal buttons.",
+"judge": "perm"
+},
+{
+"a": "p-current",
+"b": "p-rank",
+"w": "b",
+"theme": "apple-light",
+"why": "Allow once primary, Allow for this chat secondary; otherwise identical.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-no-expand",
+"w": "b",
+"theme": "apple-light",
+"why": "Scope note makes the bigger grant explicit, which outweighs A's button hierarchy.",
+"judge": "perm"
+},
+{
+"a": "p-current",
+"b": "p-terse",
+"w": "a",
+"theme": "mocha",
+"why": "Keeps the scope note that says Allow for this chat covers future requests, plus the isolation status.",
+"judge": "perm"
+},
+{
+"a": "p-current",
+"b": "p-terse",
+"w": "a",
+"theme": "latte",
+"why": "Keeps the scope note that says Allow for this chat covers future requests, plus the isolation status.",
+"judge": "perm"
+},
+{
+"a": "p-no-expand",
+"b": "p-current",
+"w": "a",
+"theme": "latte",
+"why": "Drops the unstyled Expand details box, which looks broken, and duplicates the per-row disclosures.",
+"judge": "perm"
+},
+{
+"a": "p-rank",
+"b": "p-all",
+"w": "a",
+"theme": "mocha",
+"why": "Keeps the scope note and isolation status that B strips; same clear default button.",
+"judge": "perm"
+},
+{
+"a": "p-rank",
+"b": "p-current",
+"w": "b",
+"theme": "latte",
+"why": "A's pale gray Allow for this chat looks disabled and makes the bigger grant look smaller.",
+"judge": "perm"
+},
+{
+"a": "p-no-expand",
+"b": "p-rank",
+"w": "a",
+"theme": "mocha",
+"why": "No gray Expand chip that looks disabled; still has the note and status.",
+"judge": "perm"
+},
+{
+"a": "p-rank",
+"b": "p-all",
+"w": "a",
+"theme": "latte",
+"why": "Keeps the scope note and isolation status; B strips all context for the bigger grant.",
+"judge": "perm"
+},
+{
+"a": "p-terse",
+"b": "p-rank",
+"w": "b",
+"theme": "latte",
+"why": "Keeps the scope note and isolation status that explain what the chat grant means.",
+"judge": "perm"
+},
+{
+"a": "p-no-expand",
+"b": "p-terse",
+"w": "a",
+"theme": "mocha",
+"why": "Has the scope note and status and no dead-looking Expand chip.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-terse",
+"w": "a",
+"theme": "mocha",
+"why": "Clear Allow once default with no gray chip, versus two equal buttons plus a chip.",
+"judge": "perm"
+},
+{
+"a": "p-terse",
+"b": "p-rank",
+"w": "b",
+"theme": "mocha",
+"why": "Adds the scope note and status, and the dark secondary gives a clear default without looking disabled.",
+"judge": "perm"
+},
+{
+"a": "p-current",
+"b": "p-rank",
+"w": "b",
+"theme": "mocha",
+"why": "Lit Allow once and a dark-tonal chat grant give a fast default without looking disabled.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-no-expand",
+"w": "b",
+"theme": "latte",
+"why": "Scope note and status are shown, and the chat button doesn't look disabled.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-no-expand",
+"w": "b",
+"theme": "mocha",
+"why": "Shows the scope note and isolation status that A hides.",
+"judge": "perm"
+},
+{
+"a": "p-rank",
+"b": "p-no-expand",
+"w": "b",
+"theme": "latte",
+"why": "No unstyled Expand box and no pale chat button that looks disabled; same info.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-current",
+"w": "b",
+"theme": "latte",
+"why": "Keeps the scope note and status that explain the bigger grant.",
+"judge": "perm"
+},
+{
+"a": "p-current",
+"b": "p-no-expand",
+"w": "b",
+"theme": "mocha",
+"why": "Same info without the gray Expand chip that looks disabled.",
+"judge": "perm"
+},
+{
+"a": "p-no-expand",
+"b": "p-terse",
+"w": "a",
+"theme": "latte",
+"why": "Shows the scope note and status instead of an unstyled Expand box.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-current",
+"w": "b",
+"theme": "mocha",
+"why": "Scope note and status outweigh the gray chip; A hides all context.",
+"judge": "perm"
+},
+{
+"a": "p-all",
+"b": "p-terse",
+"w": "a",
+"theme": "latte",
+"why": "Neither has the note; A has a clear default and no broken-looking unstyled Expand box.",
+"judge": "perm"
+}
+]
