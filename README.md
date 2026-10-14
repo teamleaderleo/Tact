@@ -99,6 +99,7 @@ Use these as training equipment. A live product is preferred when it can answer 
 - [`notes/information-first-product-pages.md`](notes/information-first-product-pages.md) — product pages that put specifications, comparisons, diagrams, engineering explanation, useful photography, ownership facts, and credibility in the path of desire.
 - [`notes/lovable-jank-and-operational-atmosphere.md`](notes/lovable-jank-and-operational-atmosphere.md) — Dwarf Fortress, Battle Brothers, Mount & Blade, hot flows, muscle memory, thematic chrome, semantic diegesis, and repeated-use lessons for serious software.
 - [`notes/authorship-and-product-design.md`](notes/authorship-and-product-design.md) — art, authorship, product constraints, early-team ownership, personality, and expressive experiments in software.
+- [`notes/hci-from-the-easel.md`](notes/hci-from-the-easel.md) — what a painter's master-study habit carries into interaction design, the HCI levers that are new, and the manual reference loop with agent teardowns.
 
 ## Nearby work
 
