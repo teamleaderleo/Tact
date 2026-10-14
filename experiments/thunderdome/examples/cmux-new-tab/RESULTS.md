@@ -90,3 +90,11 @@ Mark leads row and Switch without radios are too close to call: 93% of resamples
 - Hide the native radios in the style switch. This is a bug: `ui-sr-only` is not loaded in the agent pane.
 - Lift the box, the same lever as the composer.
 - Keep "New chat" (3–13 when removed).
+
+## Re-judged at the tip (feat-cmux-next `738cd81fe3f7`)
+
+#20632 fixed the native radio dots. The style switch is now plain text with a small-radius fill on the selected item: no capsule and no form controls. It matches the variant that won blind (10–6).
+
+![before / after](stills-switch-before-after.png)
+
+Not yet landed: leading the chat rows with the harness mark (14–2 blind).

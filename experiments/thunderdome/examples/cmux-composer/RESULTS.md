@@ -77,3 +77,16 @@ Follow-up, same session: the theme-tinted lift (white 50% over the base) was ren
 **Decided (Leo): light composers sit lighter than the page.** op-next-theme is implementing it, so this dome confirms the decision; it does not reopen it. What the dome adds for that implementation:
 - Mix toward white at about 50% over the theme base, not 82%, so tinted light themes (Latte) stay in palette. Two of three blind judges marked a pure-white card on Latte "off-theme".
 - On pure-white pages the lift cannot come from fill, so it comes from the .5px rim plus the small two-layer shadow. Don't drop the rim there.
+
+## Re-judged at the tip (feat-cmux-next `738cd81fe3f7`, same day)
+
+Landed: #20624 (wedge ring, faint idle Send) and op-next-theme's surface token. Rendered through the same gallery path in four themes (Latte, Mocha, Apple Light, Apple Dark). The Mac was still locked, so this is the real webview code without the native window around it.
+
+![tip](stills-tip-738cd81.png)
+![ring and send at 3x](stills-tip-ring-send-zoom.png)
+
+- **Ring: holds.** The wedge reads as a gauge in all four themes. A small gap between the wedge and the track makes it read like a clock face, not a spinner.
+- **Send: holds.** The idle disk is text 9% with a text 45% arrow. Hover steps to 13%, and the ready state is the full accent disk, so the only change on typing is color, as recommended. The headless gallery won't fill drafts, so the ready state was checked from its CSS rule (`composerLocation.css:417`), not a screenshot.
+- **Surface: holds.** `--acpmux-composer-surface` is `light-dark(page 35% + white, text 7% over page)`, with `--elevation-1` (`0 1px 2px 7%`) in light and no shadow in dark. Latte now sits lighter than the page and still reads faintly tinted. The dome suggested about 50% toward white and the implementation went 65%; the difference doesn't justify a change. On Apple Light, the white card is carried by the 16% hairline as expected.
+
+Still open: a look at nightly-next on a real display. The lit window, wallpaper and glass may change how the 7% shadow and the hairline read.
