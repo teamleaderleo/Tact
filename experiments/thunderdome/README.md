@@ -43,6 +43,7 @@ experiments/thunderdome/
     cmux-composer/        the real cmux NEXT composer: surface, empty Send, context ring (three questions, blind agent judges)
     cmux-new-tab/         the New Tab page, one lever per contender
     cmux-sidebar-rows/    the native cmux NEXT sidebar, one runtime Debug tunable per question (app snapshot RPC)
+    cmux-compact-composer/ compact composer icons and collapse order; first cross-model panel (Opus, Sonnet, Sol, Astra)
     cmux-permission-card/ the agent permission card; RESULTS.md shows a blind re-run overturning the author's own vote
 ```
 
