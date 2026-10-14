@@ -40,6 +40,9 @@ experiments/thunderdome/
     cmux-empty-pane/      what a new, empty cmux pane shows: eight candidates in seven terminal themes (see RESULTS.md)
     motion/               four busy indicators as video, one clip per theme
     dialog/               one destructive dialog, three questions about it
+    cmux-composer/        the real cmux NEXT composer: surface, empty Send, context ring (three questions, blind agent judges)
+    cmux-new-tab/         the New Tab page, one lever per contender
+    cmux-permission-card/ the agent permission card; RESULTS.md shows a blind re-run overturning the author's own vote
 ```
 
 Each example folder has `config.js`, optional `config.css`, and a generated `index.html`. No dependencies and no package install. Media files sit next to the config and get inlined by the build.

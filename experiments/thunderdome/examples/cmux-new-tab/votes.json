@@ -1,0 +1,722 @@
+[
+ {
+  "a": "t-current",
+  "b": "t-lifted",
+  "w": "b",
+  "theme": "apple-light",
+  "why": "[apple] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "apple",
+  "bout": "nt-j1-01"
+ },
+ {
+  "a": "t-current",
+  "b": "t-lifted",
+  "w": "b",
+  "theme": "apple-light",
+  "why": "[user] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "user",
+  "bout": "nt-j1-01"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-current",
+  "w": "tie",
+  "theme": "apple-dark",
+  "why": "[apple] in dark the box surfaces are indistinguishable; the shipped shadow barely registers",
+  "judge": "apple",
+  "bout": "nt-j1-02"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-current",
+  "w": "tie",
+  "theme": "apple-dark",
+  "why": "[user] in dark the box surfaces are indistinguishable; the shipped shadow barely registers",
+  "judge": "user",
+  "bout": "nt-j1-02"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-current",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j1-03"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-current",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j1-03"
+ },
+ {
+  "a": "t-current",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "apple-dark",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j1-04"
+ },
+ {
+  "a": "t-current",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "apple-dark",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j1-04"
+ },
+ {
+  "a": "t-current",
+  "b": "t-no-newchat",
+  "w": "b",
+  "theme": "apple-light",
+  "why": "[apple] one less duplicate of the box; typing already starts a chat",
+  "judge": "apple",
+  "bout": "nt-j1-05"
+ },
+ {
+  "a": "t-current",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j1-05"
+ },
+ {
+  "a": "t-current",
+  "b": "t-no-newchat",
+  "w": "b",
+  "theme": "apple-dark",
+  "why": "[apple] one less duplicate of the box; typing already starts a chat",
+  "judge": "apple",
+  "bout": "nt-j1-06"
+ },
+ {
+  "a": "t-current",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-dark",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j1-06"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-current",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j1-07"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-current",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[user] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "user",
+  "bout": "nt-j1-07"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-current",
+  "w": "a",
+  "theme": "apple-dark",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j1-08"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-current",
+  "w": "a",
+  "theme": "apple-dark",
+  "why": "[user] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "user",
+  "bout": "nt-j1-08"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-lifted",
+  "w": "b",
+  "theme": "apple-light",
+  "why": "[apple] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "apple",
+  "bout": "nt-j1-09"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-lifted",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j1-09"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-lifted",
+  "w": "a",
+  "theme": "apple-dark",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j1-10"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-lifted",
+  "w": "a",
+  "theme": "apple-dark",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j1-10"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[apple] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "apple",
+  "bout": "nt-j1-11"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j1-11"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-lifted",
+  "w": "a",
+  "theme": "apple-dark",
+  "why": "[apple] one less duplicate of the box; typing already starts a chat",
+  "judge": "apple",
+  "bout": "nt-j1-12"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-lifted",
+  "w": "b",
+  "theme": "apple-dark",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j1-12"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-switch-fixed",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[apple] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "apple",
+  "bout": "nt-j1-13"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-switch-fixed",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[user] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "user",
+  "bout": "nt-j1-13"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-switch-fixed",
+  "w": "b",
+  "theme": "apple-dark",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j1-14"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-switch-fixed",
+  "w": "b",
+  "theme": "apple-dark",
+  "why": "[user] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "user",
+  "bout": "nt-j1-14"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j1-15"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j1-15"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "apple-dark",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j1-16"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "apple-dark",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j1-16"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-switch-fixed",
+  "w": "b",
+  "theme": "apple-light",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j1-17"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-switch-fixed",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j1-17"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-mark-lead",
+  "w": "a",
+  "theme": "apple-dark",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j1-18"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "apple-dark",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j1-18"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j1-19"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-light",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j1-19"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-dark",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j1-20"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "apple-dark",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j1-20"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-current",
+  "w": "a",
+  "theme": "latte",
+  "why": "[apple] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "apple",
+  "bout": "nt-j2-01"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-current",
+  "w": "a",
+  "theme": "latte",
+  "why": "[user] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "user",
+  "bout": "nt-j2-01"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-current",
+  "w": "tie",
+  "theme": "mocha",
+  "why": "[apple] in dark the box surfaces are indistinguishable; the shipped shadow barely registers",
+  "judge": "apple",
+  "bout": "nt-j2-02"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-current",
+  "w": "tie",
+  "theme": "mocha",
+  "why": "[user] in dark the box surfaces are indistinguishable; the shipped shadow barely registers",
+  "judge": "user",
+  "bout": "nt-j2-02"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-current",
+  "w": "a",
+  "theme": "latte",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j2-03"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-current",
+  "w": "a",
+  "theme": "latte",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j2-03"
+ },
+ {
+  "a": "t-current",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "mocha",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j2-04"
+ },
+ {
+  "a": "t-current",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "mocha",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j2-04"
+ },
+ {
+  "a": "t-current",
+  "b": "t-no-newchat",
+  "w": "b",
+  "theme": "latte",
+  "why": "[apple] one less duplicate of the box; typing already starts a chat",
+  "judge": "apple",
+  "bout": "nt-j2-05"
+ },
+ {
+  "a": "t-current",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "latte",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j2-05"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-current",
+  "w": "a",
+  "theme": "mocha",
+  "why": "[apple] one less duplicate of the box; typing already starts a chat",
+  "judge": "apple",
+  "bout": "nt-j2-06"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-current",
+  "w": "b",
+  "theme": "mocha",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j2-06"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-current",
+  "w": "a",
+  "theme": "latte",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j2-07"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-current",
+  "w": "a",
+  "theme": "latte",
+  "why": "[user] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "user",
+  "bout": "nt-j2-07"
+ },
+ {
+  "a": "t-current",
+  "b": "t-switch-fixed",
+  "w": "b",
+  "theme": "mocha",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j2-08"
+ },
+ {
+  "a": "t-current",
+  "b": "t-switch-fixed",
+  "w": "b",
+  "theme": "mocha",
+  "why": "[user] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "user",
+  "bout": "nt-j2-08"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-mark-lead",
+  "w": "a",
+  "theme": "latte",
+  "why": "[apple] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "apple",
+  "bout": "nt-j2-09"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "latte",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j2-09"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "mocha",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j2-10"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "mocha",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j2-10"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "latte",
+  "why": "[apple] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "apple",
+  "bout": "nt-j2-11"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "latte",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j2-11"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-lifted",
+  "w": "a",
+  "theme": "mocha",
+  "why": "[apple] one less duplicate of the box; typing already starts a chat",
+  "judge": "apple",
+  "bout": "nt-j2-12"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-lifted",
+  "w": "b",
+  "theme": "mocha",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j2-12"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-switch-fixed",
+  "w": "a",
+  "theme": "latte",
+  "why": "[apple] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "apple",
+  "bout": "nt-j2-13"
+ },
+ {
+  "a": "t-lifted",
+  "b": "t-switch-fixed",
+  "w": "a",
+  "theme": "latte",
+  "why": "[user] the box reads as paper to type on; the shipped grey slab plus 32px blur reads as a disabled field",
+  "judge": "user",
+  "bout": "nt-j2-13"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-lifted",
+  "w": "a",
+  "theme": "mocha",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j2-14"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-lifted",
+  "w": "a",
+  "theme": "mocha",
+  "why": "[user] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "user",
+  "bout": "nt-j2-14"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "latte",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j2-15"
+ },
+ {
+  "a": "t-no-newchat",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "latte",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j2-15"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "mocha",
+  "why": "[apple] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "apple",
+  "bout": "nt-j2-16"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "mocha",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j2-16"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-switch-fixed",
+  "w": "b",
+  "theme": "latte",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j2-17"
+ },
+ {
+  "a": "t-mark-lead",
+  "b": "t-switch-fixed",
+  "w": "a",
+  "theme": "latte",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j2-17"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-mark-lead",
+  "w": "a",
+  "theme": "mocha",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j2-18"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-mark-lead",
+  "w": "b",
+  "theme": "mocha",
+  "why": "[user] the harness mark next to the title gives each row a scannable left edge; shipped makes the eye cross 1300px to learn which agent",
+  "judge": "user",
+  "bout": "nt-j2-18"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "latte",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j2-19"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "latte",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j2-19"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "mocha",
+  "why": "[apple] native radio circles in the style switch look like a web form leaking into the chrome",
+  "judge": "apple",
+  "bout": "nt-j2-20"
+ },
+ {
+  "a": "t-switch-fixed",
+  "b": "t-no-newchat",
+  "w": "a",
+  "theme": "mocha",
+  "why": "[user] dropping New chat removes the only no-typing way to open an empty chat; the redundancy is cheap",
+  "judge": "user",
+  "bout": "nt-j2-20"
+ }
+]

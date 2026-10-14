@@ -1,0 +1,1322 @@
+[
+{
+"a": "s-current",
+"b": "s-well-noshadow",
+"w": "a",
+"q": "surface",
+"theme": "apple-light",
+"why": "Both use a grey fill darker than the page; A's soft shadow at least lifts the card off the page, while B sits flat like a disabled well.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-current",
+"w": "tie",
+"q": "surface",
+"theme": "apple-dark",
+"why": "Dark variants are indistinguishable at this resolution: same raised fill and hairline rim.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "s-flat-rim",
+"b": "s-current",
+"w": "a",
+"q": "surface",
+"theme": "apple-light",
+"why": "A's white fill sits at or above the page with a crisp rim; B's grey fill sinks below the page and reads as an inactive field.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-flat-rim",
+"b": "s-current",
+"w": "b",
+"q": "surface",
+"theme": "apple-dark",
+"why": "B's fill is a tonal step lighter than the page, so it reads as a figure; A matches the page and is only a rim outline.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "s-lifted",
+"b": "s-current",
+"w": "a",
+"q": "surface",
+"theme": "apple-light",
+"why": "A keeps a white field on a white page with a rim; B's grey fill reads disabled and darker than the page.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-current",
+"b": "s-lifted",
+"w": "b",
+"q": "surface",
+"theme": "apple-dark",
+"why": "B's rim is thinner and quieter at the same raised fill; A's brighter, heavier rim looks like a focus outline that is always on.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-soft-float",
+"b": "s-current",
+"w": "a",
+"q": "surface",
+"theme": "apple-light",
+"why": "A is the native recipe: white card, near-invisible hairline, faint ambient shadow. B's grey slab reads as a sunken, disabled area.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "s-current",
+"b": "s-soft-float",
+"w": "tie",
+"q": "surface",
+"theme": "apple-dark",
+"why": "No perceptible difference in fill, rim or shadow between the dark variants.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-flat-rim",
+"b": "s-well-noshadow",
+"w": "a",
+"q": "surface",
+"theme": "apple-light",
+"why": "White fill keeps the type field the lightest surface; B's grey fill inverts figure/ground on a light page.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "apple-dark",
+"why": "A's raised fill separates the card from the page; B's fill equals the page, so the card is just a stroked hole.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "s-lifted",
+"b": "s-well-noshadow",
+"w": "a",
+"q": "surface",
+"theme": "apple-light",
+"why": "A's white field with a subtle lift beats B's grey fill, which reads as a disabled input.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-lifted",
+"w": "a",
+"q": "surface",
+"theme": "apple-dark",
+"why": "A's thin rim crisply defines the raised card; B drops the rim, so the edge dissolves into the dark page.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "s-soft-float",
+"b": "s-well-noshadow",
+"w": "a",
+"q": "surface",
+"theme": "apple-light",
+"why": "A pairs a white fill with a hairline and gentle shadow; B's grey fill plus heavy rim feels sunken and heavy.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-soft-float",
+"w": "tie",
+"q": "surface",
+"theme": "apple-dark",
+"why": "The dark variants differ imperceptibly; both have the same raised fill and rim.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-lifted",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "apple-light",
+"why": "Both are white with a rim, but A's faint shadow gives subtle depth that B's flat outline lacks.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-lifted",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "apple-dark",
+"why": "A's fill is lifted a tonal step above the dark page; B's fill matches the page and reads as an empty outline.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-flat-rim",
+"b": "s-soft-float",
+"w": "b",
+"q": "surface",
+"theme": "apple-light",
+"why": "B lifts the white card with a soft ambient shadow and barely-there rim, the familiar Claude/ChatGPT desktop depth; A is a flat outlined box.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "s-flat-rim",
+"b": "s-soft-float",
+"w": "b",
+"q": "surface",
+"theme": "apple-dark",
+"why": "B separates by a raised tonal fill, the way dark macOS surfaces are layered; A's page-colored fill with a rim reads as a cutout.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "s-soft-float",
+"b": "s-lifted",
+"w": "a",
+"q": "surface",
+"theme": "apple-light",
+"why": "A uses a lighter rim plus subtle shadow; B's darker, heavier stroke with no depth looks like a form-field outline.",
+"judge": "j1",
+"state": "focused"
+},
+{
+"a": "s-soft-float",
+"b": "s-lifted",
+"w": "b",
+"q": "surface",
+"theme": "apple-dark",
+"why": "B adds a faint hairline that crisps the raised card's edge; A's rimless edge goes soft against the page.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-ghost",
+"b": "n-current",
+"w": "b",
+"q": "send",
+"theme": "apple-light",
+"why": "A muted filled disc is the familiar empty-draft Send and keeps a stable target; A's bare arrow looks like a stray toolbar glyph.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-ghost",
+"b": "n-current",
+"w": "b",
+"q": "send",
+"theme": "apple-dark",
+"why": "The filled disc keeps the Send affordance anchored; A's naked arrow loses its button silhouette and blends with the mic.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-current",
+"w": "b",
+"q": "send",
+"theme": "apple-light",
+"why": "The muted filled disc matches the Codex/Claude convention; A's outline ring reads as a hollow secondary button and adds a second rim.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-current",
+"w": "b",
+"q": "send",
+"theme": "apple-dark",
+"why": "The filled tonal disc reads as dormant Send; A's stroked circle looks like an unrelated outline control.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-faint",
+"b": "n-current",
+"w": "a",
+"q": "send",
+"theme": "apple-light",
+"why": "A's pale disc with a grey arrow clearly reads as disabled; B's mid-grey disc with a white arrow looks armed even though the draft is empty.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-current",
+"b": "n-faint",
+"w": "b",
+"q": "send",
+"theme": "apple-dark",
+"why": "B's dimmer disc correctly signals nothing to send; A's brighter disc with a dark arrow reads as enabled.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-ghost",
+"w": "a",
+"q": "send",
+"theme": "apple-light",
+"why": "The outline ring keeps Send's circular footprint so it does not jump shape when enabled; B's bare arrow loses the button.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-ghost",
+"b": "n-outline",
+"w": "b",
+"q": "send",
+"theme": "apple-dark",
+"why": "The ring preserves the Send target and silhouette; A's naked arrow reads as an icon, not a button.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-ghost",
+"b": "n-faint",
+"w": "b",
+"q": "send",
+"theme": "apple-light",
+"why": "B's pale tonal disc is the clearest familiar disabled Send; A's bare arrow has no button form.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-faint",
+"b": "n-ghost",
+"w": "a",
+"q": "send",
+"theme": "apple-dark",
+"why": "A's dim disc reads as dormant Send while keeping its shape; B's bare arrow drops the affordance.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-faint",
+"b": "n-outline",
+"w": "a",
+"q": "send",
+"theme": "apple-light",
+"why": "A's pale filled disc reads as disabled with no extra stroke; B's outline ring adds visual noise and looks like a secondary button.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-faint",
+"w": "b",
+"q": "send",
+"theme": "apple-dark",
+"why": "B's low-contrast filled disc reads as calm and disabled; A's stroked ring draws more attention than an inactive control should.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-thin",
+"b": "r-current",
+"w": "tie",
+"q": "ring",
+"theme": "apple-light",
+"why": "Both are thin partial arcs on a track, and both read as a loading spinner rather than a 24% gauge; neither wins.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-thin",
+"b": "r-current",
+"w": "tie",
+"q": "ring",
+"theme": "apple-dark",
+"why": "Both are near-identical thin arcs that look like activity spinners, not a context gauge.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-current",
+"b": "r-pie",
+"w": "b",
+"q": "ring",
+"theme": "apple-light",
+"why": "B's filled pie wedge reads unambiguously as a quantity gauge; A's open arc reads as something loading.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-current",
+"w": "a",
+"q": "ring",
+"theme": "apple-dark",
+"why": "A's pie wedge reads as 'a quarter used'; B's thin arc reads as an indeterminate spinner.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-current",
+"b": "r-hidden",
+"w": "b",
+"q": "ring",
+"theme": "apple-light",
+"why": "Hiding beats a spinner look-alike: A's arc implies activity at idle, while B stays calm.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-hidden",
+"b": "r-current",
+"w": "a",
+"q": "ring",
+"theme": "apple-dark",
+"why": "Hidden is calmer than B's arc, which reads as a perpetual loading indicator beside the model name.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-thin",
+"w": "a",
+"q": "ring",
+"theme": "apple-light",
+"why": "A's pie wedge reads as a static gauge; B's arc looks like it is spinning.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-thin",
+"b": "r-pie",
+"w": "b",
+"q": "ring",
+"theme": "apple-dark",
+"why": "B's pie communicates fill level at a glance; A's arc is mistakable for a loading spinner.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-hidden",
+"b": "r-thin",
+"w": "a",
+"q": "ring",
+"theme": "apple-light",
+"why": "Hiding avoids B's arc, which falsely signals that something is loading.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-thin",
+"b": "r-hidden",
+"w": "b",
+"q": "ring",
+"theme": "apple-dark",
+"why": "Hiding avoids A's spinner-like arc, which reads as busy state at idle.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-hidden",
+"w": "a",
+"q": "ring",
+"theme": "apple-light",
+"why": "The pie wedge reads correctly as a gauge and gives useful context at no calm cost; hiding throws the information away.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "r-hidden",
+"b": "r-pie",
+"w": "b",
+"q": "ring",
+"theme": "apple-dark",
+"why": "The pie wedge is legible as context used without implying activity; it is worth keeping over hiding.",
+"judge": "j1",
+"state": "idle"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-current",
+"w": "b",
+"q": "surface",
+"theme": "latte",
+"why": "Same tinted fill and rim; B's soft drop shadow lifts the card off the light page so I find the input faster.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-current",
+"b": "s-well-noshadow",
+"w": "tie",
+"q": "surface",
+"theme": "mocha",
+"why": "The shadow is invisible on Mocha, so the two cards render identically.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-flat-rim",
+"b": "s-current",
+"w": "b",
+"q": "surface",
+"theme": "latte",
+"why": "A has no fill, so the card dissolves into the page; B's tinted fill and shadow mark the input zone.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-flat-rim",
+"b": "s-current",
+"w": "b",
+"q": "surface",
+"theme": "mocha",
+"why": "A's unfilled card matches the background and reads as an outline; B's Surface0 tint makes it the obvious place to type.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-current",
+"b": "s-lifted",
+"w": "a",
+"q": "surface",
+"theme": "latte",
+"why": "B's pure-white card is generic corporate chat; A's Latte-tinted fill with a shadow stays in the theme and still separates.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-current",
+"b": "s-lifted",
+"w": "tie",
+"q": "surface",
+"theme": "mocha",
+"why": "The differences in fill and width are imperceptible.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-soft-float",
+"b": "s-current",
+"w": "b",
+"q": "surface",
+"theme": "latte",
+"why": "A's bright white card breaks the Latte palette; B's tinted fill with a rim belongs to the terminal theme.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-soft-float",
+"b": "s-current",
+"w": "tie",
+"q": "surface",
+"theme": "mocha",
+"why": "Visually identical; any shadow is lost on the dark base.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-flat-rim",
+"b": "s-well-noshadow",
+"w": "b",
+"q": "surface",
+"theme": "latte",
+"why": "A is only a rim around page-colored space; B's tinted fill makes the input instantly locatable.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "mocha",
+"why": "B has no fill and a faint rim, so the composer nearly vanishes on Mocha; A's tinted fill holds the eye.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-lifted",
+"w": "a",
+"q": "surface",
+"theme": "latte",
+"why": "B's white card with a shadow is off-theme beige-corporate; A's tinted fill with a rim is themed and calm.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-lifted",
+"b": "s-well-noshadow",
+"w": "b",
+"q": "surface",
+"theme": "mocha",
+"why": "Both tinted; B's slightly crisper rim defines the edge without extra noise.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-soft-float",
+"b": "s-well-noshadow",
+"w": "b",
+"q": "surface",
+"theme": "latte",
+"why": "A is a floating white card with a heavy shadow that ignores the theme; B's tinted fill with a hairline rim is quieter and themed.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-soft-float",
+"b": "s-well-noshadow",
+"w": "b",
+"q": "surface",
+"theme": "mocha",
+"why": "Same tint; B's hairline rim gives a definite edge, while A's edge depends on low fill contrast alone.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-flat-rim",
+"b": "s-lifted",
+"w": "a",
+"q": "surface",
+"theme": "latte",
+"why": "B's white fill is off-palette; A's rim is enough to locate the input and stays in theme with less glare.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-flat-rim",
+"b": "s-lifted",
+"w": "b",
+"q": "surface",
+"theme": "mocha",
+"why": "A's unfilled card is just a stroke on the base; B's raised Surface0 fill is easier to find among ten panes.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "s-soft-float",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "latte",
+"why": "B has no fill and a faint rim, so the input almost disappears; A's white card at least is findable instantly.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-soft-float",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "mocha",
+"why": "B's unfilled faint-rim card blends into the background; A's tinted fill marks the input.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-soft-float",
+"b": "s-lifted",
+"w": "tie",
+"q": "surface",
+"theme": "latte",
+"why": "Both are the same white shadowed card; no meaningful difference.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-lifted",
+"b": "s-soft-float",
+"w": "tie",
+"q": "surface",
+"theme": "mocha",
+"why": "Both are tinted with a rim; the small size difference does not matter.",
+"judge": "j2",
+"state": "focused"
+},
+{
+"a": "n-ghost",
+"b": "n-current",
+"w": "a",
+"q": "send",
+"theme": "latte",
+"why": "With an empty draft, A's bare dim arrow is quiet; B's solid grey disc is a heavy blob that looks disabled.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-ghost",
+"b": "n-current",
+"w": "a",
+"q": "send",
+"theme": "mocha",
+"why": "B's filled disc shouts for attention with nothing to send; A's bare arrow is low-noise and clearly dormant.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-current",
+"w": "a",
+"q": "send",
+"theme": "latte",
+"why": "A's thin outline keeps the target shape at low weight; B's solid grey disc is a dead greyed-out button.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-current",
+"w": "a",
+"q": "send",
+"theme": "mocha",
+"why": "The outline is lighter than B's filled disc, which reads as a big disabled control.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-current",
+"b": "n-faint",
+"w": "b",
+"q": "send",
+"theme": "latte",
+"why": "B's faint disc whispers 'nothing to send yet'; A's solid grey disc is visually loud for an idle state.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-faint",
+"b": "n-current",
+"w": "a",
+"q": "send",
+"theme": "mocha",
+"why": "A's barely-there disc is dormant but locatable; B's brighter disc looks ready to send an empty draft.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-ghost",
+"b": "n-outline",
+"w": "a",
+"q": "send",
+"theme": "latte",
+"why": "A's bare arrow is the least noise; B's outlined circle echoes the context ring beside the model name and adds a second hollow circle.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-ghost",
+"b": "n-outline",
+"w": "a",
+"q": "send",
+"theme": "mocha",
+"why": "B's outline ring adds a stroke that carries no state; A's bare arrow is enough.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-ghost",
+"b": "n-faint",
+"w": "a",
+"q": "send",
+"theme": "latte",
+"why": "A's bare arrow is quieter than B's faint disc and is still clearly the send spot.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-faint",
+"b": "n-ghost",
+"w": "b",
+"q": "send",
+"theme": "mocha",
+"why": "B's bare arrow is the lowest-noise idle state; A's tinted disc adds a shape that means nothing yet.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-faint",
+"w": "b",
+"q": "send",
+"theme": "latte",
+"why": "A's outline circle rhymes with the spinner-like context ring; B's faint filled disc is a distinct, quiet button.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "n-faint",
+"b": "n-outline",
+"w": "a",
+"q": "send",
+"theme": "mocha",
+"why": "B's hollow outline looks like a second loading ring; A's faint disc reads as an idle button.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-thin",
+"b": "r-current",
+"w": "tie",
+"q": "ring",
+"theme": "latte",
+"why": "Both are open arcs on a track that look like a loading spinner; stroke weight barely changes that.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-current",
+"b": "r-thin",
+"w": "tie",
+"q": "ring",
+"theme": "mocha",
+"why": "Both arcs read as spinners on Mocha; neither says 24% used.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-current",
+"w": "a",
+"q": "ring",
+"theme": "latte",
+"why": "A's filled pie wedge in a circle reads as a gauge; B's open arc looks like something is loading.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-current",
+"w": "a",
+"q": "ring",
+"theme": "mocha",
+"why": "A's pie wedge is unmistakably a fill level; B's partial arc makes me think the agent is busy.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-current",
+"b": "r-hidden",
+"w": "b",
+"q": "ring",
+"theme": "latte",
+"why": "A's arc looks like a spinner, so I'd think the chat is busy; hiding the low 24% value removes false state.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-hidden",
+"b": "r-current",
+"w": "a",
+"q": "ring",
+"theme": "mocha",
+"why": "B's arc reads as loading next to an idle composer; A hides it and removes the false busy signal.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-thin",
+"b": "r-pie",
+"w": "b",
+"q": "ring",
+"theme": "latte",
+"why": "B's pie wedge reads as a gauge; A's arc reads as a spinner.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-thin",
+"w": "a",
+"q": "ring",
+"theme": "mocha",
+"why": "A's pie is a static fill level; B's thin open arc looks mid-spin.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-thin",
+"b": "r-hidden",
+"w": "b",
+"q": "ring",
+"theme": "latte",
+"why": "A's spinner-like arc suggests work in progress; hiding it at 24% is calmer and honest.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-hidden",
+"b": "r-thin",
+"w": "a",
+"q": "ring",
+"theme": "mocha",
+"why": "The hidden indicator beats an arc that mimics a loading spinner.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-hidden",
+"w": "a",
+"q": "ring",
+"theme": "latte",
+"why": "A's pie carries real state without looking like loading, so it earns its spot over hiding.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "r-hidden",
+"b": "r-pie",
+"w": "b",
+"q": "ring",
+"theme": "mocha",
+"why": "B's pie gauge gives the context level at a glance and doesn't read as busy; worth keeping over hiding.",
+"judge": "j2",
+"state": "idle"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-current",
+"w": "b",
+"q": "surface",
+"theme": "gh-light",
+"why": "Soft shadow lifts the filled card off the page; A's flat gray slab sits in the page rather than on it",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-current",
+"w": "tie",
+"q": "surface",
+"theme": "tokyo",
+"why": "Dark variants are indistinguishable at real size; any shadow is swallowed by the dark page",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-flat-rim",
+"b": "s-current",
+"w": "b",
+"q": "surface",
+"theme": "gh-light",
+"why": "Gray fill plus shadow makes the input an obvious object; A is a white card on white held only by a hairline",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-current",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "tokyo",
+"why": "Raised fill plus a brighter rim says 'field here'; B is an outline on page color and reads as a frame, not an input",
+"judge": "j3",
+"state": "focused"
+},
+{
+"a": "s-lifted",
+"b": "s-current",
+"w": "b",
+"q": "surface",
+"theme": "gh-light",
+"why": "Tinted fill separates the input from the white page; A's white-on-white leans entirely on the rim",
+"judge": "j3",
+"state": "focused"
+},
+{
+"a": "s-current",
+"b": "s-lifted",
+"w": "tie",
+"q": "surface",
+"theme": "tokyo",
+"why": "Rim/shadow delta isn't visible at real size on dark",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-current",
+"b": "s-soft-float",
+"w": "a",
+"q": "surface",
+"theme": "gh-light",
+"why": "Fill + rim + shadow gives clear presence; B is white-on-white with only a rim",
+"judge": "j3",
+"state": "focused"
+},
+{
+"a": "s-soft-float",
+"b": "s-current",
+"w": "tie",
+"q": "surface",
+"theme": "tokyo",
+"why": "No perceptible difference between the focused dark cards",
+"judge": "j3",
+"state": "focused"
+},
+{
+"a": "s-flat-rim",
+"b": "s-well-noshadow",
+"w": "b",
+"q": "surface",
+"theme": "gh-light",
+"why": "Gray fill defines the input area; A's faint hairline on white nearly dissolves (low edge contrast)",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "tokyo",
+"why": "Filled card reads as an input surface; B is just an outline on the page with no field affordance",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-lifted",
+"w": "a",
+"q": "surface",
+"theme": "gh-light",
+"why": "Flat gray fill has a solid, legible boundary; B relies on a whisper shadow and a nearly invisible rim",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-lifted",
+"w": "tie",
+"q": "surface",
+"theme": "tokyo",
+"why": "Rim weight difference too small to see at real size",
+"judge": "j3",
+"state": "focused"
+},
+{
+"a": "s-well-noshadow",
+"b": "s-soft-float",
+"w": "a",
+"q": "surface",
+"theme": "gh-light",
+"why": "Gray fill gives an unmistakable field; B's white card with diffuse shadow has a mushy, low-contrast edge",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-soft-float",
+"b": "s-well-noshadow",
+"w": "tie",
+"q": "surface",
+"theme": "tokyo",
+"why": "Identical at real size",
+"judge": "j3",
+"state": "focused"
+},
+{
+"a": "s-lifted",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "gh-light",
+"why": "Added soft shadow lifts the white card slightly over a rim-only twin; small but visible gain in presence",
+"judge": "j3",
+"state": "focused"
+},
+{
+"a": "s-lifted",
+"b": "s-flat-rim",
+"w": "a",
+"q": "surface",
+"theme": "tokyo",
+"why": "Filled surface over outline-only; B's interior is the page, so the input feels absent",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-flat-rim",
+"b": "s-soft-float",
+"w": "a",
+"q": "surface",
+"theme": "gh-light",
+"why": "Crisp rim gives a defined edge; B's shadow-only edge is too faint to locate the field reliably",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-flat-rim",
+"b": "s-soft-float",
+"w": "b",
+"q": "surface",
+"theme": "tokyo",
+"why": "Filled card reads as a place to type; A is a hollow outline on the dark page",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-soft-float",
+"b": "s-lifted",
+"w": "b",
+"q": "surface",
+"theme": "gh-light",
+"why": "Rim plus shadow gives a defined edge; A's shadow-only white card has a soft, ambiguous boundary",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "s-soft-float",
+"b": "s-lifted",
+"w": "tie",
+"q": "surface",
+"theme": "tokyo",
+"why": "Rim difference is imperceptible on dark",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-current",
+"b": "n-ghost",
+"w": "a",
+"q": "send",
+"theme": "gh-light",
+"why": "Disc keeps the submit target visible when empty; B's bare faint arrow loses the button and its hit area",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-current",
+"b": "n-ghost",
+"w": "a",
+"q": "send",
+"theme": "tokyo",
+"why": "Disc marks where to submit; B's lone gray arrow reads as decoration",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-current",
+"w": "b",
+"q": "send",
+"theme": "gh-light",
+"why": "Filled disc keeps the same shape as the enabled button so only the color changes on enable; the outline adds a different form",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-current",
+"w": "b",
+"q": "send",
+"theme": "tokyo",
+"why": "Filled disc is a stronger target with the same silhouette as enabled; the outline ring is thin and reads like a different control",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-faint",
+"b": "n-current",
+"w": "a",
+"q": "send",
+"theme": "gh-light",
+"why": "Pale disc with gray arrow reads 'disabled, but here'; B's mid-gray disc with low-contrast white arrow looks half-enabled",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-current",
+"b": "n-faint",
+"w": "b",
+"q": "send",
+"theme": "tokyo",
+"why": "Dimmer disc clearly reads disabled yet present; A's brighter disc is easy to mistake for ready-to-send",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-ghost",
+"w": "a",
+"q": "send",
+"theme": "gh-light",
+"why": "Outline ring preserves target and hit area; B's bare arrow loses the button",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-ghost",
+"w": "a",
+"q": "send",
+"theme": "tokyo",
+"why": "Outline keeps the submit location visible; the bare arrow nearly vanishes on dark",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-faint",
+"b": "n-ghost",
+"w": "a",
+"q": "send",
+"theme": "gh-light",
+"why": "Pale disc still says 'button here'; B's bare arrow drops the affordance",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-ghost",
+"b": "n-faint",
+"w": "b",
+"q": "send",
+"theme": "tokyo",
+"why": "Dim disc locates submit; A's bare arrow is just a glyph",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-outline",
+"b": "n-faint",
+"w": "b",
+"q": "send",
+"theme": "gh-light",
+"why": "Pale filled disc matches the enabled silhouette and reads disabled cleanly; the outline adds line noise",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "n-faint",
+"b": "n-outline",
+"w": "a",
+"q": "send",
+"theme": "tokyo",
+"why": "Dim filled disc with the same silhouette as enabled; B's outline ring is a different form",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-current",
+"b": "r-thin",
+"w": "tie",
+"q": "ring",
+"theme": "gh-light",
+"why": "Both are arc-on-track rings that read as spinners; stroke and contrast differences are negligible at real size",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-thin",
+"b": "r-current",
+"w": "tie",
+"q": "ring",
+"theme": "tokyo",
+"why": "Both arcs read as loading spinners; the weight difference doesn't change meaning",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-current",
+"b": "r-pie",
+"w": "b",
+"q": "ring",
+"theme": "gh-light",
+"why": "Pie wedge reads as a static fill gauge; A's partial arc is the universal loading-spinner shape",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-current",
+"w": "a",
+"q": "ring",
+"theme": "tokyo",
+"why": "Pie wedge reads as a quantity; B's arc looks like something is loading",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-current",
+"b": "r-hidden",
+"w": "b",
+"q": "ring",
+"theme": "gh-light",
+"why": "A spinner-looking arc signals a false busy state; at 24% hiding costs little, while a lying indicator costs trust",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-current",
+"b": "r-hidden",
+"w": "b",
+"q": "ring",
+"theme": "tokyo",
+"why": "Hiding beats a permanent fake spinner; low-urgency info at 24% isn't worth the misread",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-thin",
+"w": "a",
+"q": "ring",
+"theme": "gh-light",
+"why": "Pie fill is an unambiguous gauge; B's arc reads as a spinner",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-thin",
+"w": "a",
+"q": "ring",
+"theme": "tokyo",
+"why": "Pie wedge communicates usage; the arc reads as loading",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-hidden",
+"b": "r-thin",
+"w": "a",
+"q": "ring",
+"theme": "gh-light",
+"why": "No indicator beats a spinner-shaped one that implies ongoing work",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-hidden",
+"b": "r-thin",
+"w": "a",
+"q": "ring",
+"theme": "tokyo",
+"why": "Hidden beats a misleading loading arc on dark",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-hidden",
+"w": "a",
+"q": "ring",
+"theme": "gh-light",
+"why": "Pie gauge conveys context use without misreading; hiding throws away useful info that the pie shows honestly",
+"judge": "j3",
+"state": "idle"
+},
+{
+"a": "r-pie",
+"b": "r-hidden",
+"w": "a",
+"q": "ring",
+"theme": "tokyo",
+"why": "Pie gauge gives real information with no 'loading' misread; hiding costs the user the context read",
+"judge": "j3",
+"state": "idle"
+}
+]
