@@ -1,0 +1,30 @@
+{
+ "q1-access": {
+  "A": "lockopen",
+  "B": "current",
+  "C": "shieldcheck",
+  "D": "shield",
+  "E": "handbolt"
+ },
+ "q2-effort": {
+  "A": "current",
+  "B": "meter",
+  "C": "abbr",
+  "D": "merged"
+ },
+ "q3-model": {
+  "A": "current",
+  "B": "nochev",
+  "C": "mark",
+  "D": "family"
+ },
+ "q4-stop": {
+  "A": "ring",
+  "B": "solid",
+  "C": "current"
+ },
+ "q5-compact-logic": {
+  "A": "current",
+  "B": "proposal"
+ }
+}

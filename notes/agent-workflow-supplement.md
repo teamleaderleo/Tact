@@ -57,3 +57,61 @@ On cosmic-gray with the screen locked, the native AppKit sidebar still renders t
 ## 9. Keep the machinery reusable
 
 Keep `shoot.sh`, `sheet.py`, the vote converter and the injection frame next to the work (`~/Projects/design-judge/` on cosmic-gray), so the next round starts from a surface choice and not from tooling.
+
+## 10. Cross-model panel: one blind panel per Thunderdome
+
+From the compact-composer round (2026-10-14) on, the judges are several vision models, not several lenses of one model. Different model families miss different things. Agreement across families is the signal worth routing. A split is the signal worth showing Leo.
+
+**The panel.** Each judge has a reasoning level picked for vision and design critique, with the reason written down:
+
+| Judge | Level | Why |
+|---|---|---|
+| Claude Opus 5.5 | high | The strongest Claude at multi-image reasoning. Above high it spends its budget on prose, not on more looking. |
+| Claude Sonnet 5.5 | high | A second Claude with different priors (it votes conventions harder). Low effort skims boards. |
+| GPT-6.1 Sol | high | Benchmarks put its sweet spot at high. LMArena Vision is roughly tied with Astra. |
+| GPT-6 Astra | xhigh | The stronger multimodal model (OSWorld 2.0 72.6%). Codex capacity is plentiful, so it gets the extra budget. |
+
+**Same input for everyone.** Every judge gets:
+
+- the same blind boards, with contender letters shuffled per question and the key outside the panel folder;
+- the same references;
+- one fixed rubric: clarity of meaning, consistency, density, theme fit, Apple-level polish, references.
+
+Each judge answers in a fixed order: a numbered list of every issue it sees, then scores, then a winner with the mechanism, then one JSON block. The OpenAI judges are told outright that they are weighted as issue-finders. Codex models are good at finding problems, and that capacity would otherwise go unused.
+
+**Routing.** Use sr for everything, with no plain logins.
+
+- Claude judges: `acpmux run -m claude-sr/<model> -e <level> --policy approve-reads --ephemeral`.
+- OpenAI judges: on cosmic-gray (10-14), acpmux's codex-acp harness fails with "Authentication required" because it doesn't inherit sr. Use `sr codex exec -m <model> -c model_reasoning_effort=<level> -s read-only -i <every board>` instead. Attaching the boards with `-i` is better anyway, because the judge can't skip one.
+
+**Merging.**
+
+- Where all judges pick the same winner, it's high confidence: route it.
+- Where they split, give Leo the strongest argument from each side, not a vote count.
+- Issues raised by two or more families go into the verdict. A single-judge issue goes in only if you can see it yourself.
+
+**Check claims against the fixture before routing them.** Judges report what's in the frame. In the compact round, two judges flagged "effort and access chips vanish while a turn runs". That was a gallery fixture without `composerControls`, not the product.
+
+### Motion: give judges frames, not a video
+
+Vision models judge stills. For motion items (focus, hover cards, folds, New Tab, minimap, per-PR clips), turn each clip into:
+
+- a strip at a fixed interval (50–100 ms), every frame labelled with its timestamp and its diff from the previous frame;
+- first, middle and last frames at full size;
+- a frame-diff heatmap over the last frame. Anything hot outside the element that should move is jank.
+- `timing.json`: duration, the motion window, moving frames, and hitches (still frames inside the motion window).
+
+The tool is `motion.py clip outdir [step_ms]` in `~/Projects/design-judge/` (ffmpeg + Pillow). Timestamps come from the clip's own frame timestamps, never from an assumed frame rate.
+
+### Capture hygiene the panel forced
+
+Four headless Chromes against `python -m http.server` dropped module fetches. The default listen backlog is 5. The result was a quiet grey error page that looked like a frame. Two fixes:
+
+- Serve with a larger backlog.
+- Have the shooter reject blank, grey-error and low-contrast frames and retry them, with longer virtual time each try (`badshot.py`).
+
+Look at every contact sheet before the panel sees it. This round, that one look caught:
+
+- a clipped "Me" label from a CSS variable that didn't resolve;
+- a dropped-in duplicate contender (the accent token equals the text colour in these themes);
+- a menu caught mid-fade.

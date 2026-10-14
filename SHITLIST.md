@@ -157,6 +157,26 @@ A filled wedge inside a 1px track ring (18–0 against every alternative). See [
 **Boundary:**
 Arcs are fine for real progress that animates toward completion, where "busy" is the truth.
 
+## cmux NEXT closed padlock on "Full access"
+
+**Raw:**
+> Full access is locked?
+
+**Observed:**
+The composer's permission chip drew the same closed padlock for every mode, tinted orange for Full access, while its menu put a shield with "!" on every row, Supervised included. A four-model blind panel called the Full access lock "inverted" 4-0 (2026-10-14).
+
+**Diagnosis:**
+Symbol semantics fighting color. A closed shackle means "secured", so the only danger signal left is the tint, and the menu's warning shield on the safest mode spends the warning glyph on nothing.
+
+**Cost:**
+The one control that decides whether an agent can act unsupervised says "safe" at a glance. At narrow widths the label goes and only the inverted glyph remains.
+
+**Correction:**
+One family, one meaning per mark: shield-check for Supervised, plain shield between, shield-! in the warning color for Full access, the same glyph in trigger and menu. See [`experiments/thunderdome/examples/cmux-compact-composer/RESULTS.md`](experiments/thunderdome/examples/cmux-compact-composer/RESULTS.md).
+
+**Boundary:**
+An *open* padlock for Full access is defensible (T3 Code ships it; one judge preferred it). The failure is the closed one.
+
 ## Rule
 
 Do not put something here merely because it is unfamiliar, unfashionable, dense, ugly, or opinionated.
