@@ -1,0 +1,974 @@
+[
+{
+"a": "mark-replaces",
+"b": "shipped",
+"w": "b",
+"theme": "applelight",
+"why": "Trailing state glyphs (reply bubble, idle ring) say what needs you; A's brand marks only say which agent",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "shipped",
+"b": "mark-replaces",
+"w": "a",
+"theme": "appledark",
+"why": "Trailing state glyphs say what needs you; B's brand marks carry identity, not state",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "shipped",
+"b": "mark-beside",
+"w": "a",
+"theme": "applelight",
+"why": "B's leading brand marks on only some rows break the shared text edge; A keeps one clean leading column",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "shipped",
+"b": "mark-beside",
+"w": "a",
+"theme": "appledark",
+"why": "B's partial leading marks make the title edge ragged; A scans down a single aligned edge",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-beside",
+"b": "mark-replaces",
+"w": "a",
+"theme": "applelight",
+"why": "A keeps the trailing state glyph (bubble/ring); B swaps state for brand, losing the needs-you signal",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-beside",
+"b": "mark-replaces",
+"w": "a",
+"theme": "appledark",
+"why": "A keeps the trailing state glyphs; B's trailing brand marks hide whether the agent is waiting",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "badge-quiet",
+"b": "shipped",
+"w": "b",
+"theme": "applelight",
+"why": "Small-radius filled badge separates the unread count from title text; A's bare numerals read like metadata",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-quiet",
+"w": "a",
+"theme": "appledark",
+"why": "Filled small-radius badge reads as unread at a glance; B's bare numerals fade into the row",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-outline",
+"w": "a",
+"theme": "applelight",
+"why": "Solid tinted badge is calm and crisp; B's outlined box reads like a keycap or shortcut hint",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-outline",
+"w": "a",
+"theme": "appledark",
+"why": "Filled badge beats the outlined keycap look, which adds line noise and reads as a shortcut",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-tone",
+"w": "a",
+"theme": "applelight",
+"why": "Neutral filled badge has crisp contrast; B's amber-on-cream numerals are low-contrast and muddy",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-tone",
+"b": "shipped",
+"w": "b",
+"theme": "appledark",
+"why": "Neutral high-contrast badge is crisp; A's amber on dark brown is murky and dim",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-quiet",
+"b": "badge-outline",
+"w": "a",
+"theme": "applelight",
+"why": "Plain numerals are quieter than the outlined keycap boxes, which look like shortcut hints",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-quiet",
+"b": "badge-outline",
+"w": "a",
+"theme": "appledark",
+"why": "Outlined boxes add line noise and look like keycaps; plain count is calmer",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-tone",
+"b": "badge-quiet",
+"w": "a",
+"theme": "applelight",
+"why": "The tinted container marks unread as an attention state; B's bare numerals are easy to miss",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-tone",
+"b": "badge-quiet",
+"w": "a",
+"theme": "appledark",
+"why": "The amber fill makes unread pop as attention; B's plain gray numerals are easy to scan past",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-outline",
+"b": "badge-tone",
+"w": "b",
+"theme": "applelight",
+"why": "The filled tint reads as unread; A's outlined keycap boxes look like shortcuts",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-tone",
+"b": "badge-outline",
+"w": "a",
+"theme": "appledark",
+"why": "The filled tint reads as unread; B's outlined keycaps add line noise and look like shortcuts",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "rh22",
+"w": "b",
+"theme": "applelight",
+"why": "Tighter native pitch fits more rows with subtitles still legible; A wastes vertical space",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "rh22",
+"b": "shipped",
+"w": "a",
+"theme": "appledark",
+"why": "Tighter native pitch keeps the whole list in view; B is airier with no gain in clarity",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "rh28",
+"b": "rh22",
+"w": "b",
+"theme": "applelight",
+"why": "A's loose pitch spreads the list until groups lose cohesion; B is native Finder-like density",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "rh28",
+"b": "rh22",
+"w": "b",
+"theme": "appledark",
+"why": "Compact pitch keeps title and status tied together; A's loose rows float apart",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "rh28",
+"w": "a",
+"theme": "applelight",
+"why": "Medium pitch keeps groups tight; B's loose spacing separates title from status and spreads the list",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "rh28",
+"w": "a",
+"theme": "appledark",
+"why": "A is denser and more cohesive; B's loose pitch costs about 2 rows with no gain in legibility",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "r4",
+"w": "tie",
+"theme": "applelight",
+"why": "Radius difference is sub-pixel; corners look the same even at zoom",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r4",
+"b": "shipped",
+"w": "tie",
+"theme": "appledark",
+"why": "Radius difference is sub-pixel; corners look the same even at zoom",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r4",
+"b": "r9",
+"w": "a",
+"theme": "applelight",
+"why": "Smaller radius keeps group headers crisp rects; B's larger radius pushes them toward pills",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r4",
+"b": "r9",
+"w": "a",
+"theme": "appledark",
+"why": "Smaller radius header reads as a crisp rect; B's rounder ends drift toward capsule",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r9",
+"b": "shipped",
+"w": "b",
+"theme": "applelight",
+"why": "Smaller radius header keeps crisp rect corners; A's larger radius drifts toward capsule",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r9",
+"b": "shipped",
+"w": "b",
+"theme": "appledark",
+"why": "Smaller radius header keeps crisp rect corners; A's larger radius looks pill-like",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "sec-card",
+"b": "shipped",
+"w": "b",
+"theme": "applelight",
+"why": "Plain rows with a hairline divider stay calm; A's filled card around Home/App Store looks like a permanent selection",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-card",
+"b": "shipped",
+"w": "b",
+"theme": "appledark",
+"why": "A's filled card competes with the real selection highlight; B's divider separates without the extra weight",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-linesicons",
+"b": "shipped",
+"w": "a",
+"theme": "applelight",
+"why": "Icon strip makes the fixed destinations quiet and gives about 1 row back to workspaces, where the needs-you state lives",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-linesicons",
+"b": "shipped",
+"w": "a",
+"theme": "appledark",
+"why": "Compact icon strip makes the pinned items recede and lets the workspace list start higher",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-card",
+"b": "sec-linesicons",
+"w": "b",
+"theme": "applelight",
+"why": "Icon strip is lightest; A's filled card reads as a second selection and takes the most height",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-linesicons",
+"b": "sec-card",
+"w": "a",
+"theme": "appledark",
+"why": "Icon strip is lightest; B's filled card takes the most height and competes with the selection",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "mark-replaces",
+"b": "shipped",
+"w": "b",
+"theme": "latte",
+"why": "trailing marks carry state (needs-input bubble, idle ring) instead of harness logos that say nothing about who needs me",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-replaces",
+"b": "shipped",
+"w": "b",
+"theme": "mocha",
+"why": "state glyphs beat brand logos in the trailing slot; Leo scans for state, not harness",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-beside",
+"b": "shipped",
+"w": "b",
+"theme": "latte",
+"why": "leading harness marks indent only some titles, giving a ragged left edge; state alone stays aligned",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-beside",
+"b": "shipped",
+"w": "b",
+"theme": "mocha",
+"why": "same: leading logos break the title column and add stateless noise",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-beside",
+"b": "mark-replaces",
+"w": "a",
+"theme": "latte",
+"why": "A keeps the needs-input/idle state glyphs; B swaps them for harness logos and loses state",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-replaces",
+"b": "mark-beside",
+"w": "b",
+"theme": "mocha",
+"why": "B has the state glyphs; A's logos hide which agent is waiting",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "shipped",
+"b": "badge-quiet",
+"w": "a",
+"theme": "latte",
+"why": "filled chip gives the count a findable shape; a bare digit blends into the row text",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-quiet",
+"w": "a",
+"theme": "mocha",
+"why": "filled chip pops on dark; a bare 1 reads like part of the title",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-outline",
+"w": "a",
+"theme": "latte",
+"why": "outlined box reads as a keycap or SF symbol; a filled chip reads as a count",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-outline",
+"w": "a",
+"theme": "mocha",
+"why": "filled chip is calmer and clearer than the keycap-looking outline",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-tone",
+"w": "b",
+"theme": "latte",
+"why": "peach-tinted chip uses the theme accent to mark unread, so it reads as needs-you at a glance",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-tone",
+"w": "b",
+"theme": "mocha",
+"why": "themed yellow digit on dark is the first thing the eye lands on; gray chip blends in",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-outline",
+"b": "badge-quiet",
+"w": "a",
+"theme": "latte",
+"why": "outline at least gives the count a shape; a bare digit is nearly invisible when scanning",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-quiet",
+"b": "badge-outline",
+"w": "b",
+"theme": "mocha",
+"why": "outline beats bare digit for findability, by the same reasoning as 13",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-quiet",
+"b": "badge-tone",
+"w": "b",
+"theme": "latte",
+"why": "theme-accent chip clearly flags unread; bare digit vanishes",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-quiet",
+"b": "badge-tone",
+"w": "b",
+"theme": "mocha",
+"why": "accent chip on dark is the strongest needs-you signal",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-outline",
+"b": "badge-tone",
+"w": "b",
+"theme": "latte",
+"why": "themed accent fill beats a gray keycap outline",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-tone",
+"b": "badge-outline",
+"w": "a",
+"theme": "mocha",
+"why": "themed accent fill beats a gray keycap outline",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "rh22",
+"w": "b",
+"theme": "latte",
+"why": "tighter pitch fits more agents with no loss of legibility",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "rh22",
+"w": "b",
+"theme": "mocha",
+"why": "denser rows; more agents visible without scrolling",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "rh22",
+"b": "rh28",
+"w": "a",
+"theme": "latte",
+"why": "B's loose pitch costs about 3 rows of real estate for nothing",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "rh28",
+"b": "rh22",
+"w": "b",
+"theme": "mocha",
+"why": "compact pitch; A wastes vertical space",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "rh28",
+"w": "a",
+"theme": "latte",
+"why": "standard pitch over loose: more rows, still scannable",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "rh28",
+"w": "a",
+"theme": "mocha",
+"why": "standard pitch over loose: more rows, still scannable",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "r4",
+"w": "tie",
+"theme": "latte",
+"why": "radius difference not perceptible even at 4x zoom; no scanning effect",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "shipped",
+"b": "r4",
+"w": "tie",
+"theme": "mocha",
+"why": "no perceptible radius difference",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r9",
+"b": "r4",
+"w": "tie",
+"theme": "latte",
+"why": "no perceptible radius difference",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r9",
+"b": "r4",
+"w": "tie",
+"theme": "mocha",
+"why": "no perceptible radius difference",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r9",
+"b": "shipped",
+"w": "tie",
+"theme": "latte",
+"why": "no perceptible radius difference",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r9",
+"b": "shipped",
+"w": "tie",
+"theme": "mocha",
+"why": "no perceptible radius difference",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "shipped",
+"b": "sec-card",
+"w": "a",
+"theme": "latte",
+"why": "plain rows plus divider; B's card wrapper adds chrome and pushes the list down",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "shipped",
+"b": "sec-card",
+"w": "a",
+"theme": "mocha",
+"why": "card wrapper is stateless chrome; the divider list is leaner",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "shipped",
+"b": "sec-linesicons",
+"w": "b",
+"theme": "latte",
+"why": "icon tiles reclaim a full row height for agents, and Home/Store stay in fixed positions",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "shipped",
+"b": "sec-linesicons",
+"w": "b",
+"theme": "mocha",
+"why": "compact icon tiles give more room to the rows that carry state",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-card",
+"b": "sec-linesicons",
+"w": "b",
+"theme": "latte",
+"why": "icon tiles beat a card block: about 2 rows saved, less chrome",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-linesicons",
+"b": "sec-card",
+"w": "a",
+"theme": "mocha",
+"why": "icon tiles beat a card block: about 2 rows saved, less chrome",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "mark-replaces",
+"b": "shipped",
+"w": "b",
+"theme": "applelight",
+"why": "Trailing status marks (needs-input bubble, idle ring) say what needs you; A's harness logos only say who is running",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "shipped",
+"b": "mark-replaces",
+"w": "a",
+"theme": "mocha",
+"why": "Status glyphs carry actionable state; B's harness logos swap it for identity",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-beside",
+"b": "shipped",
+"w": "a",
+"theme": "applelight",
+"why": "A keeps the trailing status and adds harness identity up front; B drops that information",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "shipped",
+"b": "mark-beside",
+"w": "b",
+"theme": "mocha",
+"why": "B keeps status plus a leading harness mark: more information at the cost of a slightly uneven left edge",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-beside",
+"b": "mark-replaces",
+"w": "a",
+"theme": "applelight",
+"why": "A has both harness and status; B uses the trailing slot for the logo and loses the needs-input/idle state",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "mark-replaces",
+"b": "mark-beside",
+"w": "b",
+"theme": "mocha",
+"why": "B keeps the status glyphs and shows harness on the left; A has logos only, with no state",
+"judge": "sb",
+"q": "agent-mark"
+},
+{
+"a": "shipped",
+"b": "badge-quiet",
+"w": "a",
+"theme": "applelight",
+"why": "The filled chip separates the count from the text; B's bare gray numeral reads like a row number and is easy to miss",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-quiet",
+"w": "a",
+"theme": "mocha",
+"why": "The filled chip stands out against the dark background; the bare numeral is low-salience",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-outline",
+"b": "shipped",
+"w": "b",
+"theme": "applelight",
+"why": "The filled chip reads clean; A's thin outline crowds the numeral and looks like a keycap or icon",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "shipped",
+"b": "badge-outline",
+"w": "a",
+"theme": "mocha",
+"why": "The filled chip is crisp; the outlined box crowds the digit and reads as a glyph",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-tone",
+"b": "shipped",
+"w": "b",
+"theme": "applelight",
+"why": "In light mode the amber tint puts a gold numeral on cream with weak contrast; the neutral chip has a dark numeral and higher contrast",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-tone",
+"b": "shipped",
+"w": "a",
+"theme": "mocha",
+"why": "On dark, the amber chip with a light numeral pops and signals attention apart from neutral chrome",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-quiet",
+"b": "badge-outline",
+"w": "b",
+"theme": "applelight",
+"why": "The outline at least encloses the count as a badge; A's bare numeral has the least salience",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-quiet",
+"b": "badge-outline",
+"w": "b",
+"theme": "mocha",
+"why": "The enclosed count beats a bare dim numeral for spotting unread items on dark",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-tone",
+"b": "badge-quiet",
+"w": "a",
+"theme": "applelight",
+"why": "A tinted chip, even if low-contrast, is more findable than a bare gray digit",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-tone",
+"b": "badge-quiet",
+"w": "a",
+"theme": "mocha",
+"why": "The amber chip is clearly the attention signal; the bare digit disappears",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-outline",
+"b": "badge-tone",
+"w": "b",
+"theme": "applelight",
+"why": "A filled tint reads as a badge at a glance; the outline crowds the digit",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "badge-outline",
+"b": "badge-tone",
+"w": "b",
+"theme": "mocha",
+"why": "The amber fill with a light digit has strong salience on dark; the outline is fussy",
+"judge": "sb",
+"q": "notification-badge"
+},
+{
+"a": "rh22",
+"b": "shipped",
+"w": "b",
+"theme": "applelight",
+"why": "Medium pitch gives the two-line rows breathing room and bigger targets; compact crowds status subtitles against the next title",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "rh22",
+"w": "a",
+"theme": "mocha",
+"why": "Medium pitch over compact: subtitle and title pairs separate more clearly and targets are larger",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "rh28",
+"b": "rh22",
+"w": "b",
+"theme": "applelight",
+"why": "Large pitch spends about 20% more height for no information gain; compact shows more workspaces per glance with adequate targets",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "rh22",
+"b": "rh28",
+"w": "a",
+"theme": "mocha",
+"why": "Compact fits the whole list well above the fold; large pitch pushes groups down with no added information",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "rh28",
+"w": "a",
+"theme": "applelight",
+"why": "Medium pitch is dense yet comfortable; large wastes vertical space you need for scanning many workspaces",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "rh28",
+"w": "a",
+"theme": "mocha",
+"why": "Medium over large: same targets in practice, more rows visible",
+"judge": "sb",
+"q": "row-pitch"
+},
+{
+"a": "shipped",
+"b": "r4",
+"w": "tie",
+"theme": "applelight",
+"why": "The radius difference is not perceptible at real size",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "shipped",
+"b": "r4",
+"w": "tie",
+"theme": "mocha",
+"why": "The radius difference is not perceptible at real size",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r9",
+"b": "r4",
+"w": "tie",
+"theme": "applelight",
+"why": "The radius difference is not perceptible at real size",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r9",
+"b": "r4",
+"w": "tie",
+"theme": "mocha",
+"why": "The radius difference is not perceptible at real size",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "shipped",
+"b": "r9",
+"w": "tie",
+"theme": "applelight",
+"why": "The radius difference is not perceptible at real size",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "r9",
+"b": "shipped",
+"w": "tie",
+"theme": "mocha",
+"why": "The radius difference is not perceptible at real size",
+"judge": "sb",
+"q": "corner-radius"
+},
+{
+"a": "sec-card",
+"b": "shipped",
+"w": "b",
+"theme": "applelight",
+"why": "A's card fill matches the selected-row fill, so destinations look selected; B's divider separates them without a fake state",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-card",
+"b": "shipped",
+"w": "b",
+"theme": "mocha",
+"why": "The card tint is ambiguous with the selection highlight; a plain divider is unambiguous",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "shipped",
+"b": "sec-linesicons",
+"w": "a",
+"theme": "applelight",
+"why": "Icon-only destinations lose labels and shrink click targets to about 28px to save one row; the labeled list is findable",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-linesicons",
+"b": "shipped",
+"w": "b",
+"theme": "mocha",
+"why": "Labeled destinations keep text findability and full-width targets; the icon pair saves little height",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-card",
+"b": "sec-linesicons",
+"w": "a",
+"theme": "applelight",
+"why": "Even with a selection-like card, labels and full-width targets beat two small unlabeled icons",
+"judge": "sb",
+"q": "top-sections"
+},
+{
+"a": "sec-card",
+"b": "sec-linesicons",
+"w": "a",
+"theme": "mocha",
+"why": "Labels plus wide targets beat icon-only; the card's selection ambiguity is the lesser cost",
+"judge": "sb",
+"q": "top-sections"
+}
+]

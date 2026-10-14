@@ -41,3 +41,7 @@ Unresolved: none of these were seen in the native app on a real display (the Mac
 - **Pattern candidate: theme-relative tokens must be checked in both brightnesses.** "Text at N% over the page" is a two-design token. It is one case so far, across three surfaces. Promote it when a second product shows the same flip.
 - SIGNATURE "Make hot paths direct" gains a visual corollary: **a control's resting look must not resemble a different state** (disabled, loading, ready).
 - **Method:** a fork that judged its own variants picked "all three changes" 16–0. Blind judges ranked the same stack 6–10. Self-judging after authoring is not evidence.
+
+## Follow-up: sidebar rows (same day)
+
+[`experiments/thunderdome/examples/cmux-sidebar-rows/`](../../experiments/thunderdome/examples/cmux-sidebar-rows/RESULTS.md): 108 blind bouts on native tunables. The same principle carried over: the status slot must carry state, so a brand mark that displaced it lost 0–12. The bigger finding came from looking rather than voting. A failed run is drawn exactly like routine work, while decorative group bands are the loudest thing in the column. That is SHITLIST's "healthy activity represented as attention demand" turned inside out: attention demand represented as healthy activity.
