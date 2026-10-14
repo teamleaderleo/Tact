@@ -45,3 +45,7 @@ Unresolved: none of these were seen in the native app on a real display (the Mac
 ## Follow-up: sidebar rows (same day)
 
 [`experiments/thunderdome/examples/cmux-sidebar-rows/`](../../experiments/thunderdome/examples/cmux-sidebar-rows/RESULTS.md): 108 blind bouts on native tunables. The same principle carried over: the status slot must carry state, so a brand mark that displaced it lost 0–12. The bigger finding came from looking rather than voting. A failed run is drawn exactly like routine work, while decorative group bands are the loudest thing in the column. That is SHITLIST's "healthy activity represented as attention demand" turned inside out: attention demand represented as healthy activity.
+
+## Use: what landed (same day)
+
+The round trip from a Thunderdome verdict to merged code took a few hours. The ring wedge and the faint Send landed in #20624, the theme surface token through op-next-theme, and the radio fix in #20632. All three were re-judged at `738cd81fe3f7`, and all three hold (composer and New Tab RESULTS). Nobody has used them on a lit display yet. That is the remaining test, and the hundredth-use test belongs to Leo's nightly-next.
