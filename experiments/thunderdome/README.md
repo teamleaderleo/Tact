@@ -44,7 +44,7 @@ experiments/thunderdome/
     cmux-new-tab/         the New Tab page, one lever per contender
     cmux-sidebar-rows/    the native cmux NEXT sidebar, one runtime Debug tunable per question (app snapshot RPC)
     cmux-compact-composer/ compact composer icons and collapse order; first cross-model panel (Opus, Sonnet, Sol, Astra)
-    cmux-sidebar-groups/  how sidebar groups are drawn (Chrome, Zen band, elbow tree) plus status grouping; cross-model panel
+    cmux-sidebar-group-look/ how sidebar groups are drawn (Chrome, Zen band, elbow tree) plus status grouping; cross-model panel
     cmux-permission-card/ the agent permission card; RESULTS.md shows a blind re-run overturning the author's own vote
 ```
 
