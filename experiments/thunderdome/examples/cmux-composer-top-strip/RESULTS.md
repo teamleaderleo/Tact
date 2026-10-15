@@ -56,7 +56,7 @@ Each judge wrote its issue list first, then scored each contender 1-10 on six cr
 
 ### Bug in plain
 
-- **A stray stroke** a few px tall sits above the card's top-left corner in light themes (Astra). Fix it whether or not plain ships.
+- **A stray stroke** a few px tall sits above both of the card's top corners in light themes (Astra; confirmed in the renders). Fix it whether or not plain ships.
 
 ## What the round taught
 
